@@ -41,7 +41,7 @@ Message format:
 ```javascript
 {
 const request = {
-    vtkrpc: 1.0,
+    wslink: 1.0,
     id: `rpc:${clientId}:${count}`,
     method: 'render.window.image',
     args: [],
@@ -49,7 +49,7 @@ const request = {
 };
 
 const response = {
-    vtkrpc: 1.0,
+    wslink: 1.0,
     id: `rpc:${clientId}:${count}`,
     result: {}, // either result or error, not both
     error: {}
@@ -70,10 +70,10 @@ def getImage(self):
     }
 ```
 
-## VtkRpcJs
+## wslink.js
 We would like to support kwargs, like wamp, which violates pure jsonrpc.
 We can extend it by simply adding a 'kwargs' param, as above. Therefore we'll
-use 'vtkrpc' as our version string, instead of 'jsonrpc'. We also change from 'params' to 'args'.
+use 'wslink' as our version string, instead of 'jsonrpc'. We also change from 'params' to 'args'.
 
 AutobahnJS `session.call()` returns a Promise, except that IE doesn't support
 promises, so it uses an alternative if needed. node_modules/autobahn/lib/session.js uses `self._defer()` to retrieve it. connection.js has the factory. 

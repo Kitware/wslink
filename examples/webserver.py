@@ -1,14 +1,14 @@
 import json, os, sys
 
 # from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
-from vtkrpc.websocket import ServerProtocol, TimeoutWebSocketServerFactory, VtkrpcWebSocketServerProtocol
+from wslink.websocket import ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
 from autobahn.twisted.resource import WebSocketResource
 
 from myProtocol import MyProtocol
 
 class ExampleServer(ServerProtocol):
     def initialize(self):
-        self.registerVtkWebProtocol(MyProtocol())
+        self.registerLinkProtocol(MyProtocol())
         self.updateSecret("vtkweb-secret")
 
 # -----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ root = File(os.path.join(os.path.dirname(__file__), "../client/www"))
 
 # WS endpoint
 factory = TimeoutWebSocketServerFactory(url=u"ws://127.0.0.1:8080", timeout=60)
-factory.protocol = VtkrpcWebSocketServerProtocol
+factory.protocol = WslinkWebSocketServerProtocol
 factory.setServerProtocol(exampleServer)
 resource = WebSocketResource(factory)
 root.putChild(b"ws", resource)

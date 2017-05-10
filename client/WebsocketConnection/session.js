@@ -1,11 +1,11 @@
 // TODO fix import of paraviewweb, after migration. Or copy file directly.
-import CompositeClosureHelper from '../../../../paraviewweb/src/Common/Core/CompositeClosureHelper';
+import CompositeClosureHelper from '../../../paraviewweb/src/Common/Core/CompositeClosureHelper';
 
 function Session(publicAPI, model) {
   let msgCount = 0;
   const inFlightRpc = {};
   const attachments = [];
-  const regexAttach = /^vtkrpc_bin[\d]+$/;
+  const regexAttach = /^wslink_bin[\d]+$/;
   // matches 'rpc:client3:21'
   // client may be dot-separated and include '_'
   // number is message count - unique.
@@ -28,9 +28,9 @@ function Session(publicAPI, model) {
   publicAPI.onconnect = (event) => {
     // send hello message
     model.ws.send(JSON.stringify({
-      vtkrpc: '1.0',
+      wslink: '1.0',
       id: 'system:c0:0',
-      method: 'vtkrpc.hello',
+      method: 'wslink.hello',
       args: [{ secret: model.secret }],
       kwargs: {}
     }));
@@ -41,7 +41,7 @@ function Session(publicAPI, model) {
     if (model.ws && clientID) {
       const id = `rpc:${clientID}:${msgCount++}`
       inFlightRpc[id] = deferred;
-      model.ws.send(JSON.stringify({ vtkrpc: '1.0', id, method, args, kwargs }));
+      model.ws.send(JSON.stringify({ wslink: '1.0', id, method, args, kwargs }));
     } else {
       deferred.reject(`RPC call ${method} unsuccessful: connection not open`);
     }
@@ -53,7 +53,7 @@ function Session(publicAPI, model) {
       if (!subscriptions[topic]) subscriptions[topic] = [];
       subscriptions[topic].push(callback);
       // we can notify the server, but we don't need to, if the server always sends messages unconditionally.
-      // model.ws.send(JSON.stringify({ vtkrpc: '1.0', id: `subscribe:${msgCount++}`, method, args: [] }));
+      // model.ws.send(JSON.stringify({ wslink: '1.0', id: `subscribe:${msgCount++}`, method, args: [] }));
     }
   };
   publicAPI.unsubscribe = (topic, callback) => {
@@ -90,7 +90,7 @@ function Session(publicAPI, model) {
       if (!payload.id) {
         // Notification-only message from the server - should be binary attachment header
         console.log('Notify', payload);
-        if (payload.method === 'vtkrpc.binary.attachment') {
+        if (payload.method === 'wslink.binary.attachment') {
           payload.args.forEach((key) => {
             attachments.push({ key, data: null });
           });

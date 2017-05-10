@@ -1,6 +1,6 @@
 import os
 
-from vtkrpc import register as exportRPC
+from wslink import register as exportRPC
 from twisted.internet import task
 
 # -----------------------------------------------------------------------------

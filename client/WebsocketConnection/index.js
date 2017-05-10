@@ -1,4 +1,4 @@
-import CompositeClosureHelper from '../../../../paraviewweb/src/Common/Core/CompositeClosureHelper';
+import CompositeClosureHelper from '../../../paraviewweb/src/Common/Core/CompositeClosureHelper';
 import Session from './session';
 
 function getTransportObject(url) {

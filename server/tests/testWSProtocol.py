@@ -7,11 +7,11 @@ except ImportError:
     from mock import MagicMock
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from vtkrpc.websocket import ServerProtocol, TimeoutWebSocketServerFactory, VtkrpcWebSocketServerProtocol
+from wslink.websocket import ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
 from autobahn.twisted.resource import WebSocketResource
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
 
-from vtkrpc import register as exportRPC
+from wslink import register as exportRPC
 from twisted.internet import reactor, task
 
 class MyProtocol(object):
@@ -88,7 +88,7 @@ class MyProtocol(object):
 
 class ExampleServer(ServerProtocol):
     def initialize(self):
-        self.registerVtkWebProtocol(MyProtocol())
+        self.registerLinkProtocol(MyProtocol())
         self.updateSecret("vtkweb-secret")
 
 
@@ -134,7 +134,7 @@ class TestWSProtocol(unittest.TestCase):
         exampleServer = ExampleServer()
         f = TimeoutWebSocketServerFactory(timeout=5)
         f.setServerProtocol(exampleServer)
-        p = VtkrpcWebSocketServerProtocol()
+        p = WslinkWebSocketServerProtocol()
         p.factory = f
         p.transport = t
 
@@ -175,7 +175,7 @@ class TestWSProtocol(unittest.TestCase):
 
     def test_messageNoConnect(self):
         msg = {
-            "vtkrpc": "1.0",
+            "wslink": "1.0",
             "id": "rpc:c0:0",
             "method": "myprotocol.add",
             "args": [1,2],
@@ -193,9 +193,9 @@ class TestWSProtocol(unittest.TestCase):
     def handshake(self):
         self.protocol.onConnect({})
         msg = {
-            "vtkrpc": "1.0",
+            "wslink": "1.0",
             "id": "system:c0:0",
-            "method": "vtkrpc.hello",
+            "method": "wslink.hello",
             "args": [{ "secret": "vtkweb-secret" }],
             "kwargs": {},
         }
@@ -206,7 +206,7 @@ class TestWSProtocol(unittest.TestCase):
         self.assertIsNotNone(msgMock.call_args[0])
         self.assertIsNotNone(msgMock.call_args[0][0])
         msg_bytes = msgMock.call_args[0][0]
-        self.assertEqual(b'{"vtkrpc": "1.0", "id": "system:c0:0", "result": {"clientID": "c0"}}',
+        self.assertEqual(b'{"wslink": "1.0", "id": "system:c0:0", "result": {"clientID": "c0"}}',
                          msg_bytes)
         # allow follow-on msg tests to use clientID
         self.clientID = "c0"
@@ -216,7 +216,7 @@ class TestWSProtocol(unittest.TestCase):
 
     def message(self, msgMock, method, args, kwargs):
         msg = {
-            "vtkrpc": "1.0",
+            "wslink": "1.0",
             "id": "rpc:{0}:{1}".format(self.clientID, self.msgCount),
             "method": method,
             "args": args,
@@ -231,9 +231,9 @@ class TestWSProtocol(unittest.TestCase):
     def test_badSecret(self):
         self.protocol.onConnect({})
         msg = {
-            "vtkrpc": "1.0",
+            "wslink": "1.0",
             "id": "system:c0:0",
-            "method": "vtkrpc.hello",
+            "method": "wslink.hello",
             "args": [{ "secret": "bad-secret" }],
             "kwargs": {},
         }
@@ -266,13 +266,13 @@ class TestWSProtocol(unittest.TestCase):
         msgMock = self.handshake()
         msg_bytes = self.message(msgMock, "myprotocol.add", [[1, 2, 3]], {})
         self.assertEqual(msg_bytes,
-            b'{"vtkrpc": "1.0", "id": "rpc:c0:0", "result": 6}')
+            b'{"wslink": "1.0", "id": "rpc:c0:0", "result": 6}')
 
     def test_nonReturnRPC(self):
         msgMock = self.handshake()
         msg_bytes = self.message(msgMock, "myprotocol.nothing", [], {})
         self.assertEqual(msg_bytes,
-            b'{"vtkrpc": "1.0", "id": "rpc:c0:0", "result": null}')
+            b'{"wslink": "1.0", "id": "rpc:c0:0", "result": null}')
 
     def test_throwsRPC(self):
         msgMock = self.handshake()
@@ -298,13 +298,13 @@ class TestWSProtocol(unittest.TestCase):
         msgMock = self.handshake()
         msg_bytes = self.message(msgMock, "myprotocol.binary", [5], {})
         self.assertEqual(msgMock.call_count, 3)
-        self.assertIn(b'"method": "vtkrpc.binary.attachment"', msgMock.call_args_list[0][0][0])
-        self.assertIn(b'"args": ["vtkrpc_bin0"]', msgMock.call_args_list[0][0][0])
+        self.assertIn(b'"method": "wslink.binary.attachment"', msgMock.call_args_list[0][0][0])
+        self.assertIn(b'"args": ["wslink_bin0"]', msgMock.call_args_list[0][0][0])
 
         binary_msg = msgMock.call_args_list[1][0][0].tolist()
         self.assertEqual(binary_msg, [0, 1, 2, 254, 255])
         self.assertEqual(msg_bytes,
-            b'{"vtkrpc": "1.0", "id": "rpc:c0:0", "result": {"blob": "vtkrpc_bin0"}}')
+            b'{"wslink": "1.0", "id": "rpc:c0:0", "result": {"blob": "wslink_bin0"}}')
 
     # TODO some bad binary behaviors:
     # creating an attachment and not using it.

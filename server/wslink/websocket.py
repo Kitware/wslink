@@ -1,5 +1,5 @@
 r"""websocket is a module that provide classes that extend any
-twisted/autobahn websocket related class for the purpose of vtkrpc.
+twisted/autobahn websocket related class for the purpose of wslink.
 
 """
 
@@ -25,12 +25,12 @@ from autobahn.twisted.websocket import WebSocketServerProtocol
 
 class ServerProtocol(object):
     """
-    Defines the core server protocol for vtkrpc. Gathers a list of vtkWebProtocol
+    Defines the core server protocol for wslink. Gathers a list of linkProtocol
     objects that provide rpc and pub/sub functionality.
     """
 
     def __init__(self):
-        self.vtkWebProtocols = []
+        self.linkProtocols = []
         self.secret = None
         self.initialize()
 
@@ -47,15 +47,15 @@ class ServerProtocol(object):
 
     # def onJoin(self, details):
     #     self.register(self)
-    #     for protocol in self.vtkWebProtocols:
+    #     for protocol in self.linkProtocols:
     #         self.register(protocol)
 
-    def registerVtkWebProtocol(self, protocol):
+    def registerLinkProtocol(self, protocol):
         protocol.coreServer = self
-        self.vtkWebProtocols.append(protocol)
+        self.linkProtocols.append(protocol)
 
-    def getVtkWebProtocols(self):
-        return self.vtkWebProtocols
+    def getLinkProtocols(self):
+        return self.linkProtocols
 
     def updateSecret(self, newSecret):
         self.secret = newSecret
@@ -72,7 +72,7 @@ class ServerProtocol(object):
 
 # =============================================================================
 #
-# Base class for vtkWeb WebSocketServerFactory
+# Base class for wslink WebSocketServerFactory
 #
 # =============================================================================
 
@@ -150,9 +150,9 @@ RESULT_SERIALIZE_ERROR = -32002
 # WS protocol definition
 # -----------------------------------------------------------------------------
 
-class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
+class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
     def __init__(self):
-        super(VtkrpcWebSocketServerProtocol, self).__init__()
+        super(WslinkWebSocketServerProtocol, self).__init__()
         self.functionMap = {}
         self.attachmentMap = {}
         self.attachmentId = 0
@@ -162,7 +162,7 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         self.clientID = self.factory.getClientCount()
         print("client connected", self.clientID, request)
         # Build the rpc method dictionary. self.factory isn't set until connected.
-        protocolList = (self.factory.getServerProtocol().getVtkWebProtocols() if self.factory.getServerProtocol() else [])
+        protocolList = (self.factory.getServerProtocol().getLinkProtocols() if self.factory.getServerProtocol() else [])
         for protocolObject in protocolList:
             protocolObject.init(self.publish, self.addAttachment)
             test = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
@@ -180,7 +180,7 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
     def handleSystemMessage(self, rpcid, methodName, args):
         rpcList = rpcid.split(":")
         if rpcList[0] == "system":
-            if (methodName == "vtkrpc.hello"):
+            if (methodName == "wslink.hello"):
                 if (args and args[0] and (type(args[0]) is dict) and ("secret" in args[0]) \
                     and (args[0]["secret"] == self.factory.getServerProtocol().secret)):
                     self.sendWrappedMessage(rpcid, { "clientID": "c{0}".format(self.clientID) })
@@ -198,7 +198,7 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             return
         rpc = json.loads(payload)
         # TODO validate
-        version = rpc['vtkrpc']
+        version = rpc['wslink']
         rpcid = rpc['id']
         methodName = rpc['method']
         args = []
@@ -229,7 +229,7 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
     def sendWrappedMessage(self, rpcid, content, method=''):
         wrapper = {
-            "vtkrpc": "1.0",
+            "wslink": "1.0",
             "id": rpcid,
             "result": content,
         }
@@ -248,8 +248,8 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
                 if key.encode('utf8') in encMsg:
                     # send header
                     header = {
-                        "vtkrpc": "1.0",
-                        "method": "vtkrpc.binary.attachment",
+                        "wslink": "1.0",
+                        "method": "wslink.binary.attachment",
                         "args": [key],
                     }
                     self.sendMessage(json.dumps(header, ensure_ascii = False).encode('utf8'))
@@ -260,7 +260,7 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
     def sendWrappedError(self, rpcid, code, message, data = None):
         wrapper = {
-            "vtkrpc": "1.0",
+            "wslink": "1.0",
             "id": rpcid,
             "error": {
                 "code": code,
@@ -283,7 +283,7 @@ class VtkrpcWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         print("attachment", self, self.attachmentId)
         # use a string flag in place of the binary attachment.
         # (Using rpcid would prevent re-use of the attachment in publish)
-        binaryId = 'vtkrpc_bin{0}'.format(self.attachmentId)
+        binaryId = 'wslink_bin{0}'.format(self.attachmentId)
         self.attachmentMap[binaryId] = payload
         self.attachmentId += 1
         return binaryId
