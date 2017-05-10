@@ -1,0 +1,19 @@
+<html>
+<body>
+<button onClick="connect()">Connect</button>
+<button onClick="wsclose()">Disconnect</button>
+<br/>
+<input type="text" value="1,2,3,4,5" class="input" />
+<button onClick="sendInput('add')">Send Add</button>
+<button onClick="sendInput('mult')">Send Mult</button>
+<button onClick="sendBinary()">Send Binary</button>
+<button onClick="toggleStream()">Sub/Unsub</button>
+<button onClick="sendMistake()">Mistake</button>
+<br/>
+<textarea class="output" rows="12" cols="50"></textarea>
+<br/>
+<canvas class="imageCanvas" width="300px" height="300px"></canvas>
+
+<script src="bundle.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "pvwRPC-client",
+  "version": "1.0.0",
+  "description": "rpc test bed",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "prod": "webpack -p",
+    "start": "webpack-dev-server"
+  },
+  "author": "Aron Helser",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.24.0",
+    "babel-loader": "^6.4.1",
+    "babel-preset-es2015": "^6.24.0",
+    "css-loader": "^0.27.3",
+    "extract-text-webpack-plugin": "^2.1.0",
+    "webpack": "2.2.1",
+    "webpack-dev-server": "^2.4.2"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.23.0"
+  }
+}
