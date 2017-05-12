@@ -1,5 +1,5 @@
-// TODO fix import of paraviewweb, after migration. Or copy file directly.
-import CompositeClosureHelper from '../../../paraviewweb/src/Common/Core/CompositeClosureHelper';
+// Helper borrowed from paraviewweb/src/Common/Core
+import CompositeClosureHelper from '../CompositeClosureHelper';
 
 function Session(publicAPI, model) {
   let msgCount = 0;

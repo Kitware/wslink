@@ -1,22 +1,18 @@
 import os
 
 from wslink import register as exportRPC
+from wslink.websocket import LinkProtocol
 from twisted.internet import task
 
 # -----------------------------------------------------------------------------
 # WS protocol definition
 # -----------------------------------------------------------------------------
 
-class MyProtocol(object):
-    def __init__(self, publish=None, addAttachment=None):
+class MyProtocol(LinkProtocol):
+    def __init__(self):
+        super(MyProtocol, self).__init__()
         self.subscribers = {}
         self.subMsgCount = 0
-        self.publish = publish
-        self.addAttachment = addAttachment
-
-    def init(self, publish, addAttachment):
-        self.publish = publish
-        self.addAttachment = addAttachment
 
     @exportRPC("myprotocol.add")
     def add(self, listOfNumbers):

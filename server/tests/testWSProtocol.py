@@ -7,23 +7,28 @@ except ImportError:
     from mock import MagicMock
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from wslink.websocket import ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
+from wslink.websocket import LinkProtocol, ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
 from autobahn.twisted.resource import WebSocketResource
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
 
 from wslink import register as exportRPC
 from twisted.internet import reactor, task
 
-class MyProtocol(object):
+class MyProtocol(LinkProtocol):
     def __init__(self, publish=None, addAttachment=None):
+        super(MyProtocol, self).__init__()
         self.subscribers = {}
         self.subMsgCount = 0
         self.publish = publish
         self.addAttachment = addAttachment
+        self.app = None
 
     def init(self, publish, addAttachment):
         self.publish = publish
         self.addAttachment = addAttachment
+
+    def setApplication(self, app):
+        self.app = app
 
     @exportRPC("myprotocol.add")
     def add(self, listOfNumbers):

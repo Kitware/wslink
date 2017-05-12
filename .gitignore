@@ -3,6 +3,7 @@ runtime*
 __pycache__
 *.pyc
 *.swp
+*.egg-info
 .npm-packages
 .npmrc
 npm-debug.log

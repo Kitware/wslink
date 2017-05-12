@@ -1,5 +1,5 @@
-r"""websocket is a module that provide classes that extend any
-twisted/autobahn websocket related class for the purpose of wslink.
+r"""websocket is a module that provides classes that extend any
+twisted/autobahn websockets related classes for the purposes of wslink.
 
 """
 
@@ -17,26 +17,60 @@ from . import register as exportRpc
 from autobahn.twisted.websocket import WebSocketServerFactory
 from autobahn.twisted.websocket import WebSocketServerProtocol
 
+
 # =============================================================================
 #
-# Base class for vtkWeb ServerProtocol
+# Base class for objects that can accept RPC calls or publish over wslink
+#
+# =============================================================================
+
+class LinkProtocol(object):
+    """
+    Subclass this to communicate with wslink clients. LinkProtocol
+    objects provide rpc and pub/sub actions.
+    """
+    def __init__(self):
+        self.publish = None
+        self.addAttachment = None
+        self.Application = None
+
+    def init(self, publish, addAttachment):
+        self.publish = publish
+        self.addAttachment = addAttachment
+
+    def setApplication(self, app):
+        self.Application = app
+
+    def getApplication(self):
+        return self.Application
+
+# =============================================================================
+#
+# Base class for wslink ServerProtocol objects
 #
 # =============================================================================
 
 class ServerProtocol(object):
     """
-    Defines the core server protocol for wslink. Gathers a list of linkProtocol
-    objects that provide rpc and pub/sub functionality.
+    Defines the core server protocol for wslink. Gathers a list of LinkProtocol
+    objects that provide rpc and publish functionality.
     """
 
     def __init__(self):
         self.linkProtocols = []
         self.secret = None
+        self.Application = self.initApplication()
         self.initialize()
 
     def init(self, publish, addAttachment):
         self.publish = publish
         self.addAttachment = addAttachment
+
+    def initApplication(self):
+        """
+        Let subclass initialize a custom application, used by vtk and paraview.
+        """
+        return None
 
     def initialize(self):
         """
@@ -51,7 +85,9 @@ class ServerProtocol(object):
     #         self.register(protocol)
 
     def registerLinkProtocol(self, protocol):
+        assert( isinstance(protocol, LinkProtocol))
         protocol.coreServer = self
+        protocol.setApplication(self.Application)
         self.linkProtocols.append(protocol)
 
     def getLinkProtocols(self):
@@ -168,10 +204,10 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             test = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
             for k in inspect.getmembers(protocolObject.__class__, test):
                 proc = k[1]
-                if "_wampuris" in proc.__dict__:
-                    pat = proc.__dict__["_wampuris"][0]
-                    if pat.is_endpoint():
-                        uri = pat.uri()
+                if "_wslinkuris" in proc.__dict__:
+                    uri_info = proc.__dict__["_wslinkuris"][0]
+                    if "uri" in uri_info:
+                        uri = uri_info["uri"]
                         self.functionMap[uri] = (protocolObject, proc)
 
     def onClose(self, wasClean, code, reason):
