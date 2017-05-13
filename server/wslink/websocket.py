@@ -32,17 +32,14 @@ class LinkProtocol(object):
     def __init__(self):
         self.publish = None
         self.addAttachment = None
-        self.Application = None
 
     def init(self, publish, addAttachment):
         self.publish = publish
         self.addAttachment = addAttachment
 
-    def setApplication(self, app):
-        self.Application = app
-
-    def getApplication(self):
-        return self.Application
+    def getSharedObject(self, key):
+        assert(self.coreServer)
+        return self.coreServer.getSharedObject(key)
 
 # =============================================================================
 #
@@ -59,18 +56,12 @@ class ServerProtocol(object):
     def __init__(self):
         self.linkProtocols = []
         self.secret = None
-        self.Application = self.initApplication()
+        self.sharedObjects = {}
         self.initialize()
 
     def init(self, publish, addAttachment):
         self.publish = publish
         self.addAttachment = addAttachment
-
-    def initApplication(self):
-        """
-        Let subclass initialize a custom application, used by vtk and paraview.
-        """
-        return None
 
     def initialize(self):
         """
@@ -78,6 +69,18 @@ class ServerProtocol(object):
         themselves.
         """
         pass
+
+    def setSharedObject(self, key, shared):
+        if (shared == None and key in self.sharedObjects):
+            del self.sharedObjects[key]
+        else:
+            self.sharedObjects[key] = shared
+
+    def getSharedObject(self, key):
+        if (key in self.sharedObjects):
+            return self.sharedObjects[key]
+        else:
+            return None
 
     # def onJoin(self, details):
     #     self.register(self)
@@ -87,7 +90,6 @@ class ServerProtocol(object):
     def registerLinkProtocol(self, protocol):
         assert( isinstance(protocol, LinkProtocol))
         protocol.coreServer = self
-        protocol.setApplication(self.Application)
         self.linkProtocols.append(protocol)
 
     def getLinkProtocols(self):

@@ -21,14 +21,10 @@ class MyProtocol(LinkProtocol):
         self.subMsgCount = 0
         self.publish = publish
         self.addAttachment = addAttachment
-        self.app = None
 
     def init(self, publish, addAttachment):
         self.publish = publish
         self.addAttachment = addAttachment
-
-    def setApplication(self, app):
-        self.app = app
 
     @exportRPC("myprotocol.add")
     def add(self, listOfNumbers):

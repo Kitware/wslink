@@ -7,14 +7,22 @@ server can publish messages to topics that the client can subscribe to.
 ## ParaViewWeb RPC and publish/subscribe
 
 ParaViewWeb and vtkWeb require:
-* RPC - a remote procedure call that can be fired by the client and return sometime later with a response from the server, possibly an error.
-* Publish/subscribe - client can subscribe to a topic provided by the server, possibly with a filter on the parts of interest. When the topic has updated results, the server publishes them to the client, without further action on the client's part.
+* RPC - a remote procedure call that can be fired by the client and return
+  sometime later with a response from the server, possibly an error.
 
-## Example
+* Publish/subscribe - client can subscribe to a topic provided by the server,
+  possibly with a filter on the parts of interest. When the topic has updated
+  results, the server publishes them to the client, without further action on
+  the client's part.
+
+## Examples
 
 * Set up a virtualenv using requirements.txt
+* `cd wslink`
 * `python examples/webserver.py`
   - starts a webserver at [localhost](http://localhost:8080/) with buttons to test RPC and pub/sub methods
+* `python examples/simple.py --content client/www`
+  - starts the same example using the configurable server
 
 ## Testing
 
@@ -29,7 +37,8 @@ Existing ParaViewWeb applications use these code patterns:
 * session.subscribe("method.uri", callback) in JS client to initiate a pub/sub relationship.
     * server calls self.publish("method.uri", result) to push info back to the client
 
-We don't support introspection or initial handshake about which methods are supported - the client and server must be in sync. 
+We don't support introspection or initial handshake about which methods are
+supported - the client and server must be in sync.
 
 Message format:
 ```javascript
@@ -65,28 +74,28 @@ def getImage(self):
 ```
 
 ### Binary attachments
-session.addAttachment() takes binary data and stores it, returning a string
-key that will be associated with the attachment. When a message is sent that
-uses the attachment key, a binary message is sent beforehand with the
-attachment. The client can then substitute the binary buffer for the string
-key when it receives the final message. 
 
-Now sending a text header message for each binary message to associate it with
-a key.
+session.addAttachment() takes binary data and stores it, returning a string key
+that will be associated with the attachment. When a message is sent that uses
+the attachment key, a text header message and a binary message is sent
+beforehand with each attachment. The client can then substitute the binary
+buffer for the string key when it receives the final message.
 
 ### Subscribe
-The client needs to know about subscriptions - the server can blindly send out
+
+The client tracks subscriptions - the server currently blindly sends out
 messages for any data it produces which might be subscribed to. This is not
 very efficient - if the client notifies the server of a subscription, it can
 send the data only when someone is listening.
 
 ### Handshake
-When the client initially connects, it can authenticate with the server, so the
-server knows this client can handle the messages it sends, and the server can
-provide the client with a unique client ID - which the client can embed in the 
-rpc "id" field of it's messages to the server.
 
-* The first message client sends should be hello, with the secret key provided by it's launcher.
+When the client initially connects, it sends a 'hello' to authenticate with
+the server, so the server knows this client can handle the messages it sends,
+and the server can provide the client with a unique client ID - which the
+client can embed in the rpc "id" field of its messages to the server.
+
+* The first message client sends should be hello, with the secret key provided by its launcher.
 * Server authenicates the key, responds with the client ID.
 * If the client doesn't send a key, the server can choose to serve an un-authenticated client, or respond with an authentication error message.
 

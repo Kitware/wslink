@@ -1,6 +1,7 @@
 __version__ = '0.1.0'
 __license__ = 'BSD'
 
+from .uri import checkURI
 # name is chosen to match Autobahn RPC decorator.
 def register(uri):
    """
@@ -11,7 +12,7 @@ def register(uri):
       assert(callable(f))
       if not hasattr(f, '_wslinkuris'):
          f._wslinkuris = []
-      f._wslinkuris.append({ "uri": uri })
+      f._wslinkuris.append({ "uri": checkURI(uri) })
       return f
    return decorate
 
