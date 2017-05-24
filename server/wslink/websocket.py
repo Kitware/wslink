@@ -231,10 +231,13 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
 
     def onMessage(self, payload, isBinary):
+        # import rpdb; rpdb.set_trace()
         if isBinary:
             print("Dropping binary message")
             return
         rpc = json.loads(payload)
+        log.msg(payload, logLevel=logging.DEBUG)
+
         # TODO validate
         version = rpc['wslink']
         rpcid = rpc['id']

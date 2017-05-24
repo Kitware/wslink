@@ -52,16 +52,16 @@ function WebsocketConnection(publicAPI, model) {
     model.connection.onopen = (event) => {
       if (model.session) model.session.onconnect(event);
 
-      publicAPI.fireConnectionReady();
+      publicAPI.fireConnectionReady(publicAPI);
     };
 
     model.connection.onclose = (event) => {
-      publicAPI.fireConnectionClose();
+      publicAPI.fireConnectionClose(publicAPI);
       model.connection = null;
       // return !model.retry; // true => Stop retry
     };
     model.connection.onerror = (event) => {
-      publicAPI.fireConnectionError(event);
+      publicAPI.fireConnectionError(publicAPI, event);
     };
     // handle messages in the session.
     model.connection.onmessage = (event) => {

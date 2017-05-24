@@ -49,9 +49,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     keywords='websocket javascript rpc pubsub',
-    packages=find_packages(
+    packages=find_packages('server',
         exclude=('tests.*', 'tests', '*.plugin_tests.*', '*.plugin_tests')
     ),
+    package_dir={'':'server'},
     install_requires=install_reqs,
     # extras_require=extras_reqs,
 )

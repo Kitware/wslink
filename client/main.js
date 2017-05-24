@@ -1,5 +1,6 @@
 /* global document */
 import WebsocketConnection from './WebsocketConnection';
+import SmartConnect from './SmartConnect';
 
 const inputElement = document.querySelector('.input');
 const logOutput = document.querySelector('.output');
@@ -69,11 +70,19 @@ function wsclose() {
   session.close();
 }
 
-function connect() {
-  ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
-
+function connect(direct=false) {
+  let ws = null;
+  if (direct) {
+    ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
+  } else {
+    const config = { application: 'simple' };
+    ws = new SmartConnect(config);
+  }
   ws.onConnectionReady(() => {
     log('WS open');
+    if (!session) {
+      session = ws.getSession();
+    }
     const canvas = document.querySelector('.imageCanvas');
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, 300, 300);

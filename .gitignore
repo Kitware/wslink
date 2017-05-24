@@ -1,5 +1,7 @@
 .DS_Store
 runtime*
+dist
+logs
 __pycache__
 *.pyc
 *.swp
