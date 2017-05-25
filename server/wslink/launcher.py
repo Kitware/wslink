@@ -47,7 +47,8 @@ Here is a sample of what a configuration file could look like:
             "timeout" : 25,                           # Wait time in second after process start
             "log_dir" : "/.../viz-logs",              # Directory for log files
             "upload_dir" : "/.../data",               # If launcher should act as upload server, where to put files
-            "fields" : ["file", "host", "port", "updir"]       # List of fields that should be send back to client
+            "fields" : ["file", "host", "port", "updir"]     # List of fields that should be send back to client
+                                                             # include "secret" if you provide it as an --authKey to the app
         },
 
         ## ===============================
@@ -114,7 +115,7 @@ Here is a sample of what a configuration file could look like:
                     "${pvpython}", "-dr", "${pv_python_path}/pv_web_visualizer.py",
                     "--plugins", "${plugins_path}/libPointSprite_Plugin.so", "--port", "${port}",
                     "--data-dir", "${dataDir}", "--load-file", "${dataDir}/${fileToLoad}",
-                    "--authKey", "${secret}", "-f" ],
+                    "--authKey", "${secret}", "-f" ],  # Use of ${secret} means it needs to be provided to the client, in "fields", above.
                 "ready_line" : "Starting factory"
             },
             "loader": {
@@ -420,7 +421,11 @@ class LauncherResource(resource.Resource, object):
         return self
 
     def __del__(self):
-        logging.warning("Server factory shutting down. Stopping all processes")
+        try:
+            # causes an exception when server is killed with Ctrl-C
+            logging.warning("Server factory shutting down. Stopping all processes")
+        except:
+            pass
 
     # ========================================================================
     # Handle POST request

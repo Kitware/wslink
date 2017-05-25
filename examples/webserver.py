@@ -9,7 +9,7 @@ from myProtocol import MyProtocol
 class ExampleServer(ServerProtocol):
     def initialize(self):
         self.registerLinkProtocol(MyProtocol())
-        self.updateSecret("vtkweb-secret")
+        self.updateSecret("wslink-secret")
 
 # -----------------------------------------------------------------------------
 # Web server definition

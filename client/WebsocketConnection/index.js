@@ -2,6 +2,8 @@
 import CompositeClosureHelper from '../CompositeClosureHelper';
 import Session from './session';
 
+const DEFAULT_SECRET = 'wslink-secret';
+
 function getTransportObject(url) {
   var idx = url.indexOf(':'),
     protocol = url.substring(0, idx);
@@ -46,6 +48,7 @@ function WebsocketConnection(publicAPI, model) {
 
     model.connection = new WebSocket(transports[0].url);
     model.connection.binaryType = 'blob';
+    if (!model.secret) model.secret = DEFAULT_SECRET;
     model.session = Session.newInstance({ ws: model.connection, secret: model.secret });
 
 
@@ -85,7 +88,7 @@ function WebsocketConnection(publicAPI, model) {
 }
 
 const DEFAULT_VALUES = {
-  secret: 'vtkweb-secret',
+  secret: DEFAULT_SECRET,
   connection: null,
   session: null,
   retry: false,

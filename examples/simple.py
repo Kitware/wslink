@@ -1,15 +1,25 @@
+import argparse
+
 from wslink.websocket import ServerProtocol
-from wslink.server import *
+from wslink import server
 
 from myProtocol import MyProtocol
 
 class ExampleServer(ServerProtocol):
+    authKey = "wslink-secret"
+
+    @staticmethod
+    def configure(options):
+        ExampleServer.authKey = options.authKey
+
     def initialize(self):
         self.registerLinkProtocol(MyProtocol())
-        self.updateSecret("vtkweb-secret")
+
+        # Update authentication key to use
+        self.updateSecret(ExampleServer.authKey)
 
 def simple_start(argv=None):
-    start(argv, ExampleServer)
+    server.start(argv, ExampleServer)
 
 if __name__ == "__main__":
     simple_start()

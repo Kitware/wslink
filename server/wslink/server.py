@@ -62,7 +62,7 @@ def add_arguments(parser):
         help="timeout for reaping process on idle in seconds (default: 300s)")
     parser.add_argument("-c", "--content", default='',
         help="root for web-pages to serve (default: none)")
-    parser.add_argument("-a", "--authKey", default='vtkweb-secret',
+    parser.add_argument("-a", "--authKey", default='wslink-secret',
         help="Authentication key for clients to connect to the WebSocket.")
     parser.add_argument("-f", "--force-flush", default=False, help="If provided, this option will force additional padding content to the output.  Useful when application is triggered by a session manager.", dest="forceFlush", action='store_true')
     parser.add_argument("-k", "--sslKey", type=str, default="",
@@ -108,6 +108,12 @@ def start(argv=None,
     parser = argparse.ArgumentParser(description=description)
     add_arguments(parser)
     args = parser.parse_args(argv)
+    # configure protocol, if available
+    try:
+        protocol.configure(args)
+    except AttributeError:
+        pass
+
     start_webserver(options=args, protocol=protocol)
 
 

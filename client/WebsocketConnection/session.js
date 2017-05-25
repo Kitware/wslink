@@ -162,7 +162,7 @@ function Session(publicAPI, model) {
 
 
 const DEFAULT_VALUES = {
-  secret: 'vtkweb-secret',
+  secret: 'wslink-secret',
   ws: null,
 };
 
