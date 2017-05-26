@@ -56,7 +56,6 @@ class ServerProtocol(object):
     def __init__(self):
         self.linkProtocols = []
         self.secret = None
-        self.sharedObjects = {}
         self.initialize()
 
     def init(self, publish, addAttachment):
@@ -71,6 +70,8 @@ class ServerProtocol(object):
         pass
 
     def setSharedObject(self, key, shared):
+        if not hasattr(self, "sharedObjects"):
+            self.sharedObjects = {}
         if (shared == None and key in self.sharedObjects):
             del self.sharedObjects[key]
         else:

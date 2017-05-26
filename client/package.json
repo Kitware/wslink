@@ -1,7 +1,7 @@
 {
-  "name": "pvwRPC-client",
-  "version": "1.0.0",
-  "description": "rpc test bed",
+  "name": "wslink",
+  "version": "0.1.0",
+  "description": "rpc and pub/sub between python and js",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,7 @@
     "start": "webpack-dev-server"
   },
   "author": "Aron Helser",
-  "license": "ISC",
+  "license": "BSD",
   "devDependencies": {
     "babel-core": "^6.24.0",
     "babel-loader": "^6.4.1",
