@@ -53,9 +53,18 @@ function WebsocketConnection(publicAPI, model) {
 
 
     model.connection.onopen = (event) => {
-      if (model.session) model.session.onconnect(event);
-
-      publicAPI.fireConnectionReady(publicAPI);
+      if (model.session) {
+        // sends handshake message - wait for reply before issuing ready()
+        model.session.onconnect(event).then(
+          () => {
+            publicAPI.fireConnectionReady(publicAPI);
+          },
+          (err) => {
+            console.error('Connection error', err);
+            publicAPI.fireConnectionError(publicAPI, err);
+          }
+        );
+      }
     };
 
     model.connection.onclose = (event) => {
@@ -74,6 +83,8 @@ function WebsocketConnection(publicAPI, model) {
   };
 
   publicAPI.getSession = () => (model.session);
+
+  publicAPI.getUrl = () => (model.connection ? model.connection.url : undefined);
 
   publicAPI.destroy = (timeout = 10) => {
     // publicAPI.off();

@@ -5,7 +5,7 @@ twisted/autobahn websockets related classes for the purposes of wslink.
 
 from __future__ import absolute_import, division, print_function
 
-import inspect, logging, json
+import inspect, logging, json, sys, traceback
 
 from twisted.web            import resource
 from twisted.python         import log
@@ -32,6 +32,7 @@ class LinkProtocol(object):
     def __init__(self):
         self.publish = None
         self.addAttachment = None
+        self.coreServer = None
 
     def init(self, publish, addAttachment):
         self.publish = publish
@@ -83,15 +84,22 @@ class ServerProtocol(object):
         else:
             return None
 
-    # def onJoin(self, details):
-    #     self.register(self)
-    #     for protocol in self.linkProtocols:
-    #         self.register(protocol)
-
     def registerLinkProtocol(self, protocol):
         assert( isinstance(protocol, LinkProtocol))
         protocol.coreServer = self
         self.linkProtocols.append(protocol)
+
+    # Note: this can only be used _before_ a connection is made -
+    # otherwise the WslinkWebSocketServerProtocol will already have stored references to
+    # the RPC methods in the protocol.
+    def unregisterLinkProtocol(self, protocol):
+        assert( isinstance(protocol, LinkProtocol))
+        protocol.coreServer = None
+        try:
+            self.linkProtocols.remove(protocol)
+        except ValueError as e:
+            log.error("Link protocol missing from registered list.")
+
 
     def getLinkProtocols(self):
         return self.linkProtocols
@@ -262,7 +270,8 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         try:
             results = func(obj, *args, **kwargs)
         except Exception as e:
-            self.sendWrappedError(rpcid, EXCEPTION_ERROR, "Exception raised", repr(e))
+            self.sendWrappedError(rpcid, EXCEPTION_ERROR, "Exception raised",
+                { "method": methodName, "exception": repr(e), "trace": traceback.format_exc() })
             return
 
         self.sendWrappedMessage(rpcid, results, method=methodName)

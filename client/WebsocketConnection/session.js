@@ -27,13 +27,17 @@ function Session(publicAPI, model) {
 
   publicAPI.onconnect = (event) => {
     // send hello message
+    const deferred = publicAPI.defer();
+    const id = 'system:c0:0';
+    inFlightRpc[id] = deferred;
     model.ws.send(JSON.stringify({
       wslink: '1.0',
-      id: 'system:c0:0',
+      id,
       method: 'wslink.hello',
       args: [{ secret: model.secret }],
       kwargs: {}
     }));
+    return deferred.promise;
   };
   publicAPI.call = (method, args = [], kwargs = {}) => {
     // create a promise that we will use to notify the caller of the result.
@@ -136,11 +140,14 @@ function Session(publicAPI, model) {
             // for each callback, provide the message data.
             subscriptions[topic].forEach((callback) => (callback(payload.result)));
           } else if (type == 'system') {
-            console.log(payload.id, payload.result);
+            console.log('DBG system:', payload.id, payload.result);
+            const deferred = inFlightRpc[payload.id];
             if (payload.id === 'system:c0:0') {
               clientID = payload.result.clientID;
+              if (deferred) deferred.resolve(clientID);
             } else {
               console.error('Unknown system message', payload.id);
+              if (deferred) deferred.reject(`Unknown system message ${payload.id}`);
             }
           } else {
             console.error('Unknown rpc id format', payload.id);

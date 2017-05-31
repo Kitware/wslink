@@ -15,7 +15,6 @@ import sys, logging
 
 # from vtk.web import testing
 from wslink import upload
-# from vtk.web import wamp as vtk_wamp
 
 # from autobahn.wamp              import types
 
@@ -31,6 +30,14 @@ from twisted.internet           import reactor
 from twisted.internet.defer     import inlineCallbacks
 from twisted.internet.endpoints import serverFromString
 from twisted.python             import log
+
+# TEMP allow binary image websocket handler from vtk.
+# Replace with normal protocol on main websocket connection.
+useVtk = True
+try:
+    from vtk.web import wslink as vtk_wslink
+except ImportError:
+    useVtk = False
 
 # =============================================================================
 # Setup default arguments to be parsed
@@ -211,13 +218,12 @@ def start_webserver(options, protocol=wsl.ServerProtocol, disableLogging=False):
 
     # Handle binary push WebSocket for images
     # TODO remove and use ws endpoint
-    # if not options.nobws:
-    #     wsbFactory = WebSocketServerFactory( \
-    #         url   = "%s://%s:%d" % (wsProtocol, options.host, options.port), \
-    #         debug = options.debug)
-    #     wsbFactory.protocol = vtk_wamp.ImagePushBinaryWebSocketServerProtocol
-    #     wsbResource = WebSocketResource(wsbFactory)
-    #     handle_complex_resource_path('wsb', root, wsbResource)
+    if useVtk and not options.nobws:
+        wsbFactory = WebSocketServerFactory( \
+            url   = "%s://%s:%d" % (wsProtocol, options.host, options.port))
+        wsbFactory.protocol = vtk_wslink.ImagePushBinaryWebSocketServerProtocol
+        wsbResource = WebSocketResource(wsbFactory)
+        handle_complex_resource_path('wsb', root, wsbResource)
 
     if options.uploadPath != None :
         from wslink.upload import UploadPage
