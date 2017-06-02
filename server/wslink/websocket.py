@@ -192,6 +192,8 @@ METHOD_NOT_FOUND = -32601
 AUTHENTICATION_ERROR = -32000
 EXCEPTION_ERROR = -32001
 RESULT_SERIALIZE_ERROR = -32002
+# used in client JS code:
+CLIENT_ERROR = -32099
 
 # -----------------------------------------------------------------------------
 # WS protocol definition

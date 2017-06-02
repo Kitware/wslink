@@ -2,6 +2,7 @@
 import CompositeClosureHelper from '../CompositeClosureHelper';
 
 function Session(publicAPI, model) {
+  const CLIENT_ERROR = -32099;
   let msgCount = 0;
   const inFlightRpc = {};
   const attachments = [];
@@ -42,34 +43,52 @@ function Session(publicAPI, model) {
   publicAPI.call = (method, args = [], kwargs = {}) => {
     // create a promise that we will use to notify the caller of the result.
     const deferred = publicAPI.defer();
-    if (model.ws && clientID) {
+    // readyState OPEN === 1
+    if (model.ws && clientID && model.ws.readyState === 1) {
       const id = `rpc:${clientID}:${msgCount++}`
       inFlightRpc[id] = deferred;
       model.ws.send(JSON.stringify({ wslink: '1.0', id, method, args, kwargs }));
     } else {
-      deferred.reject(`RPC call ${method} unsuccessful: connection not open`);
+      deferred.reject({ code: CLIENT_ERROR, message: `RPC call ${method} unsuccessful: connection not open` });
     }
     return deferred.promise;
   };
   publicAPI.subscribe = (topic, callback) => {
+    const deferred = publicAPI.defer();
     if (model.ws && clientID) {
       // we needs to track subscriptions, to trigger callback when publish is received.
       if (!subscriptions[topic]) subscriptions[topic] = [];
       subscriptions[topic].push(callback);
       // we can notify the server, but we don't need to, if the server always sends messages unconditionally.
       // model.ws.send(JSON.stringify({ wslink: '1.0', id: `subscribe:${msgCount++}`, method, args: [] }));
+      deferred.resolve({ topic, callback });
+    } else {
+      deferred.reject({ code: CLIENT_ERROR, message: `Subscribe call ${topic} unsuccessful: connection not open` });
     }
+    return deferred.promise;
   };
-  publicAPI.unsubscribe = (topic, callback) => {
-    if (!subscriptions[topic]) return;
+  publicAPI.unsubscribe = (info) => {
+    const deferred = publicAPI.defer();
+    const { topic, callback } = info;
+    if (!subscriptions[topic]) {
+      deferred.reject({ code: CLIENT_ERROR, message: `Unsubscribe call ${topic} unsuccessful: not subscribed` });
+      return deferred.promise;
+    }
     const index = subscriptions[topic].indexOf(callback);
     if (index !== -1) {
       subscriptions[topic].splice(index, 1);
+      deferred.resolve();
+    } else {
+      deferred.reject({ code: CLIENT_ERROR, message: `Unsubscribe call ${topic} unsuccessful: callback not found` });
     }
+    return deferred.promise;
   };
   publicAPI.close = () => {
+    const deferred = publicAPI.defer();
     // some transports might be able to close the session without closing the connection. Not true for websocket...
     model.ws.close();
+    deferred.resolve();
+    return deferred.promise;
   };
 
   publicAPI.onmessage = (event) => {
@@ -137,8 +156,8 @@ function Session(publicAPI, model) {
             if (!subscriptions[topic]) {
               return;
             }
-            // for each callback, provide the message data.
-            subscriptions[topic].forEach((callback) => (callback(payload.result)));
+            // for each callback, provide the message data. Wrap in an array, for back-compatibility with WAMP
+            subscriptions[topic].forEach((callback) => (callback([payload.result])));
           } else if (type == 'system') {
             console.log('DBG system:', payload.id, payload.result);
             const deferred = inFlightRpc[payload.id];
@@ -147,7 +166,7 @@ function Session(publicAPI, model) {
               if (deferred) deferred.resolve(clientID);
             } else {
               console.error('Unknown system message', payload.id);
-              if (deferred) deferred.reject(`Unknown system message ${payload.id}`);
+              if (deferred) deferred.reject({ code: CLIENT_ERROR, message: `Unknown system message ${payload.id}` });
             }
           } else {
             console.error('Unknown rpc id format', payload.id);

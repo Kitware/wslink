@@ -1,11 +1,15 @@
 # wslink
-This initial version is an import of an experimental repo with a working
-example and server tests. A python server communicates over a websocket
-to a javascript client. The client can make RPC calls to the server, and the
-server can publish messages to topics that the client can subscribe to.
 
-## ParaViewWeb RPC and publish/subscribe
+Wslink allows easy, bi-directional communication between a python server and a
+javascript client over a [websocket]. The client can make RPC calls to the
+server, and the server can publish messages to topics that the client can
+subscribe to. The server can include binary attachments in these messages,
+which are communicated as a binary websocket message, avoiding the overhead of
+encoding and decoding.
 
+## RPC and publish/subscribe
+
+The initial users of wslink driving development are [VTK] and [ParaViewWeb].
 ParaViewWeb and vtkWeb require:
 * RPC - a remote procedure call that can be fired by the client and return
   sometime later with a response from the server, possibly an error.
@@ -15,9 +19,13 @@ ParaViewWeb and vtkWeb require:
   results, the server publishes them to the client, without further action on
   the client's part.
 
+Wslink is replacing a communication layer based on Autobahn WAMP, and so one
+of the goals is to be fairly compatible with WAMP, but simplify the interface
+to the point-to-point communication we actually use.
+
 ## Examples
 
-* Set up a virtualenv using requirements.txt
+* Set up a Python (2.7 or 3.5+) [virtualenv] using requirements.txt
 * `cd wslink`
 * `python examples/webserver.py`
   - starts a webserver at [localhost](http://localhost:8080/) with buttons to test RPC and pub/sub methods
@@ -46,7 +54,7 @@ Message format:
 const request = {
     wslink: 1.0,
     id: `rpc:${clientId}:${count}`,
-    method: 'render.window.image',
+    method: 'myapp.render.window.image',
     args: [],
     kwargs: { w: 512, h: 512 }
 };
@@ -78,7 +86,7 @@ def getImage(self):
 session.addAttachment() takes binary data and stores it, returning a string key
 that will be associated with the attachment. When a message is sent that uses
 the attachment key, a text header message and a binary message is sent
-beforehand with each attachment. The client can then substitute the binary
+beforehand with each attachment. The client will then substitute the binary
 buffer for the string key when it receives the final message.
 
 ### Subscribe
@@ -93,13 +101,17 @@ send the data only when someone is listening.
 When the client initially connects, it sends a 'hello' to authenticate with
 the server, so the server knows this client can handle the messages it sends,
 and the server can provide the client with a unique client ID - which the
-client can embed in the rpc "id" field of its messages to the server.
+client must embed in the rpc "id" field of its messages to the server.
 
-* The first message client sends should be hello, with the secret key provided by its launcher.
-* Server authenicates the key, responds with the client ID.
-* If the client doesn't send a key, the server can choose to serve an un-authenticated client, or respond with an authentication error message.
+* The first message the client sends should be hello, with the secret key provided by its launcher.
+* Server authenicates the key, and responds with the client ID.
+* If the client send the wrong key or no key, the server responds with an authentication error message.
 
 ### Design
 
 More extensive discussion in the [design](design.md) document.
 
+[ParaViewWeb]: https://www.paraview.org/web/
+[virtualenv]: https://virtualenv.pypa.io/
+[VTK]: http://www.vtk.org/
+[websocket]: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket

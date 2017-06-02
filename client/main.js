@@ -5,7 +5,7 @@ import SmartConnect from './SmartConnect';
 const inputElement = document.querySelector('.input');
 const logOutput = document.querySelector('.output');
 let ws = null;
-let subscribed = false;
+let subscription = false;
 let session = null;
 
 function log(msg) {
@@ -24,7 +24,8 @@ function sendInput(type) {
     .then((result) => log('result ' + result), (err) => logerr(err));
 }
 function handleMessage(data) {
-  if (data.blob instanceof Blob) {
+  let blob = Array.isArray(data) ? data[0].blob : data.blob;
+  if (blob instanceof Blob) {
     const canvas = document.querySelector('.imageCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -34,9 +35,9 @@ function handleMessage(data) {
       img.onload = () => ctx.drawImage(img, 0, 0);
       img.src = e.target.result;
     };
-    reader.readAsDataURL(data.blob);
+    reader.readAsDataURL(blob);
   } else {
-    log('result ' + data.blob);
+    log('result ' + blob);
   }
 }
 
@@ -53,16 +54,16 @@ function sendMistake() {
 }
 
 function toggleStream() {
-  if (!subscribed) {
-    session.subscribe('image', handleMessage);
+  if (!subscription) {
+    session.subscribe('image', handleMessage).then((result) => (subscription = result));
     session.call('myprotocol.stream', ['image'])
       .then((result) => log('result ' + result), (err) => logerr(err));
   } else {
     session.call('myprotocol.stop', ['image'])
       .then((result) => log('result ' + result), (err) => logerr(err));
-    session.unsubscribe('image', handleMessage);
+    session.unsubscribe(subscription);
+    subscription = null;
   }
-  subscribed = !subscribed;
 }
 
 function wsclose() {

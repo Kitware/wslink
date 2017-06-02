@@ -14,7 +14,7 @@ export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${windo
 
 
 function wsConnect(self) {
-  const wsConnection = WebsocketConnection.newInstance({ urls: self.config.sessionURL,  secret: self.config.secret,  retry: self.config.retry });
+  const wsConnection = WebsocketConnection.newInstance({ urls: self.config.sessionURL, secret: self.config.secret, retry: self.config.retry });
   self.subscriptions.push(wsConnection.onConnectionReady(self.readyForwarder));
   self.subscriptions.push(wsConnection.onConnectionClose(self.closeForwarder));
   return wsConnection.connect();
