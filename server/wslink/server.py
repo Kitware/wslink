@@ -1,9 +1,9 @@
 r"""server is a module that enables using python through a web-server. This
-module implments a wslink Server Protocol that provides the core RPC-API. Developers can extend
+module implements a wslink Server Protocol that provides the core RPC-API. Developers can extend
 ServerProtocol to provide additional RPC callbacks for their web-applications.
 
 This module can be used as the entry point to the application. In that case, it
-sets up a Twisted web-server serve
+sets up a Twisted web-server.
 web-pages are determines by the command line arguments passed in.
 Use "--help" to list the supported arguments.
 
@@ -11,18 +11,14 @@ Use "--help" to list the supported arguments.
 
 from __future__ import absolute_import, division, print_function
 
-import sys, logging
+import logging
 
 # from vtk.web import testing
 from wslink import upload
-
-# from autobahn.wamp              import types
+from wslink import websocket as wsl
 
 from autobahn.twisted.resource  import WebSocketResource
 from autobahn.twisted.websocket import listenWS, WebSocketServerFactory
-# from autobahn.twisted.longpoll  import WampLongPollResource
-from wslink import websocket as wsl
-
 
 from twisted.web                import resource
 from twisted.web.resource       import Resource
@@ -30,14 +26,6 @@ from twisted.internet           import reactor
 from twisted.internet.defer     import inlineCallbacks
 from twisted.internet.endpoints import serverFromString
 from twisted.python             import log
-
-# TEMP allow binary image websocket handler from vtk.
-# Replace with normal protocol on main websocket connection.
-useVtk = True
-try:
-    from vtk.web import wslink as vtk_wslink
-except ImportError:
-    useVtk = False
 
 # =============================================================================
 # Setup default arguments to be parsed
@@ -51,7 +39,7 @@ except ImportError:
 
 def add_arguments(parser):
     """
-    Add arguments processed know to this module. parser must be
+    Add arguments known to this module. parser must be
     argparse.ArgumentParser instance.
     """
     import os
@@ -80,8 +68,6 @@ def add_arguments(parser):
         help="Specify WebSocket endpoint. (e.g. foo/bar/ws, Default: ws)")
     parser.add_argument("--no-ws-endpoint", action="store_true", dest='nows',
         help="If provided, disables the websocket endpoint")
-    parser.add_argument("--no-bws-endpoint", action="store_true", dest='nobws',
-        help="If provided, disables the binary websocket endpoint for pushing images")
     parser.add_argument("--fs-endpoints", default='', dest='fsEndpoints',
         help="add another fs location to a specific endpoint (i.e: data=/Users/seb/Download|images=/Users/seb/Pictures)")
 
@@ -178,26 +164,10 @@ def start_webserver(options, protocol=wsl.ServerProtocol, disableLogging=False):
     else:
       wsProtocol = "ws"
 
-    # Create WAMP router factory
-    # from autobahn.twisted.wamp import RouterFactory
-    # router_factory = RouterFactory()
-
-    # create a user DB
-    # authdb = vtk_wamp.AuthDb()
-
-    # create a WAMP router session factory
-    # from autobahn.twisted.wamp import RouterSessionFactory
-    # session_factory = RouterSessionFactory(router_factory)
-    # session_factory.session = vtk_wamp.CustomWampCraRouterSession
-    # session_factory.authdb = authdb
-
-    # Create ApplicationSession and register protocols
-    # appSession = protocol(types.ComponentConfig(realm = "vtkweb"))
-    # appSession.setAuthDB(authdb)
-    # session_factory.add(appSession)
+    # Create default or custom ServerProtocol
     wslinkServer = protocol()
 
-    # create a WAMP-over-WebSocket transport server factory
+    # create a wslink-over-WebSocket transport server factory
     transport_factory = wsl.TimeoutWebSocketServerFactory(\
            url        = "%s://%s:%d" % (wsProtocol, options.host, options.port),    \
            timeout    = options.timeout )
@@ -215,15 +185,6 @@ def start_webserver(options, protocol=wsl.ServerProtocol, disableLogging=False):
     if not options.nows:
         wsResource = WebSocketResource(transport_factory)
         handle_complex_resource_path(options.ws, root, wsResource)
-
-    # Handle binary push WebSocket for images
-    # TODO remove and use ws endpoint
-    if useVtk and not options.nobws:
-        wsbFactory = WebSocketServerFactory( \
-            url   = "%s://%s:%d" % (wsProtocol, options.host, options.port))
-        wsbFactory.protocol = vtk_wslink.ImagePushBinaryWebSocketServerProtocol
-        wsbResource = WebSocketResource(wsbFactory)
-        handle_complex_resource_path('wsb', root, wsbResource)
 
     if options.uploadPath != None :
         from wslink.upload import UploadPage

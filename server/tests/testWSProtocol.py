@@ -15,16 +15,10 @@ from wslink import register as exportRPC
 from twisted.internet import reactor, task
 
 class MyProtocol(LinkProtocol):
-    def __init__(self, publish=None, addAttachment=None):
+    def __init__(self):
         super(MyProtocol, self).__init__()
         self.subscribers = {}
         self.subMsgCount = 0
-        self.publish = publish
-        self.addAttachment = addAttachment
-
-    def init(self, publish, addAttachment):
-        self.publish = publish
-        self.addAttachment = addAttachment
 
     @exportRPC("myprotocol.add")
     def add(self, listOfNumbers):
