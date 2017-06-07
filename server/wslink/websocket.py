@@ -65,7 +65,7 @@ class ServerProtocol(object):
 
     def initialize(self):
         """
-        Let the sub class define what they need to do to properly initialize
+        Let sub classes define what they need to do to properly initialize
         themselves.
         """
         pass
@@ -129,7 +129,7 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
     that adds support to close the web-server after a timeout when the last
     connected client drops.
 
-    Currently, the protocol must call connectionMade() and connectionLost() methods
+    The protocol must call connectionMade() and connectionLost() methods
     to notify this object that the connection was started/closed.
     If the connection count drops to zero, then the reap timer
     is started which will end the process if no other connections are made in
@@ -180,7 +180,7 @@ class TimeoutWebSocketServerProtocol(WebSocketServerProtocol):
 
     def connectionMade(self):
         WebSocketServerProtocol.connectionMade(self)
-        print(self.factory)
+        # print(self.factory)
         self.factory.connectionMade()
 
     def connectionLost(self, reason):
@@ -209,7 +209,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
     def onConnect(self, request):
         self.clientID = self.factory.getClientCount()
-        print("client connected", self.clientID, request)
+        log.msg("client connected, id: {}".format(self.clientID), logLevel=logging.INFO)   # request)
         # Build the rpc method dictionary. self.factory isn't set until connected.
         protocolList = (self.factory.getServerProtocol().getLinkProtocols() if self.factory.getServerProtocol() else [])
         for protocolObject in protocolList:
@@ -224,7 +224,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
                         self.functionMap[uri] = (protocolObject, proc)
 
     def onClose(self, wasClean, code, reason):
-        print("client closed", wasClean, code, reason)
+        log.msg("client closed, clean: {}, code: {}, reason: {}".format(wasClean, code, reason), logLevel=logging.INFO)
 
     def handleSystemMessage(self, rpcid, methodName, args):
         rpcList = rpcid.split(":")
@@ -244,10 +244,10 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
     def onMessage(self, payload, isBinary):
         # import rpdb; rpdb.set_trace()
         if isBinary:
-            print("Dropping binary message")
+            log.msg("Dropping incoming binary message")
             return
         rpc = json.loads(payload)
-        log.msg(payload, logLevel=logging.DEBUG)
+        log.msg("wslink incoming msg %s" % payload, logLevel=logging.DEBUG)
 
         # TODO validate
         version = rpc['wslink']
@@ -333,7 +333,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         self.sendWrappedMessage(rpcid, data)
 
     def addAttachment(self, payload):
-        print("attachment", self, self.attachmentId)
+        # print("attachment", self, self.attachmentId)
         # use a string flag in place of the binary attachment.
         # (Using rpcid would prevent re-use of the attachment in publish)
         binaryId = 'wslink_bin{0}'.format(self.attachmentId)

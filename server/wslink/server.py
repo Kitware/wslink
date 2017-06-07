@@ -151,7 +151,12 @@ def start_webserver(options, protocol=wsl.ServerProtocol, disableLogging=False):
     import sys
 
     if not disableLogging:
-        log.startLogging(sys.stdout)
+        # redirect twisted logs to python standard logging.
+        observer = log.PythonLoggingObserver()
+        observer.start()
+        # log.startLogging(sys.stdout)
+        # Set logging level.
+        if (options.debug): logging.basicConfig(level=logging.DEBUG)
 
     contextFactory = None
 
