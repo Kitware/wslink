@@ -7,10 +7,10 @@ a VTK or a ParaView backend.
 ```javascript
 import ProcessLauncher from 'paraviewweb/src/IO/Core/ProcessLauncher';
 
-processLauncher = new ProcessLauncher('/paraview');
+processLauncher = ProcessLauncher.newInstance({ endPoint: '/paraview' });
 ```
 
-## constructor(endPoint) 
+## ProcessLauncher.newInstance({ endPoint }) 
 
 Create a process launcher that will perform request to a remote
 server using the provided endpoint url.
@@ -22,7 +22,7 @@ Submit a request for a new remote process.
 The config object get posted via a POST request to the endpoint provided
 at creation time.
 
-The current ParaViewWeb server side **Launcher** expect at least
+The current ParaViewWeb server-side **Launcher** expects at least
 the following object.
 
 ```js
@@ -33,7 +33,7 @@ the following object.
 
 But additional key/value pair can be added depending on the needs of the targeted process.
 
-Once the remote process became ready a notification will be send.
+Once the remote process becomes ready a notification will be sent.
 
 ## fetchConnection(sessionId)
 
@@ -47,11 +47,11 @@ object that was provided at start time.
 
 ## listConnections()
 
-Return the list of already establised connections. (From that instance)
+Return the list of already established connections. (From that instance)
 
 ## onProcessReady(callback) : subscription
 
-Register a callback for when a remote process become available after a start() request.
+Register a callback for when a remote process becomes available after a start() request.
 
 The callback function will then receive a json object describing how to connect to that remote process.
 
@@ -75,4 +75,4 @@ Register a callback for when an error occured regardless of the request.
 
 ## destroy()
 
-Free memory and detatch any listener.
+Free memory and detatch any listeners.

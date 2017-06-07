@@ -6,7 +6,7 @@ a sessionURL is already provided in the configuration
 it will establish a direct WebSocket connection using
 Autobahn.
 
-## constructor(config) 
+## SmartConnect.newInstance({ config }) 
 
 Create an instance that will use the provided configuration to
 connect itself to a server either by requesting a new remote

@@ -3,10 +3,12 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname),
-  entry: ['babel-polyfill', './main.js'],
+  entry: ['babel-polyfill', './index.js'],
   output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'www')
+    filename: 'wslink.js',
+    path: path.resolve(__dirname, 'dist'),
+    library: "wslink",
+    libraryTarget: "umd"
   },
   devServer: {
     contentBase: path.resolve(__dirname),

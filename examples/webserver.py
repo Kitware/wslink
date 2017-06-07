@@ -21,10 +21,14 @@ from twisted.internet import reactor
 
 log.startLogging(sys.stdout)
 
+# get the compiled library next to index.html
+from shutil import copy2
+copy2(os.path.join(os.path.dirname(__file__), "../client/dist/wslink.js"), os.path.join(os.path.dirname(__file__), "www/"))
+
 exampleServer = ExampleServer()
 
 # Static file delivery
-root = File(os.path.join(os.path.dirname(__file__), "../client/www"))
+root = File(os.path.join(os.path.dirname(__file__), "./www"))
 
 # WS endpoint
 factory = TimeoutWebSocketServerFactory(url=u"ws://127.0.0.1:8080", timeout=60)

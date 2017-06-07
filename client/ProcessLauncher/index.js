@@ -1,24 +1,17 @@
 /* global XMLHttpRequest */
+import CompositeClosureHelper from '../CompositeClosureHelper';
 
-import Monologue from 'monologue.js';
+const connections = [];
 
-const
-  PROCESS_READY_TOPIC = 'launcher.process.ready',
-  PROCESS_STOPPED_TOPIC = 'launcher.process.stopped',
-  CONNECTION_INFO_TOPIC = 'launcher.info.connection',
-  ERROR_TOPIC = 'launcher.error';
+function ProcessLauncher(publicAPI, model) {
+// export default class ProcessLauncher {
+//   constructor(endPoint) {
+//     model.endPoint = endPoint;
+//   }
 
-var
-  connections = [];
-
-export default class ProcessLauncher {
-  constructor(endPoint) {
-    this.endPoint = endPoint;
-  }
-
-  start(config) {
+  publicAPI.start = (config) => {
     var xhr = new XMLHttpRequest(),
-      url = this.endPoint;
+      url = model.endPoint;
 
     xhr.open('POST', url, true);
     xhr.responseType = 'json';
@@ -29,22 +22,22 @@ export default class ProcessLauncher {
       if (xhr.status === 200 && !response.error) {
         // Add connection to our global list
         connections.push(response);
-        this.emit(PROCESS_READY_TOPIC, response);
+        publicAPI.fireProcessReady(response);
         return;
       }
-      this.emit(ERROR_TOPIC, response);
+      publicAPI.fireError(response);
     };
 
     xhr.onerror = (e) => {
-      this.emit(ERROR_TOPIC, xhr.response);
+      publicAPI.fireError(xhr.response);
     };
 
     xhr.send(JSON.stringify(config));
-  }
+  };
 
-  fetchConnection(sessionId) {
+  publicAPI.fetchConnection = (sessionId) => {
     var xhr = new XMLHttpRequest(),
-      url = [this.endPoint, sessionId].join('/');
+      url = [model.endPoint, sessionId].join('/');
 
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
@@ -52,22 +45,22 @@ export default class ProcessLauncher {
 
     xhr.onload = (e) => {
       if (this.status === 200) {
-        this.emit(CONNECTION_INFO_TOPIC, supportsJson ? xhr.response : JSON.parse(xhr.response));
+        publicAPI.fireFetch(supportsJson ? xhr.response : JSON.parse(xhr.response));
         return;
       }
-      this.emit(ERROR_TOPIC, xhr.response);
+      publicAPI.fireError(xhr.response);
     };
 
     xhr.onerror = (e) => {
-      this.emit(ERROR_TOPIC, xhr.response);
+      publicAPI.fireError(xhr.response);
     };
 
     xhr.send();
   }
 
-  stop(connection) {
+  publicAPI.stop = (connection) => {
     var xhr = new XMLHttpRequest(),
-      url = [this.endPoint, connection.id].join('/');
+      url = [model.endPoint, connection.id].join('/');
 
     xhr.open('DELETE', url, true);
     xhr.responseType = 'json';
@@ -78,41 +71,41 @@ export default class ProcessLauncher {
         const response = supportsJson ? xhr.response : JSON.parse(xhr.response);
         // Remove connection from the list
         // FIXME / TODO
-        this.emit(PROCESS_STOPPED_TOPIC, response);
+        publicAPI.fireProcessStopped(response);
         return;
       }
-      this.emit(ERROR_TOPIC, xhr.response);
+      publicAPI.fireError(xhr.response);
     };
     xhr.onerror = (e) => {
-      this.emit(ERROR_TOPIC, xhr.response);
+      publicAPI.fireError(xhr.response);
     };
     xhr.send();
   }
 
   /* eslint-disable class-methods-use-this */
-  listConnections() {
+  publicAPI.listConnections = () => {
     return connections;
   }
-
-  onProcessReady(callback) {
-    return this.on(PROCESS_READY_TOPIC, callback);
-  }
-
-  onProcessStopped(callback) {
-    return this.on(PROCESS_STOPPED_TOPIC, callback);
-  }
-
-  onFetch(callback) {
-    return this.on(CONNECTION_INFO_TOPIC, callback);
-  }
-
-  onError(callback) {
-    return this.on(ERROR_TOPIC, callback);
-  }
-
-  destroy() {
-    this.off();
-    this.endPoint = null;
-  }
 }
-Monologue.mixInto(ProcessLauncher);
+
+const DEFAULT_VALUES = {
+  endPoint: null,
+};
+
+export function extend(publicAPI, model, initialValues = {}) {
+  Object.assign(model, DEFAULT_VALUES, initialValues);
+
+  CompositeClosureHelper.destroy(publicAPI, model);
+  CompositeClosureHelper.event(publicAPI, model, 'ProcessReady');
+  CompositeClosureHelper.event(publicAPI, model, 'ProcessStopped');
+  CompositeClosureHelper.event(publicAPI, model, 'Fetch');
+  CompositeClosureHelper.event(publicAPI, model, 'Error');
+  CompositeClosureHelper.isA(publicAPI, model, 'ProcessLauncher');
+
+  ProcessLauncher(publicAPI, model);
+}
+
+// ----------------------------------------------------------------------------
+export const newInstance = CompositeClosureHelper.newInstance(extend);
+
+export default { newInstance, extend };

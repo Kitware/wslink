@@ -34,6 +34,8 @@ function WebsocketConnection(publicAPI, model) {
         transports.push(transport);
       } catch (transportCreateError) {
         console.error(transportCreateError);
+        publicAPI.fireConnectionError(publicAPI, transportCreateError);
+        return null;
       }
     }
 
@@ -45,8 +47,16 @@ function WebsocketConnection(publicAPI, model) {
         return model.session;
       }
     }
+    try {
+      model.connection = new WebSocket(transports[0].url);
+    } catch (err) {
+      // If the server isn't running, we still don't enter here on Chrome -
+      // console shows a net::ERR_CONNECTION_REFUSED error inside WebSocket
+      console.error(err);
+      publicAPI.fireConnectionError(publicAPI, err);
+      return null;
+    }
 
-    model.connection = new WebSocket(transports[0].url);
     model.connection.binaryType = 'blob';
     if (!model.secret) model.secret = DEFAULT_SECRET;
     model.session = Session.newInstance({ ws: model.connection, secret: model.secret });

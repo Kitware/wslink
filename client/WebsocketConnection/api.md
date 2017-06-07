@@ -1,11 +1,14 @@
 # WebsocketConnection
 
-## constructor(urls, secret="vtkweb-secret")
+## WebsocketConnection.newInstance({ urls })
 
 Create an instance of a websocket connection. The urls should
 be a single url (string).
 
 Usually with a ProcessLauncher we will set the **urls** to **connection.sessionURL**.
+
+The input can optionally include a string to autheticate the 
+connection during the handshake: `{ urls, secret:"wslink-secret" }`
 
 ## connect() 
 

@@ -1,6 +1,7 @@
-/* global document */
-import WebsocketConnection from './WebsocketConnection';
-import SmartConnect from './SmartConnect';
+/* global document, WebsocketConnection, SmartConnect */
+// if you are using modules instead of a <script> tag:
+// import WebsocketConnection from 'wslink/WebsocketConnection';
+// import SmartConnect from 'wslink/SmartConnect';
 
 const inputElement = document.querySelector('.input');
 const logOutput = document.querySelector('.output');
@@ -74,10 +75,10 @@ function wsclose() {
 function connect(direct=false) {
   let ws = null;
   if (direct) {
-    ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
+    ws = wslink.WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
   } else {
     const config = { application: 'simple' };
-    ws = new SmartConnect(config);
+    ws = wslink.SmartConnect.newInstance({ config });
   }
   ws.onConnectionReady(() => {
     log('WS open');
@@ -101,9 +102,9 @@ function connect(direct=false) {
   session = ws.connect();
 }
 
-global.sendInput = sendInput;
-global.sendBinary = sendBinary;
-global.toggleStream = toggleStream;
-global.sendMistake = sendMistake;
-global.wsclose = wsclose;
-global.connect = connect;
+// global.sendInput = sendInput;
+// global.sendBinary = sendBinary;
+// global.toggleStream = toggleStream;
+// global.sendMistake = sendMistake;
+// global.wsclose = wsclose;
+// global.connect = connect;
