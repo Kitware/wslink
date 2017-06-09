@@ -26,7 +26,9 @@ to the point-to-point communication we actually use.
 ## Examples
 
 * Set up a Python (2.7 or 3.5+) [virtualenv] using requirements.txt
-* `cd wslink`
+* `cd wslink/js`
+* `npm run build:example`
+* `cd ../python`
 * `python examples/webserver.py`
   - starts a webserver at [localhost](http://localhost:8080/) with buttons to test RPC and pub/sub methods
 * `python examples/simple.py --content client/www`
@@ -34,7 +36,7 @@ to the point-to-point communication we actually use.
 
 ## Testing
 
-* `cd server`
+* `cd python/src`
 * `python tests/testWSProtocol.py`
 
 ## Existing API

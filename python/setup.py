@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 # from setuptools.command.install import install
 # from distutils.dir_util import copy_tree
 
-with open('README.md') as f:
+with open('../README.md') as f:
     readme = f.read()
 
 install_reqs = [
@@ -19,7 +19,7 @@ install_reqs = [
     'Twisted'
 ]
 
-init = os.path.join(os.path.dirname(__file__), 'server', 'wslink', '__init__.py')
+init = os.path.join(os.path.dirname(__file__), 'src', 'wslink', '__init__.py')
 with open(init) as fd:
     version = re.search(
         r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
@@ -49,10 +49,10 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     keywords='websocket javascript rpc pubsub',
-    packages=find_packages('server',
-        exclude=('tests.*', 'tests', '*.plugin_tests.*', '*.plugin_tests')
+    packages=find_packages('src',
+        exclude=('tests.*', 'tests')
     ),
-    package_dir={'':'server'},
+    package_dir={'':'src'},
     install_requires=install_reqs,
     # extras_require=extras_reqs,
 )

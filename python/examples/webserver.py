@@ -1,3 +1,4 @@
+from __future__ import absolute_import, division, print_function
 import json, os, sys
 
 # from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
@@ -22,13 +23,15 @@ from twisted.internet import reactor
 log.startLogging(sys.stdout)
 
 # get the compiled library next to index.html
-from shutil import copy2
-copy2(os.path.join(os.path.dirname(__file__), "../client/dist/wslink.js"), os.path.join(os.path.dirname(__file__), "www/"))
+# from shutil import copy2
+# copy2(os.path.join(os.path.dirname(__file__), "../client/dist/wslink.js"), os.path.join(os.path.dirname(__file__), "www/"))
+
+#TODO warning if client examples hasn't been built.
 
 exampleServer = ExampleServer()
 
 # Static file delivery
-root = File(os.path.join(os.path.dirname(__file__), "./www"))
+root = File(os.path.join(os.path.dirname(__file__), "../../js/dist/examples"))
 
 # WS endpoint
 factory = TimeoutWebSocketServerFactory(url=u"ws://127.0.0.1:8080", timeout=60)

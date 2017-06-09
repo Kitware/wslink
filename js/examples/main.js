@@ -1,7 +1,29 @@
-/* global document, WebsocketConnection, SmartConnect */
-// if you are using modules instead of a <script> tag:
-// import WebsocketConnection from 'wslink/WebsocketConnection';
-// import SmartConnect from 'wslink/SmartConnect';
+/* global document */
+import WebsocketConnection from '../src/WebsocketConnection';
+import SmartConnect from '../src/SmartConnect';
+
+// this template allows us to use HtmlWebpackPlugin
+// in webpack to generate our index.html
+// expose-loader makes our 'export' functions part of the 'app' global
+const htmlContent = `<button onClick="app.connect()">Connect</button>
+<button onClick="app.wsclose()">Disconnect</button>
+<br/>
+<input type="text" value="1,2,3,4,5" class="input" />
+<button onClick="app.sendInput('add')">Send Add</button>
+<button onClick="app.sendInput('mult')">Send Mult</button>
+<button onClick="app.sendBinary()">Send Binary</button>
+<button onClick="app.toggleStream()">Sub/Unsub</button>
+<button onClick="app.sendMistake()">Mistake</button>
+<br/>
+<textarea class="output" rows="12" cols="50"></textarea>
+<br/>
+<canvas class="imageCanvas" width="300px" height="300px"></canvas>
+`;
+
+const rootContainer = document.querySelector('body');
+const controlContainer = document.createElement('div');
+rootContainer.appendChild(controlContainer);
+controlContainer.innerHTML = htmlContent;
 
 const inputElement = document.querySelector('.input');
 const logOutput = document.querySelector('.output');
@@ -18,7 +40,7 @@ function logerr(err) {
   logOutput.innerHTML += '\n';
 }
 
-function sendInput(type) {
+export function sendInput(type) {
   if (!session) return;
   const data = JSON.parse('[' + inputElement.value + ']');
   session.call(`myprotocol.${type}`, [data])
@@ -42,19 +64,19 @@ function handleMessage(data) {
   }
 }
 
-function sendBinary() {
+export function sendBinary() {
   if (!session) return;
   session.call('myprotocol.image', [])
     .then(handleMessage, (err) => logerr(err));
 }
 
-function sendMistake() {
+export function sendMistake() {
   if (!session) return;
   session.call('myprotocol.mistake.TYPO', ['ignored'])
     .then(handleMessage, (err) => logerr(err));
 }
 
-function toggleStream() {
+export function toggleStream() {
   if (!subscription) {
     session.subscribe('image', handleMessage).then((result) => (subscription = result));
     session.call('myprotocol.stream', ['image'])
@@ -67,18 +89,18 @@ function toggleStream() {
   }
 }
 
-function wsclose() {
+export function wsclose() {
   if (!session) return;
   session.close();
 }
 
-function connect(direct=false) {
+export function connect(direct=false) {
   let ws = null;
   if (direct) {
-    ws = wslink.WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
+    ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
   } else {
     const config = { application: 'simple' };
-    ws = wslink.SmartConnect.newInstance({ config });
+    ws = SmartConnect.newInstance({ config });
   }
   ws.onConnectionReady(() => {
     log('WS open');

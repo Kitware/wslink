@@ -1,8 +1,6 @@
 /* global window */
 import CompositeClosureHelper from '../CompositeClosureHelper';
 
-// import Monologue from 'monologue.js';
-import merge from 'mout/src/object/merge';
 import ProcessLauncher from '../ProcessLauncher';
 import WebsocketConnection from '../WebsocketConnection';
 
@@ -46,7 +44,7 @@ function SmartConnect(publicAPI, model) {
       const launcher = ProcessLauncher.newInstance({ endPoint: model.config.sessionManagerURL || DEFAULT_SESSION_MANAGER_URL });
 
       model.subscriptions.push(launcher.onProcessReady((data) => {
-        model.config = merge(model.config, data);
+        model.config = Object.assign({}, model.config, data);
         session = wsConnect(publicAPI, model);
       }));
       model.subscriptions.push(launcher.onError((data) => {

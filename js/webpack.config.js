@@ -1,17 +1,13 @@
 var path = require('path');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname),
-  entry: ['babel-polyfill', './index.js'],
+  entry: ['./src/index.js'],
   output: {
     filename: 'wslink.js',
     path: path.resolve(__dirname, 'dist'),
     library: "wslink",
     libraryTarget: "umd"
-  },
-  devServer: {
-    contentBase: path.resolve(__dirname),
   },
   module: {
     rules: [
@@ -24,16 +20,7 @@ module.exports = {
             [ 'es2015', { modules: false } ]
           ]
         }
-      },
-      {
-        test: /\.css$/,
-        use: ExtractTextPlugin.extract({
-          use: 'css-loader'
-        })
       }
     ]
   },
-  plugins: [
-    new ExtractTextPlugin('styles.css'),
-  ]
 };
