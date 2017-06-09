@@ -9,7 +9,7 @@ encoding and decoding.
 
 ## RPC and publish/subscribe
 
-The initial users of wslink driving development are [VTK] and [ParaViewWeb].
+The initial users of wslink driving its development are [VTK] and [ParaViewWeb].
 ParaViewWeb and vtkWeb require:
 * RPC - a remote procedure call that can be fired by the client and return
   sometime later with a response from the server, possibly an error.

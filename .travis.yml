@@ -4,9 +4,6 @@ python:
     - "2.7"
     - "3.6"
 
-node_js:
-    - "4.1"
-
 env:
     - CXX=g++-4.8
 
@@ -16,7 +13,6 @@ addons:
             - ubuntu-toolchain-r-test
         packages:
             - g++-4.8
-            - libgif-dev
 
 notifications:
     email:
@@ -35,6 +31,7 @@ before_install:
     - pip install -U pip
     # recent node/npm
     - nvm install 6
+    - nvm use 6
 
 install:
     - pushd "js"
@@ -47,7 +44,7 @@ install:
 script:
     # Run client tests
     - pushd "js"
-    - npm run build
+    - npm run build:release
     # - npm run test
     - popd
     # Now run server tests
@@ -56,4 +53,5 @@ script:
     - popd
 
 after_success:
-    # - npm run semantic-release
+    # Requires NPM_TOKEN env var.
+    - npm publish "js"

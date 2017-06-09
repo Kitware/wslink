@@ -1,5 +1,7 @@
 # wslink
 
+[![Build Status](https://travis-ci.org/Kitware/wslink.svg?branch=master)](https://travis-ci.org/Kitware/wslink)
+
 Wslink allows easy, bi-directional communication between a python server and a
 javascript client over a [websocket]. The client can make RPC calls to the
 server, and the server can publish messages to topics that the client can
@@ -9,7 +11,7 @@ encoding and decoding.
 
 ## RPC and publish/subscribe
 
-The initial users of wslink driving development are [VTK] and [ParaViewWeb].
+The initial users of wslink driving its development are [VTK] and [ParaViewWeb].
 ParaViewWeb and vtkWeb require:
 * RPC - a remote procedure call that can be fired by the client and return
   sometime later with a response from the server, possibly an error.
@@ -26,6 +28,7 @@ to the point-to-point communication we actually use.
 ## Examples
 
 * Set up a Python (2.7 or 3.5+) [virtualenv] using requirements.txt
+* Install node.js 6+ for the javascript client
 * `cd wslink/js`
 * `npm run build:example`
 * `cd ../python`
