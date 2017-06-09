@@ -1,0 +1,59 @@
+sudo: false
+language: python
+python:
+    - "2.7"
+    - "3.6"
+
+node_js:
+    - "4.1"
+
+env:
+    - CXX=g++-4.8
+
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-4.8
+            - libgif-dev
+
+notifications:
+    email:
+        recipients:
+            - aron.helser@kitware.com
+        on_success: change
+        on_failure: always
+cache:
+    directories:
+        - js/node_modules
+
+compiler:
+    - gcc
+before_install:
+    # Update pip
+    - pip install -U pip
+    # recent node/npm
+    - nvm install 6
+
+install:
+    - pushd "js"
+    - npm install
+    - popd
+    - pushd "python"
+    - pip install -U -r requirements.txt
+    - popd
+
+script:
+    # Run client tests
+    - pushd "js"
+    - npm run build
+    # - npm run test
+    - popd
+    # Now run server tests
+    - pushd "python"
+    - python src/tests/testWSProtocol.py
+    - popd
+
+after_success:
+    # - npm run semantic-release

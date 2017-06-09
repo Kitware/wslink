@@ -6,6 +6,12 @@
     "type": "git",
     "url": "git+https://github.com/kitware/wslink.git"
   },
+    "bugs": { "url": "https://github.com/kitware/wslink/issues" },
+    "homepage": "https://github.com/kitware/wslink#readme",
+    "engines" : {
+      "npm" : ">=3.0.0",
+      "node": ">=4.0.0"
+    },
   "main": "dist/wslink.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

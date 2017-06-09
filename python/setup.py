@@ -34,7 +34,7 @@ setup(
     author='Kitware, Inc.',
     author_email='kitware@kitware.com',
     url='https://github.com/kitware/wslink',
-    license='BSD License',
+    license='BSD-3-Clause',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
