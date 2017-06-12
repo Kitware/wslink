@@ -1,6 +1,7 @@
-r"""websocket is a module that provides classes that extend any
-twisted/autobahn websockets related classes for the purposes of wslink.
-
+r"""
+This module implements the core RPC and publish APIs. Developers can extend
+LinkProtocol to provide additional RPC callbacks for their web-applications. Then extend
+ServerProtocol to hook all the needed LinkProtocols together.
 """
 
 from __future__ import absolute_import, division, print_function

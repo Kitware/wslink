@@ -1,6 +1,4 @@
-r"""server is a module that enables using python through a web-server. This
-module implements a wslink Server Protocol that provides the core RPC-API. Developers can extend
-ServerProtocol to provide additional RPC callbacks for their web-applications.
+r"""server is a module that enables using python through a web-server.
 
 This module can be used as the entry point to the application. In that case, it
 sets up a Twisted web-server.

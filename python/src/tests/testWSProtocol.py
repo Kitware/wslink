@@ -6,12 +6,17 @@ try:
 except ImportError:
     from mock import MagicMock
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+try:
+    from wslink import register as exportRPC
+except ImportError:
+    print("loading wslink directly from src/ directory, as fallback")
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from wslink import register as exportRPC
+
 from wslink.websocket import LinkProtocol, ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
 from autobahn.twisted.resource import WebSocketResource
 from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
 
-from wslink import register as exportRPC
 from twisted.internet import reactor, task
 
 class MyProtocol(LinkProtocol):
