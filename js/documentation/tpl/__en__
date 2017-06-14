@@ -1,0 +1,26 @@
+menu:
+  docs: Docs
+  api: API
+  examples: Examples
+  news: News
+  search: Search
+
+index:
+  get_started: Get started
+
+page:
+  contents: Contents
+  back_to_top: Back to Top
+  improve: Improve this doc
+  prev: Prev
+  next: Next
+  last_updated: "Last updated: %s"
+
+sidebar:
+  docs:
+    getting_started: Getting Started
+    releases: Releases
+    tools: Developer guide
+    overview: Overview
+    contributing: Contributing
+    miscellaneous: Development

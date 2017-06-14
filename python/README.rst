@@ -13,6 +13,7 @@ RPC and publish/subscribe
 
 The initial users of wslink driving its development are VTK_ and ParaViewWeb_.
 ParaViewWeb and vtkWeb require:
+
 * RPC - a remote procedure call that can be fired by the client and return
   sometime later with a response from the server, possibly an error.
 
@@ -24,7 +25,7 @@ ParaViewWeb and vtkWeb require:
 Get the whole story
 -------------------
 
-This package is just the server side of wslink. See the github repo_ for
+This package is just the server side of wslink. See the `github repo`_ for
 the full story - and to contribute or report issues!
 
 License

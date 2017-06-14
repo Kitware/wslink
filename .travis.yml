@@ -38,7 +38,7 @@ install:
     - npm install
     - popd
     - pushd "python"
-    - pip install -U -r requirements.txt
+    - pip install -U -r requirements.txt -r requirements-dev.txt
     - popd
 
 script:
@@ -46,10 +46,18 @@ script:
     - pushd "js"
     - npm run build:release
     # - npm run test
+    - git config --global user.name "Travis CI"
+    - git config --global user.email "aron.helser@kitware.com"
+    - export GIT_PUBLISH_URL=https://${GH_TOKEN}@github.com/Kitware/wslink.git
+    - if [ "$TRAVIS_BRANCH" == "master" ]; then npm run doc:publish; fi
     - popd
     # Now run server tests
     - pushd "python"
+    # check readme format
+    - python setup.py checkdocs
     - python src/tests/testWSProtocol.py
+    # build the distribution
+    - python setup.py bdist_wheel sdist
     - popd
 
 after_success:

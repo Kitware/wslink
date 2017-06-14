@@ -11,8 +11,9 @@ from setuptools import setup, find_packages
 # from setuptools.command.install import install
 # from distutils.dir_util import copy_tree
 
-# with open('README.rst') as f:
-#     readme = f.read()
+readme = ''
+with open('README.rst') as f:
+    readme = f.read()
 
 install_reqs = [
     'autobahn',
@@ -30,7 +31,7 @@ setup(
     name='wslink',
     version=version,
     description='Python/JavaScript library for communicating over WebSocket',
-    # long_description=readme,
+    long_description=readme,
     author='Kitware, Inc.',
     author_email='kitware@kitware.com',
     url='https://github.com/kitware/wslink',
