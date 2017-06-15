@@ -2,44 +2,44 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://kitware.github.io/wslink/2016/04/28/kw-doc/</loc>
+    
+    <lastmod>2017-06-15T19:36:31.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://kitware.github.io/wslink/index.html</loc>
     
-    <lastmod>2017-06-14T15:43:13.286Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://kitware.github.io/wslink/docs/tools.html</loc>
-    
-    <lastmod>2017-06-14T15:43:13.271Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://kitware.github.io/wslink/docs/index.html</loc>
-    
-    <lastmod>2017-06-14T15:43:13.255Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://kitware.github.io/wslink/docs/contributing.html</loc>
-    
-    <lastmod>2017-06-14T15:43:13.255Z</lastmod>
+    <lastmod>2017-06-15T19:36:31.000Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://kitware.github.io/wslink/api/index.html</loc>
     
-    <lastmod>2017-06-14T15:43:13.239Z</lastmod>
+    <lastmod>2017-06-15T19:36:31.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://kitware.github.io/wslink/2016/04/28/kw-doc/</loc>
+    <loc>https://kitware.github.io/wslink/docs/contributing.html</loc>
     
-    <lastmod>2017-06-14T15:43:13.021Z</lastmod>
+    <lastmod>2017-06-15T19:36:31.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://kitware.github.io/wslink/docs/index.html</loc>
+    
+    <lastmod>2017-06-15T19:36:31.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://kitware.github.io/wslink/docs/tools.html</loc>
+    
+    <lastmod>2017-06-15T19:36:31.000Z</lastmod>
     
   </url>
   
