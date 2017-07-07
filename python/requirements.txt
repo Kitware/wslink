@@ -1,8 +1,5 @@
 autobahn==0.18.1
 twisted==17.1.0
 
-# testing on 2.7:
-mock ; python_version < '3.0'
-
 # platform specific
 pypiwin32==220; sys_platform == 'win32'

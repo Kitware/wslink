@@ -8,7 +8,7 @@ We welcome your contributions to the development of wslink. This document will h
 Please follow the coding style:
 
 - Follow [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript).
-- Use soft-tabs with a two space indent.
+- Use spaces, not tabs, with a two space indent.
 - Don't put commas first.
 
 ## Workflow
@@ -18,9 +18,11 @@ Please follow the coding style:
 
     {% code %}
     $ git clone https://github.com/<username>/wslink.git
-    $ cd wslink
+    $ cd wslink/js
     $ npm install
     $ npm install -g commitizen
+    $ cd ../python
+    $ pip install -r requirements-dev.txt
     {% endcode %}
 
 3. Create a feature branch.
@@ -30,6 +32,7 @@ Please follow the coding style:
     {% endcode %}
 
 4. Start hacking.
+5. Test.
 5. Use Commitizen for commit message
 
     {% code %}
@@ -50,7 +53,7 @@ Please follow the coding style:
 - Your pull request will only get merged when tests have passed. Don't forget to run tests before submission.
 
     {% code %}
-    $ npm test
+    $ python src/tests/testWSProtocol.py
     {% endcode %}
 
 ## Updating Documentation

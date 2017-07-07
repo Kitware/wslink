@@ -1,3 +1,5 @@
+-r requirements.txt
+
 # testing on 2.7:
 mock ; python_version < '3.0'
 

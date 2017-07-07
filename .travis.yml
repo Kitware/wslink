@@ -38,7 +38,7 @@ install:
     - npm install
     - popd
     - pushd "python"
-    - pip install -U -r requirements.txt -r requirements-dev.txt
+    - pip install -U -r requirements-dev.txt
     - popd
 
 script:

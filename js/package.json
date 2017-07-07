@@ -20,9 +20,9 @@
     "build": "webpack",
     "build:example": "webpack --config webpack-example.config.js",
     "build:release": "webpack -p",
-    "doc"           : "kw-doc -c ./documentation/config.js",
-    "doc:www"       : "kw-doc -c ./documentation/config.js -s",
-    "doc:publish"   : "kw-doc -c ./documentation/config.js -p",
+    "doc"           : "kw-doc -c ../documentation/config.js",
+    "doc:www"       : "kw-doc -c ../documentation/config.js -s",
+    "doc:publish"   : "kw-doc -c ../documentation/config.js -p",
     "start": "webpack-dev-server"
   },
   "author": "Aron Helser",

@@ -22,4 +22,3 @@ def register(uri):
       f._wslinkuris.append({ "uri": checkURI(uri) })
       return f
    return decorate
-

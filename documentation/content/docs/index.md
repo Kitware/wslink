@@ -2,7 +2,7 @@ title: Documentation
 ---
 
 Wslink is a library that allows useful communication between a JavaScript
-client and an Python web-server over websockets.
+client and a Python webserver over websockets.
 
 ## Installation
 
@@ -10,21 +10,21 @@ It only takes few minutes to set up wslink. If you encounter a problem and can't
 
 ### Requirements
 
-Installing wslink as a dependency inside your Web project is quite easy. However, you do need to have a couple of other things installed first:
+Installing wslink as a dependency inside your Web project is quite easy. However, you do need to have a couple of things installed first:
 
 - [Node.js](http://nodejs.org/)
 - [Git](http://git-scm.com/)
 
-If your computer already has these, congratulations! Just install ParaViewWeb wslink with npm:
+If your computer already has these, congratulations! Just install wslink with npm:
 
 ``` bash
 $ npm install wslink --save
 ```
 
-If not, please follow the following instructions to install all the requirements.
+If not, please follow these steps to install all the requirements.
 
 {% note warn For Mac users %}
-You may encounter some problems when compiling. Please install Xcode from the App Store first. After Xcode is installed, open Xcode and go to **Preferences -> Download -> Command Line Tools -> Install** to install command line tools.
+Please install Xcode from the App Store first. After Xcode is installed, open Xcode and go to **Preferences -> Download -> Command Line Tools -> Install** to install command line tools. This will avoid some problems when compiling.
 {% endnote %}
 
 ### Install Git

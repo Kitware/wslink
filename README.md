@@ -72,7 +72,7 @@ const response = {
 };
 
 // types used as prefix for id.
-const types = ['rpc', 'publish', 'system']; 
+const types = ['rpc', 'publish', 'system'];
 }
 ```
 
