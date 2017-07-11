@@ -19,7 +19,7 @@ function wsConnect(publicAPI, model) {
   return wsConnection.connect();
 }
 
-function SmartConnect(publicAPI, model) {
+function smartConnect(publicAPI, model) {
   let session = null;
   model.gc = [];
 
@@ -58,11 +58,11 @@ function SmartConnect(publicAPI, model) {
       // Add to the garbage collector
       model.gc.push(launcher);
     }
-  }
+  };
 
   publicAPI.getSession = () => {
     return session;
-  }
+  };
 
   publicAPI.destroy = () => {
     if (session) {
@@ -73,7 +73,7 @@ function SmartConnect(publicAPI, model) {
     while (model.gc.length) {
       model.gc.pop().destroy();
     }
-  }
+  };
 }
 
 const DEFAULT_VALUES = {
@@ -89,7 +89,7 @@ export function extend(publicAPI, model, initialValues = {}) {
   CompositeClosureHelper.event(publicAPI, model, 'ConnectionError');
   CompositeClosureHelper.isA(publicAPI, model, 'SmartConnect');
 
-  SmartConnect(publicAPI, model);
+  smartConnect(publicAPI, model);
 }
 
 // ----------------------------------------------------------------------------

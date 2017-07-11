@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/Kitware/wslink.svg?branch=master)](https://travis-ci.org/Kitware/wslink)
 
 Wslink allows easy, bi-directional communication between a python server and a
-javascript client over a [websocket]. The client can make RPC calls to the
-server, and the server can publish messages to topics that the client can
-subscribe to. The server can include binary attachments in these messages,
-which are communicated as a binary websocket message, avoiding the overhead of
-encoding and decoding.
+javascript client over a [websocket]. The client can make remote procedure
+calls (RPC) to the server, and the server can publish messages to topics that
+the client can subscribe to. The server can include binary attachments in
+these messages, which are communicated as a binary websocket message, avoiding
+the overhead of encoding and decoding.
 
 ## RPC and publish/subscribe
 
@@ -39,8 +39,10 @@ to the point-to-point communication we actually use.
 
 ## Testing
 
+* additional testing dependencies are in requirements-dev.txt
 * `cd python/src`
 * `python tests/testWSProtocol.py`
+* Uses a 'mock' of the WslinkWebSocketServerProtocol's sendMessage, to check that the expected messages or errors are generated.
 
 ## Existing API
 
@@ -99,7 +101,8 @@ buffer for the string key when it receives the final message.
 The client tracks subscriptions - the server currently blindly sends out
 messages for any data it produces which might be subscribed to. This is not
 very efficient - if the client notifies the server of a subscription, it can
-send the data only when someone is listening.
+send the data only when someone is listening. The ParaViewWeb app Visualizer
+makes an RPC call after subscribing to tell the server to start publishing.
 
 ### Handshake
 
@@ -110,7 +113,7 @@ client must embed in the rpc "id" field of its messages to the server.
 
 * The first message the client sends should be hello, with the secret key provided by its launcher.
 * Server authenicates the key, and responds with the client ID.
-* If the client send the wrong key or no key, the server responds with an authentication error message.
+* If the client sends the wrong key or no key, the server responds with an authentication error message.
 
 ### Design
 
