@@ -96,7 +96,7 @@ function Session(publicAPI, model) {
       // we've gotten a header with the keys for this binary data.
       // we will soon receive a json message with embedded ids of the binary objects.
       // Save with it's key, in order.
-      console.log('Saving binary attachment');
+      // console.log('Saving binary attachment');
       let foundIt = false;
       for (let i = 0; i < attachments.length; i++) {
         if (attachments[i].data === null) {
@@ -112,7 +112,7 @@ function Session(publicAPI, model) {
       const payload = JSON.parse(event.data);
       if (!payload.id) {
         // Notification-only message from the server - should be binary attachment header
-        console.log('Notify', payload);
+        // console.log('Notify', payload);
         if (payload.method === 'wslink.binary.attachment') {
           payload.args.forEach((key) => {
             attachments.push({ key, data: null });
@@ -127,7 +127,7 @@ function Session(publicAPI, model) {
             if (typeof(payload.result[key]) === 'string' &&
               regexAttach.test(payload.result[key])) {
               const binaryKey = payload.result[key];
-              console.log('Adding binary attachment', binaryKey);
+              // console.log('Adding binary attachment', binaryKey);
               const index = attachments.findIndex((att) => (att.key === binaryKey));
               if (index !== -1) {
                 payload.result[key] = attachments[index].data;
@@ -159,7 +159,7 @@ function Session(publicAPI, model) {
             // for each callback, provide the message data. Wrap in an array, for back-compatibility with WAMP
             subscriptions[topic].forEach((callback) => (callback([payload.result])));
           } else if (type == 'system') {
-            console.log('DBG system:', payload.id, payload.result);
+            // console.log('DBG system:', payload.id, payload.result);
             const deferred = inFlightRpc[payload.id];
             if (payload.id === 'system:c0:0') {
               clientID = payload.result.clientID;

@@ -172,6 +172,12 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
     def getServerProtocol(self):
         return self._protocolHandler
 
+    ### Does not seem to work to print a "ready line"
+    # def startFactory(self):
+    #     sys.stdout.write("wslink: Starting factory\n")
+    #     sys.stdout.flush()
+    #     WebSocketServerFactory.startFactory(self)
+
     def getClientCount(self):
         return self.clientCount
 
@@ -202,7 +208,6 @@ CLIENT_ERROR = -32099
 
 class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
     def __init__(self):
-        super(WslinkWebSocketServerProtocol, self).__init__()
         self.functionMap = {}
         self.attachmentMap = {}
         self.attachmentId = 0
@@ -285,7 +290,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         wrapper = {
             "wslink": "1.0",
             "id": rpcid,
-            "result": content,
+            "result": content if content else [],
         }
         try:
             encMsg = json.dumps(wrapper, ensure_ascii = False).encode('utf8')

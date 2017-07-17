@@ -9,7 +9,7 @@ Use "--help" to list the supported arguments.
 
 from __future__ import absolute_import, division, print_function
 
-import logging
+import logging, sys
 
 # from vtk.web import testing
 from wslink import upload
@@ -24,6 +24,10 @@ from twisted.internet           import reactor
 from twisted.internet.defer     import inlineCallbacks
 from twisted.internet.endpoints import serverFromString
 from twisted.python             import log
+
+def print_ready():
+    sys.stdout.write("wslink: Starting factory\n")
+    sys.stdout.flush()
 
 # =============================================================================
 # Setup default arguments to be parsed
@@ -219,6 +223,8 @@ def start_webserver(options, protocol=wsl.ServerProtocol, disableLogging=False):
 
     # Initialize testing: checks if we're doing a test and sets it up
     # testing.initialize(options, reactor, stop_webserver)
+
+    reactor.callWhenRunning(print_ready)
 
     # Start the reactor
     if options.nosignalhandlers:
