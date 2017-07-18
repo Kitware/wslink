@@ -2,7 +2,7 @@ module.exports = {
   cname: 'kitware.github.io',
   baseUrl: '/wslink',
   work: './build-tmp',
-  // api: ['../src'],
+  // api: ['../js/src'],
   examples: [],
   config: {
     title: 'Wslink',

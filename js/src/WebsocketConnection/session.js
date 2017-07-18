@@ -10,7 +10,7 @@ function Session(publicAPI, model) {
   // matches 'rpc:client3:21'
   // client may be dot-separated and include '_'
   // number is message count - unique.
-  // matches 'publish:dot.separated.topic:42'  number is message count - unique.
+  // matches 'publish:dot.separated.topic:42'
   const regexRPC = /^(rpc|publish|system):(\w+(?:\.\w+)*):(?:\d+)$/;
   const subscriptions = {};
   let clientID = null;
@@ -120,8 +120,17 @@ function Session(publicAPI, model) {
         }
         return;
       }
-      if (payload.result) {
-        if (attachments.length > 0) {
+      if (payload.error) {
+        // kill any attachments
+        attachments.length = 0;
+        const deferred = inFlightRpc[payload.id];
+        if (deferred) {
+          deferred.reject(payload.error);
+        } else {
+          console.error('Server error:', payload.error);
+        }
+      } else {
+        if (payload.result && attachments.length > 0) {
           // TODO need to do full traversal of nested objects/lists
           for (let key in payload.result) {
             if (typeof(payload.result[key]) === 'string' &&
@@ -172,19 +181,10 @@ function Session(publicAPI, model) {
             console.error('Unknown rpc id format', payload.id);
           }
         }
-      } else if (payload.error) {
-        // kill any attachments
-        attachments.length = 0;
-        const deferred = inFlightRpc[payload.id];
-        if (deferred) {
-          deferred.reject(payload.error);
-        } else {
-          console.error('Server error:', payload.error);
-        }
       }
     }
   };
- }
+}
 
 
 const DEFAULT_VALUES = {

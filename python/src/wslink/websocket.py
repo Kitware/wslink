@@ -148,6 +148,10 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
         WebSocketServerFactory.__init__(self, *args, **kwargs)
         WebSocketServerFactory.protocol = TimeoutWebSocketServerProtocol
 
+    def startFactory(self):
+        # this is only called if the WsSite factory isn't created first.
+        log.msg("wslink: Starting factory", logLevel=logging.CRITICAL)
+
     def connectionMade(self):
         if self._reaper:
             log.msg("Client has reconnected, cancelling reaper", logLevel=logging.DEBUG)
@@ -183,7 +187,7 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
 
 # =============================================================================
 
-class TimeoutWebSocketServerProtocol(WebSocketServerProtocol):
+class TimeoutWebSocketServerProtocol(WebSocketServerProtocol, object):
 
     def connectionMade(self):
         WebSocketServerProtocol.connectionMade(self)
@@ -290,7 +294,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         wrapper = {
             "wslink": "1.0",
             "id": rpcid,
-            "result": content if content else [],
+            "result": content,
         }
         try:
             encMsg = json.dumps(wrapper, ensure_ascii = False).encode('utf8')

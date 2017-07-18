@@ -1,25 +1,27 @@
 # ProcessLauncher
 
+The ProcessLauncher can be used to start remote python servers, or other
+remote processes.
 The ProcessLauncher is used in ParaViewWeb to start a new remote 
 server instance to perform interactive 3D post-processing using either
 a VTK or a ParaView backend.
 
 ```javascript
-import ProcessLauncher from 'paraviewweb/src/IO/Core/ProcessLauncher';
+import ProcessLauncher from 'wslink/src/ProcessLauncher';
 
 processLauncher = ProcessLauncher.newInstance({ endPoint: '/paraview' });
 ```
 
 ## ProcessLauncher.newInstance({ endPoint }) 
 
-Create a process launcher that will perform request to a remote
+Create a process launcher that will make requests to a remote
 server using the provided endpoint url.
 
 ## start(config) 
 
 Submit a request for a new remote process.
 
-The config object get posted via a POST request to the endpoint provided
+The config object gets posted via a POST request to the endpoint provided
 at creation time.
 
 The current ParaViewWeb server-side **Launcher** expects at least
@@ -31,9 +33,9 @@ the following object.
 }
 ```
 
-But additional key/value pair can be added depending on the needs of the targeted process.
+But additional key/value pairs can be added depending on the needs of the targeted process.
 
-Once the remote process becomes ready a notification will be sent.
+Once the remote process becomes ready a notification is sent.
 
 ## fetchConnection(sessionId)
 

@@ -26,7 +26,9 @@ from twisted.internet.endpoints import serverFromString
 from twisted.python             import log
 
 def print_ready():
-    sys.stdout.write("wslink: Starting factory\n")
+    # Emit an expected log message so launcher.py knows we've started up.
+    log.msg("wslink: Starting factory", logLevel=logging.CRITICAL)
+    # We've seen some issues with stdout buffering - be conservative.
     sys.stdout.flush()
 
 # =============================================================================
