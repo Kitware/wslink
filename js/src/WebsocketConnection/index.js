@@ -96,16 +96,17 @@ function WebsocketConnection(publicAPI, model) {
 
   publicAPI.getUrl = () => (model.connection ? model.connection.url : undefined);
 
-  publicAPI.destroy = (timeout = 10) => {
-    // publicAPI.off();
+  function cleanUp(timeout = 10) {
     if (model.session && timeout > 0) {
-      // model.session.call('application.exit.later', [timeout]);
+      model.session.call('application.exit.later', [timeout]);
     }
     if (model.connection) {
       model.connection.close();
     }
     model.connection = null;
-  };
+  }
+
+  publicAPI.destroy = CompositeClosureHelper.chain(cleanUp, publicAPI.destroy);
 }
 
 const DEFAULT_VALUES = {

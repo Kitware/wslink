@@ -2,4 +2,4 @@ autobahn==0.18.1
 twisted==17.1.0
 
 # platform specific
-pypiwin32==220; sys_platform == 'win32'
+pypiwin32; sys_platform == 'win32'
