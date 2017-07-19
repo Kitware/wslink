@@ -86,3 +86,41 @@ Windows/Linux or Ctrl + ⌥ + f on Mac. Alternatively, use the context menu.
 ### EditorConfig
 
 [More information available here](https://github.com/sindresorhus/editorconfig-sublime#readme)
+
+## Releases
+
+### Python
+
+wslink is published to [pypi](https://pypi.python.org/pypi/wslink). The basic
+steps taken by the maintainer to publish:
+
+* Update version in `python/src/wslink/__init__.py`
+* run tests
+* `cd python/`
+* `pip install -U requirements-dev.txt`
+* `rm dist/*`
+* `python setup.py bdist_wheel sdist`
+* `twine upload dist/*`
+
+### JavaScript
+
+wslink is published to [npm](https://www.npmjs.com/package/wslink). This can
+potentially be handled automatically by SemanticRelease, but we are not using
+that tool (yet?) because we want to synchronize with the python release.
+
+* `cd js/`
+* `npm run build:release`
+* `npm run build:example`
+* `npm publish`
+
+### Documentation
+
+wslink's webpage is on [Github Pages](https://kitware.github.io/wslink/) and is
+generated using [kw-doc](https://github.com/Kitware/kw-doc). It should be
+automatically updated by Travis-CI when a commit is made to the master branch.
+This is not working currently. Steps to update:
+
+* `cd js/`
+* `npm run doc:www`
+    * test the docs locally
+* `npm run doc:publish`
