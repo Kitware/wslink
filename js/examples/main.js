@@ -92,10 +92,13 @@ export function toggleStream() {
 export function wsclose() {
   if (!session) return;
   session.close();
+  // it's fine to destroy the WebsocketConnection, but you won't get the WS close message.
+  // if (ws) ws.destroy();
+  // ws = null;
 }
 
 export function connect(direct=false) {
-  let ws = null;
+  ws = null;
   if (direct) {
     ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });
   } else {

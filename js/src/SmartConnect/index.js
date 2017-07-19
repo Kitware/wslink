@@ -64,7 +64,7 @@ function smartConnect(publicAPI, model) {
     return session;
   };
 
-  publicAPI.destroy = () => {
+  function cleanUp() {
     if (session) {
       session.close();
     }
@@ -73,7 +73,9 @@ function smartConnect(publicAPI, model) {
     while (model.gc.length) {
       model.gc.pop().destroy();
     }
-  };
+  }
+
+  publicAPI.destroy = CompositeClosureHelper.chain(cleanUp, publicAPI.destroy);
 }
 
 const DEFAULT_VALUES = {

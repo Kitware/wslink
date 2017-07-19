@@ -4,10 +4,6 @@ import CompositeClosureHelper from '../CompositeClosureHelper';
 const connections = [];
 
 function ProcessLauncher(publicAPI, model) {
-// export default class ProcessLauncher {
-//   constructor(endPoint) {
-//     model.endPoint = endPoint;
-//   }
 
   publicAPI.start = (config) => {
     var xhr = new XMLHttpRequest(),
@@ -82,7 +78,6 @@ function ProcessLauncher(publicAPI, model) {
     xhr.send();
   }
 
-  /* eslint-disable class-methods-use-this */
   publicAPI.listConnections = () => {
     return connections;
   }
