@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://kitware.github.io/wslink/docs/tools.html</loc>
+    
+    <lastmod>2017-07-19T15:16:23.081Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://kitware.github.io/wslink/index.html</loc>
     
     <lastmod>2017-07-12T16:48:16.372Z</lastmod>
@@ -19,13 +26,6 @@
     <loc>https://kitware.github.io/wslink/docs/contributing.html</loc>
     
     <lastmod>2017-07-07T16:04:59.808Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://kitware.github.io/wslink/docs/tools.html</loc>
-    
-    <lastmod>2017-07-06T18:15:48.994Z</lastmod>
     
   </url>
   
