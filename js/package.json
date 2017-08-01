@@ -1,6 +1,6 @@
 {
   "name": "wslink",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
   "repository": {
     "type": "git",
@@ -16,9 +16,10 @@
   },
   "main": "dist/wslink.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "webpack --config webpack-test.config.js && python ../python/examples/simple.py --content dist/test --debug",
     "build": "webpack",
     "build:example": "webpack --config webpack-example.config.js",
+    "build:test": "webpack --config webpack-test.config.js",
     "build:release": "webpack -p",
     "doc"           : "kw-doc -c ../documentation/config.js",
     "doc:www"       : "kw-doc -c ../documentation/config.js -s",

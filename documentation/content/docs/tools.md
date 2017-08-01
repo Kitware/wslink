@@ -97,7 +97,7 @@ steps taken by the maintainer to publish:
 * Update version in `python/src/wslink/__init__.py`
 * run tests
 * `cd python/`
-* `pip install -U requirements-dev.txt`
+* `pip install -U -r requirements-dev.txt`
 * `rm dist/*`
 * `python setup.py bdist_wheel sdist`
 * `twine upload dist/*`
