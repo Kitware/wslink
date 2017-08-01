@@ -131,22 +131,28 @@ function Session(publicAPI, model) {
         }
       } else {
         if (payload.result && attachments.length > 0) {
-          // TODO need to do full traversal of nested objects/lists
-          for (let key in payload.result) {
-            if (typeof(payload.result[key]) === 'string' &&
-              regexAttach.test(payload.result[key])) {
-              const binaryKey = payload.result[key];
-              // console.log('Adding binary attachment', binaryKey);
-              const index = attachments.findIndex((att) => (att.key === binaryKey));
-              if (index !== -1) {
-                payload.result[key] = attachments[index].data;
-                // TODO if attachment is sent mulitple times, we shouldn't remove it yet.
-                attachments.splice(index, 1);
-              } else {
-                console.error('Binary attachment key found without matching attachment');
+          // To do a full traversal of nested objects/lists, we need recursion.
+          function addAttachment(obj_list) {
+            for (let key in obj_list) {
+              if (typeof(obj_list[key]) === 'string' &&
+                regexAttach.test(obj_list[key])) {
+                const binaryKey = obj_list[key];
+                // console.log('Adding binary attachment', binaryKey);
+                const index = attachments.findIndex((att) => (att.key === binaryKey));
+                if (index !== -1) {
+                  obj_list[key] = attachments[index].data;
+                  // TODO if attachment is sent mulitple times, we shouldn't remove it yet.
+                  attachments.splice(index, 1);
+                } else {
+                  console.error('Binary attachment key found without matching attachment');
+                }
+              } else if (typeof(obj_list[key]) === 'object') {
+                // arrays are also 'object' with this test.
+                addAttachment(obj_list[key]);
               }
             }
           }
+          addAttachment(payload.result);
         }
         const match = regexRPC.exec(payload.id);
         if (match) {
