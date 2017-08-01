@@ -73,5 +73,19 @@ class MyProtocol(LinkProtocol):
             return { "unsubscribed": topic }
         return 0
 
-
+    # test nesting attachments
+    @exportRPC("myprotocol.nested.image")
+    def testNesting(self):
+        img = self.image()
+        # just using 'bytes' only works in Py3
+        bytes_list1 = bytes(bytearray([1, 2, 3, 4]))
+        bytes_list2 = bytes(bytearray([5, 6, 7, 8, 9, 10]))
+        msg = {
+            "image": img,
+            "bytesList": [
+                self.addAttachment(bytes_list1),
+                self.addAttachment(bytes_list2),
+            ]
+        }
+        return msg
 
