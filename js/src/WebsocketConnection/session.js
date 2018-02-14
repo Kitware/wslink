@@ -91,6 +91,34 @@ function Session(publicAPI, model) {
     return deferred.promise;
   };
 
+  // split out to support a message with a bare binary attachment.
+  function getAttachment(binaryKey) {
+    // console.log('Adding binary attachment', binaryKey);
+    const index = attachments.findIndex((att) => (att.key === binaryKey));
+    if (index !== -1) {
+      const result = attachments[index].data;
+      // TODO if attachment is sent mulitple times, we shouldn't remove it yet.
+      attachments.splice(index, 1);
+      return result;
+    }
+    console.error('Binary attachment key found without matching attachment');
+    return null;
+  }
+  // To do a full traversal of nested objects/lists, we need recursion.
+  function addAttachment(obj_list) {
+    for (let key in obj_list) {
+      if (typeof(obj_list[key]) === 'string' &&
+        regexAttach.test(obj_list[key])) {
+        const binaryKey = obj_list[key];
+        const replacement = getAttachment(binaryKey);
+        if (replacement !== null) obj_list[key] = replacement;
+      } else if (typeof(obj_list[key]) === 'object') {
+        // arrays are also 'object' with this test.
+        addAttachment(obj_list[key]);
+      }
+    }
+  }
+
   publicAPI.onmessage = (event) => {
     if (event.data instanceof ArrayBuffer || event.data instanceof Blob) {
       // we've gotten a header with the keys for this binary data.
@@ -131,28 +159,13 @@ function Session(publicAPI, model) {
         }
       } else {
         if (payload.result && attachments.length > 0) {
-          // To do a full traversal of nested objects/lists, we need recursion.
-          function addAttachment(obj_list) {
-            for (let key in obj_list) {
-              if (typeof(obj_list[key]) === 'string' &&
-                regexAttach.test(obj_list[key])) {
-                const binaryKey = obj_list[key];
-                // console.log('Adding binary attachment', binaryKey);
-                const index = attachments.findIndex((att) => (att.key === binaryKey));
-                if (index !== -1) {
-                  obj_list[key] = attachments[index].data;
-                  // TODO if attachment is sent mulitple times, we shouldn't remove it yet.
-                  attachments.splice(index, 1);
-                } else {
-                  console.error('Binary attachment key found without matching attachment');
-                }
-              } else if (typeof(obj_list[key]) === 'object') {
-                // arrays are also 'object' with this test.
-                addAttachment(obj_list[key]);
-              }
-            }
+          if (typeof(payload.result) === 'string' &&
+            regexAttach.test(payload.result)) {
+            const replacement = getAttachment(payload.result);
+            if (replacement !== null) payload.result = replacement;
+          } else {
+            addAttachment(payload.result);
           }
-          addAttachment(payload.result);
         }
         const match = regexRPC.exec(payload.id);
         if (match) {
