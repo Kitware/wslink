@@ -11,6 +11,7 @@ const htmlContent = `<button onClick="app.connect()">Connect</button>
 <input type="text" value="1,2,3,4,5" class="input" />
 <button onClick="app.sendInput('add')">Send Add</button>
 <button onClick="app.sendInput('mult')">Send Mult</button>
+<button onClick="app.sendImage('unwrapped.image')">Send Image</button>
 <button onClick="app.testNesting()">Test Nesting</button>
 <button onClick="app.toggleStream()">Sub/Unsub</button>
 <button onClick="app.sendMistake()">Mistake</button>
@@ -48,9 +49,17 @@ export function sendInput(type) {
   session.call(`myprotocol.${type}`, [data])
     .then((result) => log('result ' + result), (err) => logerr(err));
 }
-
-function handleMessage(data) {
-  let blob = Array.isArray(data) ? data[0].blob : data.blob;
+export function sendImage(type) {
+  if (!session) return;
+  session.call(`myprotocol.${type}`, [])
+    .then((result) => {
+      log('result ' + result);
+      handleMessage(result);
+    }, (err) => logerr(err));
+}
+function handleMessage(inData) {
+  let data = Array.isArray(inData) ? inData[0] : inData;
+  let blob = data.blob || data;
   if (blob instanceof Blob) {
     const canvas = document.querySelector('.imageCanvas');
     const ctx = canvas.getContext('2d');
