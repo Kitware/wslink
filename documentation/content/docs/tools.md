@@ -108,6 +108,7 @@ wslink is published to [npm](https://www.npmjs.com/package/wslink). This can
 potentially be handled automatically by SemanticRelease, but we are not using
 that tool (yet?) because we want to synchronize with the python release.
 
+* Update version in `js/package.json`
 * `cd js/`
 * `npm run build:release`
 * `npm run build:example`
