@@ -9,3 +9,6 @@ collective.checkdocs
 # publishing
 twine
 wheel
+
+# TLS
+service_identity>=17.0.0
