@@ -55,5 +55,7 @@ setup(
     ),
     package_dir={'':'src'},
     install_requires=install_reqs,
-    # extras_require=extras_reqs,
+    extras_require={
+        'security': ['service_identity>=17.0.0'],
+    },
 )
