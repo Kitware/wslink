@@ -40,8 +40,9 @@ class LinkProtocol(object):
         self.addAttachment = addAttachment
 
     def getSharedObject(self, key):
-        assert(self.coreServer)
-        return self.coreServer.getSharedObject(key)
+        if self.coreServer:
+            return self.coreServer.getSharedObject(key)
+        return None
 
 # =============================================================================
 #
