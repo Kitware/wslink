@@ -15,17 +15,17 @@ function ProcessLauncher(publicAPI, model) {
 
     xhr.onload = (e) => {
       const response = supportsJson ? xhr.response : JSON.parse(xhr.response);
-      if (xhr.status === 200 && !response.error) {
+      if (xhr.status === 200 && response && !response.error) {
         // Add connection to our global list
         connections.push(response);
         publicAPI.fireProcessReady(response);
         return;
       }
-      publicAPI.fireError(response);
+      publicAPI.fireError(xhr);
     };
 
     xhr.onerror = (e) => {
-      publicAPI.fireError(xhr.response);
+      publicAPI.fireError(xhr);
     };
 
     xhr.send(JSON.stringify(config));
@@ -44,11 +44,11 @@ function ProcessLauncher(publicAPI, model) {
         publicAPI.fireFetch(supportsJson ? xhr.response : JSON.parse(xhr.response));
         return;
       }
-      publicAPI.fireError(xhr.response);
+      publicAPI.fireError(xhr);
     };
 
     xhr.onerror = (e) => {
-      publicAPI.fireError(xhr.response);
+      publicAPI.fireError(xhr);
     };
 
     xhr.send();
@@ -70,10 +70,10 @@ function ProcessLauncher(publicAPI, model) {
         publicAPI.fireProcessStopped(response);
         return;
       }
-      publicAPI.fireError(xhr.response);
+      publicAPI.fireError(xhr);
     };
     xhr.onerror = (e) => {
-      publicAPI.fireError(xhr.response);
+      publicAPI.fireError(xhr);
     };
     xhr.send();
   }
