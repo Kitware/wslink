@@ -9,7 +9,6 @@ export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${windo
 
 
 function wsConnect(publicAPI, model) {
-  console.log(model.config);
   const wsConnection = WebsocketConnection.newInstance({ urls: model.config.sessionURL, secret: model.config.secret, retry: model.config.retry });
   model.subscriptions.push(wsConnection.onConnectionReady(publicAPI.readyForwarder));
   model.subscriptions.push(wsConnection.onConnectionError(publicAPI.errorForwarder));
