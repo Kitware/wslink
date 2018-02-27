@@ -9,6 +9,7 @@ export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${windo
 
 
 function wsConnect(publicAPI, model) {
+  console.log(model.config);
   const wsConnection = WebsocketConnection.newInstance({ urls: model.config.sessionURL, secret: model.config.secret, retry: model.config.retry });
   model.subscriptions.push(wsConnection.onConnectionReady(publicAPI.readyForwarder));
   model.subscriptions.push(wsConnection.onConnectionError(publicAPI.errorForwarder));
@@ -49,9 +50,13 @@ function smartConnect(publicAPI, model) {
         session = wsConnect(publicAPI, model);
       }));
       model.subscriptions.push(launcher.onError((data) => {
-        // Try to use standard connection URL
-        model.config.sessionURL = DEFAULT_SESSION_URL;
-        session = wsConnect(publicAPI, model);
+        if (data && data.response && data.response.error) {
+          publicAPI.errorForwarder(data, data.response.error);
+        } else {
+          // Try to use standard connection URL
+          model.config.sessionURL = DEFAULT_SESSION_URL;
+          session = wsConnect(publicAPI, model);
+        }
       }));
 
       launcher.start(model.config);
