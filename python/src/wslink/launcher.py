@@ -2,6 +2,7 @@ import json
 import logging
 import io
 import os
+import re
 import string
 import subprocess
 import sys
@@ -156,10 +157,30 @@ def validateKeySet(obj, expected_keys, object_name):
             all_key_found = False
     return all_key_found
 
-# -----------------------------------------------------------------------------
+def checkSanitize(key_pair, sanitize):
+    if not sanitize:
+     return
+    for key in sanitize:
+        if key in key_pair:
+            checkItem = sanitize[key]
+            value = key_pair[key]
+            if checkItem["type"] == "inList":
+                if not value in checkItem["list"]:
+                    logging.warning("key %s: sanitize %s with default" % (key, key_pair[key]));
+                    key_pair[key] = checkItem["default"]
+            elif checkItem["type"] == "regexp":
+                if not "compiled" in checkItem:
+                    # Add begin- and end- string symbols, to make sure entire string is matched.
+                    checkItem["compiled"] = re.compile("^" + checkItem["regexp"] + "$")
+                if checkItem["compiled"].match(value) == None:
+                    logging.warning("key %s: sanitize %s with default" % (key, key_pair[key]));
+                    key_pair[key] = checkItem["default"]
 
-def replaceVariables(template_str, variable_list):
+# -----------------------------------------------------------------------------
+# guard against malicious clients - make sure substitution is expected, if 'sanitize' is provided
+def replaceVariables(template_str, variable_list, sanitize):
     for key_pair in variable_list:
+        checkSanitize(key_pair, sanitize)
         item_template = string.Template(template_str)
         template_str = item_template.safe_substitute(key_pair)
 
@@ -170,10 +191,10 @@ def replaceVariables(template_str, variable_list):
 
 # -----------------------------------------------------------------------------
 
-def replaceList(template_list, variable_list):
+def replaceList(template_list, variable_list, sanitize):
     result_list = []
-    for str in template_list:
-        result_list.append(replaceVariables(str, variable_list))
+    for template_str in template_list:
+        result_list.append(replaceVariables(template_str, variable_list, sanitize))
     return result_list
 
 # -----------------------------------------------------------------------------
@@ -207,6 +228,7 @@ class SessionManager(object):
         self.config = config
         self.resources = ResourceManager(config["resources"])
         self.mapping = mapping
+        self.sanitize = config["configuration"]["sanitize"]
 
     def createSession(self, options):
         # Assign id and store options
@@ -222,12 +244,12 @@ class SessionManager(object):
             options['port'] = port
             if not 'secret' in options:
                 options['secret'] = generatePassword()
-            options['sessionURL'] = replaceVariables(self.config['configuration']['sessionURL'], [options, self.config['properties']])
-            options['cmd'] = replaceList(self.config['apps'][options['application']]['cmd'], [options, self.config['properties']])
+            options['sessionURL'] = replaceVariables(self.config['configuration']['sessionURL'], [options, self.config['properties']], self.sanitize)
+            options['cmd'] = replaceList(self.config['apps'][options['application']]['cmd'], [options, self.config['properties']], self.sanitize)
 
             if 'sessionData' in self.config :
                 for key in self.config['sessionData'] :
-                    options[key] = replaceVariables(self.config['sessionData'][key], [options, self.config['properties']])
+                    options[key] = replaceVariables(self.config['sessionData'][key], [options, self.config['properties']], self.sanitize)
 
             self.sessions[id] = options
             self.mapping.update(self.sessions)
@@ -415,6 +437,7 @@ class LauncherResource(resource.Resource, object):
         self.session_manager = SessionManager(config,ProxyMappingManagerTXT(config['configuration']['proxy_file']))
         self.process_manager = ProcessManager(config)
 
+
     def getChild(self, path, request):
         return self
 
@@ -430,7 +453,7 @@ class LauncherResource(resource.Resource, object):
     # ========================================================================
 
     def render_POST(self, request):
-        # import pdb; pdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         payload = json.loads(request.content.getvalue())
 
         # Make sure the request has all the expected keys
@@ -608,6 +631,7 @@ def startWebServer(options, config):
     endpoint = str(config["configuration"]["endpoint"]).encode('utf-8')
     host     = str(config["configuration"]["host"])
     port     = int(config["configuration"]["port"])
+    sanitize = config["configuration"]["sanitize"]
 
     # Setup logging
     logFileName = log_dir + os.sep + "launcherLog.log"
@@ -631,7 +655,7 @@ def startWebServer(options, config):
     # Check if launcher should act as a file upload server as well
     if "upload_dir" in config["configuration"]:
         from upload import UploadPage
-        updir = replaceVariables(config['configuration']['upload_dir'], [config['properties']])
+        updir = replaceVariables(config['configuration']['upload_dir'], [config['properties']], sanitize)
         uploadResource = UploadPage(updir)
         web_resource.putChild("upload", uploadResource)
 
@@ -666,6 +690,8 @@ def parseConfig(options):
 
     if not "content" in config["configuration"]:
         config["configuration"]["content"] = ""
+    if not "sanitize" in config["configuration"]:
+        config["configuration"]["sanitize"] = {}
 
     return config
 
