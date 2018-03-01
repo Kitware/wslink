@@ -32,39 +32,54 @@ sample_config_file = """
 Here is a sample of what a configuration file could look like:
 
     {
-        ## ===============================
-        ## General launcher configuration
-        ## ===============================
+        // ===============================
+        // General launcher configuration
+        // ===============================
 
         "configuration": {
             "host" : "localhost",
             "port" : 8080,
-            "endpoint": "paraview",                   # SessionManager Endpoint
-            "content": "/.../www",                    # Optional: Directory shared over HTTP
-            "proxy_file" : "/.../proxy-mapping.txt",  # Proxy-Mapping file for Apache
-            "sessionURL" : "ws://${host}:${port}/ws", # ws url used by the client to connect to the started process
-            "timeout" : 25,                           # Wait time in second after process start
-            "log_dir" : "/.../viz-logs",              # Directory for log files
-            "upload_dir" : "/.../data",               # If launcher should act as upload server, where to put files
-            "fields" : ["file", "host", "port", "updir"]     # List of fields that should be send back to client
-                                                             # include "secret" if you provide it as an --authKey to the app
+            "endpoint": "paraview",                   // SessionManager Endpoint
+            "content": "/.../www",                    // Optional: Directory shared over HTTP
+            "proxy_file" : "/.../proxy-mapping.txt",  // Proxy-Mapping file for Apache
+            "sessionURL" : "ws://${host}:${port}/ws", // ws url used by the client to connect to the started process
+            "timeout" : 25,                           // Wait time in second after process start
+            "log_dir" : "/.../viz-logs",              // Directory for log files
+            "upload_dir" : "/.../data",               // If launcher should act as upload server, where to put files
+            "fields" : ["file", "host", "port", "updir"]     // List of fields that should be send back to client
+                                                             // include "secret" if you provide it as an --authKey to the app
+            "sanitize": {                             // Check information coming from the client
+                "cmd": {
+                    "type": "inList",                 // 'cmd' must be one of the strings in 'list'
+                    "list": [
+                        "me", "you", "something/else/altogether", "nothing-to-do"
+                    ],
+                    "default": "nothing-to-do"        // If the string doesn't match, replace it with the default.
+                                                      // Include the default in your list
+                },
+                "cmd2": {                             // 'cmd2' must match the regexp provided, example: not a quote
+                    "type": "regexp",
+                    "regexp": "^[^\"]*$",             // Make sure to include '^' and '$' to match the entire string!
+                    "default": "nothing"
+                }
+            }
         },
 
-        ## ===============================
-        ## Useful session vars for client
-        ## ===============================
+        // ===============================
+        // Useful session vars for client
+        // ===============================
 
-        "sessionData" : { "updir": "/Home" },      # Tells client which path to updateFileBrowser after uploads
+        "sessionData" : { "updir": "/Home" },      // Tells client which path to updateFileBrowser after uploads
 
-        ## ===============================
-        ## Resources list for applications
-        ## ===============================
+        // ===============================
+        // Resources list for applications
+        // ===============================
 
         "resources" : [ { "host" : "localhost", "port_range" : [9001, 9003] } ],
 
-        ## ===============================
-        ## Set of properties for cmd line
-        ## ===============================
+        // ===============================
+        // Set of properties for cmd line
+        // ===============================
 
         "properties" : {
             "vtkpython" : "/.../VTK/build/bin/vtkpython",
@@ -75,9 +90,9 @@ Here is a sample of what a configuration file could look like:
             "dataDir": "/.../path/to/data/directory"
         },
 
-        ## ===============================
-        ## Application list with cmd lines
-        ## ===============================
+        // ===============================
+        // Application list with cmd lines
+        // ===============================
 
         "apps" : {
             "cone" : {
@@ -114,7 +129,7 @@ Here is a sample of what a configuration file could look like:
                     "${pvpython}", "-dr", "${pv_python_path}/pv_web_visualizer.py",
                     "--plugins", "${plugins_path}/libPointSprite_Plugin.so", "--port", "${port}",
                     "--data-dir", "${dataDir}", "--load-file", "${dataDir}/${fileToLoad}",
-                    "--authKey", "${secret}", "-f" ],  # Use of ${secret} means it needs to be provided to the client, in "fields", above.
+                    "--authKey", "${secret}", "-f" ],  // Use of ${secret} means it needs to be provided to the client, in "fields", above.
                 "ready_line" : "Starting factory"
             },
             "loader": {
@@ -144,6 +159,30 @@ Here is a sample of what a configuration file could look like:
 # Helper module methods
 # =============================================================================
 
+def remove_comments(json_like):
+    """
+    Removes C-style comments from *json_like* and returns the result.  Example::
+        >>> test_json = '''\
+        {
+            "foo": "bar", // This is a single-line comment
+            "baz": "blah" /* Multi-line
+            Comment */
+        }'''
+        >>> remove_comments('{"foo":"bar","baz":"blah",}')
+        '{\n    "foo":"bar",\n    "baz":"blah"\n}'
+
+        From: https://gist.github.com/liftoff/ee7b81659673eca23cd9fc0d8b8e68b7
+    """
+    comments_re = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE
+    )
+    def replacer(match):
+        s = match.group(0)
+        if s[0] == '/': return ""
+        return s
+    return comments_re.sub(replacer, json_like)
+
 def generatePassword():
     return ''.join(choice(string.ascii_letters + string.digits) for _ in range(16))
 
@@ -170,8 +209,8 @@ def checkSanitize(key_pair, sanitize):
                     key_pair[key] = checkItem["default"]
             elif checkItem["type"] == "regexp":
                 if not "compiled" in checkItem:
-                    # Add begin- and end- string symbols, to make sure entire string is matched.
-                    checkItem["compiled"] = re.compile("^" + checkItem["regexp"] + "$")
+                    # User is responsible to add begin- and end- string symbols, to make sure entire string is matched.
+                    checkItem["compiled"] = re.compile(checkItem["regexp"])
                 if checkItem["compiled"].match(value) == None:
                     logging.warning("key %s: sanitize %s with default" % (key, key_pair[key]));
                     key_pair[key] = checkItem["default"]
@@ -670,7 +709,8 @@ def startWebServer(options, config):
 def parseConfig(options):
     # Read values from the configuration file
     try:
-        config = json.loads(io.open(options.config[0], encoding="utf-8").read())
+        config_comments = remove_comments(io.open(options.config[0], encoding="utf-8").read())
+        config = json.loads(config_comments)
     except:
         message = "ERROR: Unable to read config file.\n"
         message += str(sys.exc_info()[1]) + "\n" + str(sys.exc_info()[2])
@@ -716,7 +756,10 @@ def add_arguments(parser):
 
 def start(argv=None,
          description="wslink Web Launcher"):
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(
+        description=description,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=sample_config_file)
     add_arguments(parser)
     args = parser.parse_args(argv)
     config = parseConfig(args)
