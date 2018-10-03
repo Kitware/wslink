@@ -6,7 +6,7 @@ ServerProtocol to hook all the needed LinkProtocols together.
 
 from __future__ import absolute_import, division, print_function
 
-import inspect, logging, json, sys, traceback
+import inspect, logging, json, sys, traceback, re
 
 from twisted.web            import resource
 from twisted.python         import log
@@ -206,6 +206,8 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         super(WslinkWebSocketServerProtocol, self).__init__()
         self.functionMap = {}
         self.attachmentMap = {}
+        self.attachmentsReceived = {}
+        self.attachmentsRecvQueue = []
         self.attachmentId = 0
         self.publishCount = 0
 
@@ -246,15 +248,30 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
     def onMessage(self, payload, isBinary):
         # import rpdb; rpdb.set_trace()
         if isBinary:
-            log.msg("Dropping incoming binary message")
+            # assume all binary messages are attachments
+            try:
+                key = self.attachmentsRecvQueue.pop(0)
+                self.attachmentsReceived[key] = payload
+            except:
+                pass
             return
         rpc = json.loads(payload)
         log.msg("wslink incoming msg %s" % payload, logLevel=logging.DEBUG)
+        if 'id' not in rpc:
+            # should be a binary attachment header
+            if rpc.get('method') == 'wslink.binary.attachment':
+                keys = rpc.get('args', [])
+                if isinstance(keys, list):
+                    for k in keys:
+                        # wait for an attachment by it's order
+                        self.attachmentsRecvQueue.append(k)
+            return
 
         # TODO validate
         version = rpc['wslink']
         rpcid = rpc['id']
         methodName = rpc['method']
+
         args = []
         kwargs = {}
         if ('args' in rpc) and isinstance(rpc['args'], list):
@@ -272,6 +289,13 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
         obj,func = self.functionMap[methodName]
         try:
+            # get any attachments
+            for i, arg in enumerate(args):
+                if re.match(r'^wslink_bin\d+$', arg) and \
+                        arg in self.attachmentsReceived:
+                    args[i] = self.attachmentsReceived[arg]
+                    del self.attachmentsReceived[arg]
+
             results = func(obj, *args, **kwargs)
         except Exception as e:
             self.sendWrappedError(rpcid, EXCEPTION_ERROR, "Exception raised",
