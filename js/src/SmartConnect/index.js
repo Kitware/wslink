@@ -95,6 +95,7 @@ export function extend(publicAPI, model, initialValues = {}) {
   CompositeClosureHelper.event(publicAPI, model, 'ConnectionClose');
   CompositeClosureHelper.event(publicAPI, model, 'ConnectionError');
   CompositeClosureHelper.isA(publicAPI, model, 'SmartConnect');
+  CompositeClosureHelper.get(publicAPI, model, ['config']);
 
   smartConnect(publicAPI, model);
 }
