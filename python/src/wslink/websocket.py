@@ -18,6 +18,11 @@ from . import register as exportRpc
 from autobahn.twisted.websocket import WebSocketServerFactory
 from autobahn.twisted.websocket import WebSocketServerProtocol
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 
 # =============================================================================
 #
@@ -246,7 +251,6 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
 
     def onMessage(self, payload, isBinary):
-        # import rpdb; rpdb.set_trace()
         if isBinary:
             # assume all binary messages are attachments
             try:
@@ -291,7 +295,8 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         try:
             # get any attachments
             for i, arg in enumerate(args):
-                if re.match(r'^wslink_bin\d+$', arg) and \
+                if isinstance(arg, basestring) and \
+                        re.match(r'^wslink_bin\d+$', arg) and \
                         arg in self.attachmentsReceived:
                     args[i] = self.attachmentsReceived[arg]
                     del self.attachmentsReceived[arg]
