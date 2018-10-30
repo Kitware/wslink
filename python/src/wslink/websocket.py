@@ -294,12 +294,22 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         obj,func = self.functionMap[methodName]
         try:
             # get any attachments
-            for i, arg in enumerate(args):
-                if isinstance(arg, basestring) and \
-                        re.match(r'^wslink_bin\d+$', arg) and \
-                        arg in self.attachmentsReceived:
-                    args[i] = self.attachmentsReceived[arg]
-                    del self.attachmentsReceived[arg]
+            def findAttachments(o):
+                if isinstance(o, basestring) and \
+                        re.match(r'^wslink_bin\d+$', o) and \
+                        o in self.attachmentsReceived:
+                    attachment = self.attachmentsReceived[o]
+                    del self.attachmentsReceived[o]
+                    return attachment
+                elif isinstance(o, list):
+                    for i, v in enumerate(o):
+                        o[i] = findAttachments(v)
+                elif isinstance(o, dict):
+                    for k in o:
+                        o[k] = findAttachments(o[k])
+                return o
+            args = findAttachments(args)
+            kwargs = findAttachments(kwargs)
 
             results = func(obj, *args, **kwargs)
         except Exception as e:

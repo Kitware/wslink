@@ -68,17 +68,20 @@ function Session(publicAPI, model) {
           }
         };
 
-        args.filter((k) => regexAttach.test(k)).forEach(sendBinary);
-        const objFilter = (o) => {
-          Object.keys(o).forEach((k) => {
-            if (regexAttach.test(o[k])) {
-              sendBinary(o[k]);
-            } else {
-              objFilter(o[k]);
+        const findBinary = (o) => {
+          if (o) {
+            if (Array.isArray(o)) {
+              o.forEach((v) => findBinary(v))
+            } else if (o.constructor === Object) {
+              Object.keys(o).forEach((k) => findBinary(o[k]));
+            } else if (regexAttach.test(o)) {
+              sendBinary(o);
             }
-          });
+          };
         };
-        objFilter(kwargs);
+
+        findBinary(args);
+        findBinary(kwargs);
       }
 
       model.ws.send(JSON.stringify({ wslink: '1.0', id, method, args, kwargs }));
