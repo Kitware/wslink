@@ -74,7 +74,7 @@ function Session(publicAPI, model) {
             if (regexAttach.test(o[k])) {
               sendBinary(o[k]);
             } else {
-              objSearch(o[k]);
+              objFilter(o[k]);
             }
           });
         };
