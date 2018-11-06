@@ -492,6 +492,12 @@ class LauncherResource(resource.Resource, object):
     # ========================================================================
 
     def render_POST(self, request):
+        # Enable CORS
+        request.setHeader('Access-Control-Allow-Origin', '*')
+        request.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE')
+        request.setHeader('Access-Control-Allow-Headers', 'x-prototype-version,x-requested-with')
+        request.setHeader('Access-Control-Max-Age', 2520) # 42 hours
+
         # import ipdb; ipdb.set_trace()
         payload = json.loads(request.content.getvalue())
 
@@ -604,6 +610,12 @@ class LauncherResource(resource.Resource, object):
     # =========================================================================
 
     def render_GET(self, request):
+        # Enable CORS
+        request.setHeader('Access-Control-Allow-Origin', '*')
+        request.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE')
+        request.setHeader('Access-Control-Allow-Headers', 'x-prototype-version,x-requested-with')
+        request.setHeader('Access-Control-Max-Age', 2520) # 42 hours
+
         id = extractSessionId(request)
 
         if not id:
@@ -630,6 +642,12 @@ class LauncherResource(resource.Resource, object):
     # =========================================================================
 
     def render_DELETE(self, request):
+        # Enable CORS
+        request.setHeader('Access-Control-Allow-Origin', '*')
+        request.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE')
+        request.setHeader('Access-Control-Allow-Headers', 'x-prototype-version,x-requested-with')
+        request.setHeader('Access-Control-Max-Age', 2520) # 42 hours
+
         id = extractSessionId(request)
 
         if not id:
