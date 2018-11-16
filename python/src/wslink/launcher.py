@@ -249,10 +249,10 @@ def filterResponse(obj, public_keys):
 # -----------------------------------------------------------------------------
 
 def extractSessionId(request):
-    path = request.path.split('/')
+    path = request.path.split(b'/')
     if len(path) < 3:
-       return None
-    return str(path[2])
+        return None
+    return str(path[2],'utf-8')
 
 def jsonResponse(payload):
     return json.dumps(payload, ensure_ascii = False).encode('utf8')
