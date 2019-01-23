@@ -259,6 +259,13 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             except:
                 pass
             return
+
+        # handles issue https://bugs.python.org/issue10976
+        # `payload` is type bytes in Python 3. Unfortunately, json.loads
+        # doesn't support taking bytes until Python 3.6.
+        if type(payload) is bytes:
+            payload = payload.decode('utf-8')
+
         rpc = json.loads(payload)
         log.msg("wslink incoming msg %s" % payload, logLevel=logging.DEBUG)
         if 'id' not in rpc:
