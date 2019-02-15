@@ -13,7 +13,6 @@ bool wsSimpleClient::Initialize(
   std::string const &target)
 {
   this->Connection = new  wsWebsocketConnection("vtkweb-secret");
-  this->Connection->DebugOn();
   if (!this->Connection->connect(host, port, target))
   {
     this->Connection->GetErrorText(this->ErrorText);
@@ -33,6 +32,12 @@ wsSimpleClient::~wsSimpleClient()
   delete this->Connection;
 }
 
+bool wsSimpleClient::EnableDebugging()
+{
+  this->Connection->DebugOn();
+  return true;
+}
+
 bool wsSimpleClient::DeleteDataSet(int input)
 {
   json args =
@@ -47,6 +52,30 @@ bool wsSimpleClient::DeleteDataSet(int input)
   }
   if (result.count("result") && result["result"].count("success"))
   {
+    return true;
+  }
+  if (result.count("error"))
+  {
+    this->ErrorText = result["error"].dump(4);
+  }
+  return false;
+}
+
+bool wsSimpleClient::GetDataSetInformation(int input, std::string &info)
+{
+  json args =
+  {
+    {"proxyId", input}
+  };
+  json result;
+  if (!this->Connection->send("pv.proxy.manager.get", &result, nullptr, &args))
+  {
+    this->Connection->GetErrorText(this->ErrorText);
+    return false;
+  }
+  if (result.count("result") && result["result"].count("id"))
+  {
+    info = result["result"].dump(4);
     return true;
   }
   if (result.count("error"))
