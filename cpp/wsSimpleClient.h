@@ -42,6 +42,11 @@ public:
   // deleted.
   bool DeleteDataSet(int ref);
 
+  // return json string about a dataset
+  bool GetDataSetInformation(int ref,
+    std::string &result
+    );
+
   // Color a dataset by a  point field
   bool ColorDataSetByField(
     int input,
@@ -67,6 +72,9 @@ public:
   bool GetDataAsGLTF(
     std::string &result
     );
+
+  // turn on debugging output, must be called after Initialize
+  bool EnableDebugging();
 
   // if a command failed, get the error text
   std::string GetErrorText() { return this->ErrorText; }
