@@ -6,7 +6,7 @@ ServerProtocol to hook all the needed LinkProtocols together.
 
 from __future__ import absolute_import, division, print_function
 
-import inspect, logging, json, sys, traceback
+import inspect, logging, json, sys, traceback, re
 
 from twisted.web            import resource
 from twisted.python         import log
@@ -17,6 +17,11 @@ from twisted.internet.defer import Deferred, returnValue
 from . import register as exportRpc
 from autobahn.twisted.websocket import WebSocketServerFactory
 from autobahn.twisted.websocket import WebSocketServerProtocol
+
+try:
+    basestring
+except NameError:
+    basestring = str
 
 
 # =============================================================================
@@ -206,6 +211,8 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         super(WslinkWebSocketServerProtocol, self).__init__()
         self.functionMap = {}
         self.attachmentMap = {}
+        self.attachmentsReceived = {}
+        self.attachmentsRecvQueue = []
         self.attachmentId = 0
         self.publishCount = 0
 
@@ -244,17 +251,38 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
 
     def onMessage(self, payload, isBinary):
-        # import rpdb; rpdb.set_trace()
         if isBinary:
-            log.msg("Dropping incoming binary message")
+            # assume all binary messages are attachments
+            try:
+                key = self.attachmentsRecvQueue.pop(0)
+                self.attachmentsReceived[key] = payload
+            except:
+                pass
             return
+
+        # handles issue https://bugs.python.org/issue10976
+        # `payload` is type bytes in Python 3. Unfortunately, json.loads
+        # doesn't support taking bytes until Python 3.6.
+        if type(payload) is bytes:
+            payload = payload.decode('utf-8')
+
         rpc = json.loads(payload)
         log.msg("wslink incoming msg %s" % payload, logLevel=logging.DEBUG)
+        if 'id' not in rpc:
+            # should be a binary attachment header
+            if rpc.get('method') == 'wslink.binary.attachment':
+                keys = rpc.get('args', [])
+                if isinstance(keys, list):
+                    for k in keys:
+                        # wait for an attachment by it's order
+                        self.attachmentsRecvQueue.append(k)
+            return
 
         # TODO validate
         version = rpc['wslink']
         rpcid = rpc['id']
         methodName = rpc['method']
+
         args = []
         kwargs = {}
         if ('args' in rpc) and isinstance(rpc['args'], list):
@@ -272,6 +300,24 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
         obj,func = self.functionMap[methodName]
         try:
+            # get any attachments
+            def findAttachments(o):
+                if isinstance(o, basestring) and \
+                        re.match(r'^wslink_bin\d+$', o) and \
+                        o in self.attachmentsReceived:
+                    attachment = self.attachmentsReceived[o]
+                    del self.attachmentsReceived[o]
+                    return attachment
+                elif isinstance(o, list):
+                    for i, v in enumerate(o):
+                        o[i] = findAttachments(v)
+                elif isinstance(o, dict):
+                    for k in o:
+                        o[k] = findAttachments(o[k])
+                return o
+            args = findAttachments(args)
+            kwargs = findAttachments(kwargs)
+
             results = func(obj, *args, **kwargs)
         except Exception as e:
             self.sendWrappedError(rpcid, EXCEPTION_ERROR, "Exception raised",

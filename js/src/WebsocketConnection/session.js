@@ -6,6 +6,8 @@ function Session(publicAPI, model) {
   let msgCount = 0;
   const inFlightRpc = {};
   const attachments = [];
+  const attachmentsToSend = {};
+  let attachmentId = 1;
   const regexAttach = /^wslink_bin[\d]+$/;
   // matches 'rpc:client3:21'
   // client may be dot-separated and include '_'
@@ -47,6 +49,41 @@ function Session(publicAPI, model) {
     if (model.ws && clientID && model.ws.readyState === 1) {
       const id = `rpc:${clientID}:${msgCount++}`
       inFlightRpc[id] = deferred;
+
+      const msg = JSON.stringify({ wslink: '1.0', id, method, args, kwargs });
+
+      if (Object.keys(attachmentsToSend).length) {
+        const sendBinary = (key) => {
+          if (key in attachmentsToSend) {
+            // binary header
+            model.ws.send(JSON.stringify({
+              wslink: '1.0',
+              method: 'wslink.binary.attachment',
+              args: [key],
+            }));
+
+            // send binary
+            model.ws.send(attachmentsToSend[key], { binary: true });
+            delete attachmentsToSend[key];
+          }
+        };
+
+        const findBinary = (o) => {
+          if (o) {
+            if (Array.isArray(o)) {
+              o.forEach((v) => findBinary(v))
+            } else if (o.constructor === Object) {
+              Object.keys(o).forEach((k) => findBinary(o[k]));
+            } else if (regexAttach.test(o)) {
+              sendBinary(o);
+            }
+          };
+        };
+
+        findBinary(args);
+        findBinary(kwargs);
+      }
+
       model.ws.send(JSON.stringify({ wslink: '1.0', id, method, args, kwargs }));
     } else {
       deferred.reject({ code: CLIENT_ERROR, message: `RPC call ${method} unsuccessful: connection not open` });
@@ -202,6 +239,13 @@ function Session(publicAPI, model) {
         }
       }
     }
+  };
+
+  publicAPI.addAttachment = (payload) => {
+    const binaryId = `wslink_bin${attachmentId}`;
+    attachmentsToSend[binaryId] = payload;
+    attachmentId++;
+    return binaryId;
   };
 }
 

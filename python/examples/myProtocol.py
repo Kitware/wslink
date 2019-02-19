@@ -60,6 +60,10 @@ class MyProtocol(LinkProtocol):
         self.publish("image", msg)
         self.subMsgCount += 1
 
+    @exportRPC("myprotocol.postbinary")
+    def postBinary(self, data):
+        return "received binary data of length %d" % len(data)
+
     @exportRPC("myprotocol.stream")
     def startStream(self, topic):
         print("start", topic)

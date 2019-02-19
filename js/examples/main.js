@@ -14,6 +14,7 @@ const htmlContent = `<button onClick="app.connect()">Connect</button>
 <button onClick="app.sendBinary()">Send Binary</button>
 <button onClick="app.toggleStream()">Sub/Unsub</button>
 <button onClick="app.sendMistake()">Mistake</button>
+<button onClick="app.postBinary()">send a float as binary</button>
 <br/>
 <textarea class="output" rows="12" cols="50"></textarea>
 <br/>
@@ -68,6 +69,13 @@ export function sendBinary() {
   if (!session) return;
   session.call('myprotocol.image', [])
     .then(handleMessage, (err) => logerr(err));
+}
+
+export function postBinary() {
+  if (!session) return;
+  session.call('myprotocol.postbinary', [
+      session.addAttachment(new Float32Array([5678]).buffer),
+  ]).then((r) => log('result ' + r), (err) => logerr(err));
 }
 
 export function sendMistake() {
