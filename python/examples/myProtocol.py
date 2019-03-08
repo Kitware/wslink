@@ -101,3 +101,8 @@ class MyProtocol(LinkProtocol):
         }
         return msg
 
+    # test NaN and infinity
+    @exportRPC("myprotocol.special")
+    def testSpecials(self, listOfNumbers):
+        vals = [float('inf'), float('nan'), float('-inf')]
+        return vals
