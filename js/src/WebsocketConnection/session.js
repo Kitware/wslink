@@ -1,5 +1,6 @@
 // Helper borrowed from paraviewweb/src/Common/Core
 import CompositeClosureHelper from '../CompositeClosureHelper';
+import JSON5 from 'json5';
 
 function Session(publicAPI, model) {
   const CLIENT_ERROR = -32099;
@@ -174,7 +175,14 @@ function Session(publicAPI, model) {
         console.error('Missing header for received binary message');
       }
     } else {
-      const payload = JSON.parse(event.data);
+      let payload;
+      try {
+        payload = JSON5.parse(event.data);
+      } catch (e) {
+        console.error("Malformed message: ", event.data);
+        // debugger;
+      }
+      if (!payload) return;
       if (!payload.id) {
         // Notification-only message from the server - should be binary attachment header
         // console.log('Notify', payload);

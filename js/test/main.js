@@ -15,6 +15,7 @@ const htmlContent = `<button onClick="app.connect()">Connect</button>
 <button onClick="app.testNesting()">Test Nesting</button>
 <button onClick="app.toggleStream()">Sub/Unsub</button>
 <button onClick="app.sendMistake()">Mistake</button>
+<button onClick="app.sendInput('special')">Test NaN</button>
 <br/>
 <textarea class="output" rows="12" cols="50"></textarea>
 <br/>

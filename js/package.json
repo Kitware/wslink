@@ -37,6 +37,7 @@
     "expose-loader": "0.7.3",
     "extract-text-webpack-plugin": "2.1.0",
     "html-webpack-plugin": "2.28.0",
+    "json5": "2.1.0",
     "kw-doc": "1.1.1",
     "webpack": "2.2.1",
     "webpack-dev-server": "2.4.2"
