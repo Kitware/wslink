@@ -67,6 +67,32 @@ public:
     int &result
     );
 
+  // compute the threshold of a dataset and return it as a
+  // new dataset stored in result
+  bool Threshold(
+    int input,
+    std::string const &field,
+    bool fieldAssociationPoints, // true for points, false for cells
+    double min,
+    double max,
+    bool allScalars,
+    int &result
+    );
+
+  // compute streamlines for a dataset and return it as a
+  // new dataset stored in result. The input dataset must
+  // have a vector field to compute streamlines. The start
+  // and end points define a line with numberOfSeeds seed
+  // points on it.
+  bool StreamTracer(
+    int input,
+    std::string const &field,
+    double const startPoint[3],
+    double const endPoint[3],
+    int numberOfSeeds,
+    int &result
+    );
+
   // return the renderable data as a single json string
   // in gltf 2.0 format
   bool GetDataAsGLTF(
@@ -78,6 +104,19 @@ public:
 
   // if a command failed, get the error text
   std::string GetErrorText() { return this->ErrorText; }
+
+  // generic helper signature
+  bool CreateProxy(const char *name, int input, int &newID);
+
+  // low level API to format and send your own messages
+  // See https://github.com/Kitware/wslink for details
+  // on the message format
+  bool Send(
+    std::string const &method,
+    std::string const &arguments,
+    std::string const &kwarguments,
+    std::string &response
+    );
 
 protected:
   wsWebsocketConnection *Connection;

@@ -6,9 +6,16 @@
 // files
 int main()
 {
-  wsWebsocketConnection ws("vtkweb-secret");
+  wsLauncher launcher;
+  launcher.DebugOn();
+  json config;
+  config["application"] = "pve";
+  launcher.start("localhost", "8080", "/paraview", &config);
+
+  wsWebsocketConnection ws(launcher.GetSecret());
   ws.DebugOn();
-  ws.connect("localhost", "8080", "/ws");
+  ws.connect(launcher.GetServerHost(), launcher.GetServerPort(), launcher.GetServerTarget());
+
   json result;
   ws.send("file.server.directory.list", &result);
 

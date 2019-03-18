@@ -1,22 +1,93 @@
-# wslink
+# wslink C++
 
 Wslink allows easy, bi-directional communication between a python server and a
 C++/C client over a [websocket]. The client can make RPC calls to the
-server, and the server can publish messages to topics that the client can
-subscribe to. The server can include binary attachments in these messages,
-which are communicated as a binary websocket message, avoiding the overhead of
-encoding and decoding.
+server. Currently the C++ API supports websocket communications to an existing
+server as well as the ability to launch servers.
 
-Currently the C++ API supports websocket communicaitons to an existing
-server. HTTP communications to launch the server are not implemented yet.
+The low level API is provided through the wsWebSocketConnection header file. There is also a hgiher level C++ API provided through the wsSimpleCient class.
 
-## RPC and publish/subscribe
+## Example Client using the low level API
 
-The initial users of wslink driving its development are [VTK] and [ParaViewWeb].
-ParaViewWeb and vtkWeb require:
-* RPC - a remote procedure call that can be fired by the client and return
-  sometime later with a response from the server, possibly an error.
+With error checking removed for brevity. See wstest.cxx for the full code.
 
+```C++
+int main()
+{
+  wsLauncher launcher;
+  json config;
+  config["application"] = "pve";
+  launcher.start("localhost", "8080", "/paraview", &config);
+
+  wsWebsocketConnection ws(launcher.GetSecret());
+  ws.connect(launcher.GetServerHost(), launcher.GetServerPort(), launcher.GetServerTarget());
+
+  // load a file
+  json args =
+  {
+    {"relativePath", "disk_out_ref.ex2"}
+  };
+  ws.send("pv.proxy.manager.create.reader", &result, nullptr, &args);
+
+  // Create a contour filter
+  args =
+  {
+    "Contour", result["result"]["id"], json::object(), false
+  };
+  ws.send("pv.proxy.manager.create", &result, &args);
+  std::string inputID = result["result"]["id"];
+
+  // set the scalars to operate on
+  args =
+  {{
+      {
+        {"id", inputID},
+        {"name", "SelectInputScalars"},
+        {"value", { "POINTS", "Temp" } }
+      }
+  }};
+  ws.send("pv.proxy.manager.update", &result, &args);
+
+  // set the contour values
+  args =
+  {{
+      {
+        {"id", inputID},
+        {"name", "ContourValues"},
+        {"value", { 300.0, 500.0 } }
+      }
+  }};
+  ws.send("pv.proxy.manager.update", &result, &args);
+
+  ws.close();
+}
+```
+
+## Example Client using the high level API (untested)
+```C++
+int main()
+{
+  wsSimpleClient cl;
+  cl.Initialize("localhost", "8080", "/paraview");
+
+  int input = 0;
+  cl.LoadDataSet("disk_out_ref.ex2", input);
+
+  int iso = 0;
+  std::vector<double> values;
+  values.push(300.0);
+  values.push(500.0);
+  cl.IsoSurface(input,"Temp", values, iso);
+
+  std::string scene;
+  cl.GetDataAsGLTF(scene);
+
+  ...
+
+  cl.DeleteDataSet(iso);
+  cl.DeleteDataSet(input);
+}
+```
 
 ## Get the whole story
 

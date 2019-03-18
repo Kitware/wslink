@@ -109,6 +109,41 @@ bool wsSimpleClient::ListFileNames(std::vector<std::string> &files)
   return false;
 }
 
+bool wsSimpleClient::Send(
+  std::string const &method,
+  std::string const &arguments,
+  std::string const &kwarguments,
+  std::string &response)
+{
+  json result;
+  json *args = nullptr;
+  if (arguments.length())
+  {
+    args = &(json::parse(arguments));
+  }
+  json *kwargs = nullptr;
+  if (kwarguments.length())
+  {
+    kwargs = &(json::parse(kwarguments));
+  }
+  if (!this->Connection->send(method, &result, args, kwargs))
+  {
+    this->Connection->GetErrorText(this->ErrorText);
+    delete args;
+    delete kwargs;
+    return false;
+  }
+  delete args;
+  delete kwargs;
+  response = result.dump(4);
+  if (result.count("error"))
+  {
+    this->ErrorText = result["error"].dump(4);
+    return false;
+  }
+  return true;
+}
+
 bool wsSimpleClient::LoadDataSet(
   std::string const &dsname,
   int &ref)
@@ -245,16 +280,11 @@ bool wsSimpleClient::SetVisibility(int inputID, bool val)
   return true;
 }
 
-bool wsSimpleClient::IsoSurface(
-    int input,
-    std::string const &field,
-    std::vector<double> values,
-    int &isoID
-    )
+bool wsSimpleClient::CreateProxy(const char *name, int input, int &newID)
 {
   json args =
   {
-    "Contour", input, json::object(), false
+    name, input, json::object(), false
   };
   json result;
   if (!this->Connection->send("pv.proxy.manager.create", &result, &args))
@@ -264,7 +294,7 @@ bool wsSimpleClient::IsoSurface(
   }
   if (result.count("result") && result["result"].count("id"))
   {
-    isoID = atoi(result["result"]["id"].get<std::string>().c_str());
+    newID = atoi(result["result"]["id"].get<std::string>().c_str());
   }
   else
   {
@@ -274,18 +304,19 @@ bool wsSimpleClient::IsoSurface(
     }
     return false;
   }
+  return true;
+}
 
-  args =
-  {{
-      {
-        {"id", isoID},
-        {"name", "SelectInputScalars"},
-        {"value", { "POINTS", field } }
-      }
-  }};
-  if (!this->Connection->send("pv.proxy.manager.update", &result, &args))
+bool wsSimpleClient::IsoSurface(
+    int input,
+    std::string const &field,
+    std::vector<double> values,
+    int &isoID
+    )
+{
+  // create proxy
+  if (!this->CreateProxy("Contour", input, isoID))
   {
-    this->Connection->GetErrorText(this->ErrorText);
     return false;
   }
 
@@ -294,14 +325,136 @@ bool wsSimpleClient::IsoSurface(
   {
     contours.push_back(a);
   }
-  args =
-  {{
+  json result;
+  json args =
+  {
+    {
+      {
+        {"id", isoID},
+        {"name", "SelectInputScalars"},
+        {"value", { "POINTS", field } }
+      }
+    },
+    {
       {
         {"id", isoID},
         {"name", "ContourValues"},
         {"value", contours }
       }
   }};
+  if (!this->Connection->send("pv.proxy.manager.update", &result, &args))
+  {
+    this->Connection->GetErrorText(this->ErrorText);
+    return false;
+  }
+
+  return true;
+}
+
+// compute the threshold of a dataset and return it as a
+// new dataset stored in result
+bool wsSimpleClient::Threshold(
+    int input,
+    std::string const &field,
+    bool fieldAssociationPoints,
+    double min,
+    double max,
+    bool allScalars,
+    int &newID
+    )
+{
+  // create proxy
+  if (!this->CreateProxy("Threshold", input, newID))
+  {
+    return false;
+  }
+
+  json result;
+  json args =
+  {
+    {
+      {
+        {"id", newID},
+        {"name", "ThresholdBetween"},
+        {"value", { min, max } }
+      }
+    },
+    {
+      {
+        {"id", newID},
+        {"name", "SelectInputScalars"},
+        {"value", { (fieldAssociationPoints ? "POINTS" : "CELLS"), field } }
+      }
+    },
+    {
+      {
+        {"id", newID},
+        {"name", "AllScalars"},
+        {"value", allScalars }
+      }
+    }
+  };
+  if (!this->Connection->send("pv.proxy.manager.update", &result, &args))
+  {
+    this->Connection->GetErrorText(this->ErrorText);
+    return false;
+  }
+
+  return true;
+}
+
+// compute streamlines for a dataset and return it as a
+// new dataset stored in result. The input dataset must
+// have a vector field to compute streamlines. The start
+// and end points define a line with numberOfSeeds seed
+// points on it.
+bool wsSimpleClient::StreamTracer(
+  int input,
+  std::string const &field,
+  double const startPoint[3],
+  double const endPoint[3],
+  int numberOfSeeds,
+  int &newID
+  )
+{
+  // create proxy
+  if (!this->CreateProxy("StreamTracer", input, newID))
+  {
+    return false;
+  }
+
+  json result;
+  json args =
+  {
+    {
+      {
+        {"id", newID},
+        {"name", "Resolution"},
+        {"value", numberOfSeeds }
+      }
+    },
+    {
+      {
+        {"id", newID},
+        {"name", "SelectInputVectors"},
+        {"value", { "POINTS", field } }
+      }
+    },
+    {
+      {
+        {"id", newID},
+        {"name", "Point1"},
+        {"value", { startPoint[0], startPoint[1], startPoint[2]} }
+      }
+    },
+    {
+      {
+        {"id", newID},
+        {"name", "Point2"},
+        {"value", { endPoint[0], endPoint[1], endPoint[2]} }
+      }
+    }
+  };
   if (!this->Connection->send("pv.proxy.manager.update", &result, &args))
   {
     this->Connection->GetErrorText(this->ErrorText);
