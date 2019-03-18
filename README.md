@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/Kitware/wslink.svg?branch=master)](https://travis-ci.org/Kitware/wslink)
 
 Wslink allows easy, bi-directional communication between a python server and a
-javascript client over a [websocket]. The client can make remote procedure
+javascript or C++ client over a [websocket]. The client can make remote procedure
 calls (RPC) to the server, and the server can publish messages to topics that
 the client can subscribe to. The server can include binary attachments in
 these messages, which are communicated as a binary websocket message, avoiding
