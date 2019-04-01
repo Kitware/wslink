@@ -116,25 +116,23 @@ bool wsSimpleClient::Send(
   std::string &response)
 {
   json result;
-  json *args = nullptr;
+  json args;
   if (arguments.length())
   {
-    args = &(json::parse(arguments));
+    args = json::parse(arguments);
   }
-  json *kwargs = nullptr;
+  json kwargs;
   if (kwarguments.length())
   {
-    kwargs = &(json::parse(kwarguments));
+    kwargs = json::parse(kwarguments);
   }
-  if (!this->Connection->send(method, &result, args, kwargs))
+  if (!this->Connection->send(method, &result,
+    (arguments.length() ? &args : nullptr),
+    (kwarguments.length() ? &kwargs : nullptr)))
   {
     this->Connection->GetErrorText(this->ErrorText);
-    delete args;
-    delete kwargs;
     return false;
   }
-  delete args;
-  delete kwargs;
   response = result.dump(4);
   if (result.count("error"))
   {
