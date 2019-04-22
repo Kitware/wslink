@@ -27,9 +27,17 @@ to the point-to-point communication we actually use.
 
 ## Examples
 
-* Set up a Python (2.7 or 3.5+) [virtualenv] using requirements.txt
+* Set up a Python (2.7 or 3.5+) [virtualenv] using requirements.txt. Roughly:
+  - `cd wslink/python`
+  - `pip install virtualenv`
+  - `virtualenv runtime_37`
+  - `source runtime_37/Scripts/activate` (on Windows)
+  - `pip install -r requirements.txt`
+  - `pip install -e .` (to use current wslink for development)
 * Install node.js 6+ for the javascript client
 * `cd wslink/js`
+* `npm run test`
+  - or:
 * `npm run build:example`
 * `cd ../python`
 * `python examples/webserver.py`
@@ -79,7 +87,7 @@ const types = ['rpc', 'publish', 'system'];
 ```
 
 ```python
-// add a binary attachment
+# add a binary attachment
 def getImage(self):
     return {
         "size": [512, 512],
@@ -112,7 +120,7 @@ and the server can provide the client with a unique client ID - which the
 client must embed in the rpc "id" field of its messages to the server.
 
 * The first message the client sends should be hello, with the secret key provided by its launcher.
-* Server authenicates the key, and responds with the client ID.
+* Server authenticates the key, and responds with the client ID.
 * If the client sends the wrong key or no key, the server responds with an authentication error message.
 
 ### Design

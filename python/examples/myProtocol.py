@@ -46,7 +46,7 @@ class MyProtocol(LinkProtocol):
             return { "blob": self.addAttachment(contents) }
 
     @exportRPC("myprotocol.unwrapped.image")
-    def image(self, alt = False):
+    def bareImage(self, alt = False):
         filename = "kitware.png" if not alt else "kitware2.png"
         filename = os.path.join(os.path.dirname(__file__), filename)
         with open(filename, mode='rb') as file:
