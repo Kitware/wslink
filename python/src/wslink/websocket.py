@@ -141,6 +141,10 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
     If the connection count drops to zero, then the reap timer
     is started which will end the process if no other connections are made in
     the timeout interval.
+
+    In addition, use pattern from
+    https://github.com/crossbario/autobahn-python/blob/master/examples/twisted/websocket/broadcast/server.py
+    to register clients, and then use a broadcast to publish messages to all of them.
     """
 
     def __init__(self, *args, **kwargs):
@@ -149,23 +153,30 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
         self._timeout = kwargs['timeout']
         self._reaper = reactor.callLater(self._timeout, lambda: reactor.stop())
         self._protocolHandler = None
+        self.clients = []
 
         del kwargs['timeout']
         WebSocketServerFactory.__init__(self, *args, **kwargs)
         WebSocketServerFactory.protocol = TimeoutWebSocketServerProtocol
 
-    def connectionMade(self):
+    def connectionMade(self, client):
         if self._reaper:
             log.msg("Client has reconnected, cancelling reaper", logLevel=logging.DEBUG)
             self._reaper.cancel()
             self._reaper = None
         self._connection_count += 1
         self.clientCount += 1
+        if client not in self.clients:
+            log.msg("registered client {}".format(client.peer), logLevel=logging.DEBUG)
+            self.clients.append(client)
         log.msg("on_connect: connection count = %s" % self._connection_count, logLevel=logging.DEBUG)
 
-    def connectionLost(self, reason):
+    def connectionLost(self, reason, client):
         if self._connection_count > 0:
             self._connection_count -= 1
+        if client in self.clients:
+            log.msg("unregistered client {}".format(client.peer), logLevel=logging.DEBUG)
+            self.clients.remove(client)
         log.msg("connection_lost: connection count = %s" % self._connection_count, logLevel=logging.DEBUG)
 
         if self._connection_count == 0 and not self._reaper:
@@ -181,6 +192,12 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
     def getClientCount(self):
         return self.clientCount
 
+    def broadcast(self, msg, binary=False):
+        # print("broadcasting message '{}' ..".format(msg))
+        for c in self.clients:
+            c.sendMessage(msg, binary)
+            # print("message sent to {}".format(c.peer))
+
 # =============================================================================
 
 class TimeoutWebSocketServerProtocol(WebSocketServerProtocol, object):
@@ -188,11 +205,11 @@ class TimeoutWebSocketServerProtocol(WebSocketServerProtocol, object):
     def connectionMade(self):
         WebSocketServerProtocol.connectionMade(self)
         # print(self.factory)
-        self.factory.connectionMade()
+        self.factory.connectionMade(self)
 
     def connectionLost(self, reason):
         WebSocketServerProtocol.connectionLost(self, reason)
-        self.factory.connectionLost(reason)
+        self.factory.connectionLost(reason, self)
 
 # from http://www.jsonrpc.org/specification, section 5.1
 METHOD_NOT_FOUND = -32601
@@ -328,7 +345,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         # TODO is this enough to clear the attachment map? Not if publish is called without RPC calls.
         self.attachmentMap.clear()
 
-    def sendWrappedMessage(self, rpcid, content, method=''):
+    def sendWrappedMessage(self, rpcid, content, method='', publish=False):
         wrapper = {
             "wslink": "1.0",
             "id": rpcid,
@@ -347,17 +364,28 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             for key in self.attachmentMap:
                 # string match the encoded attachment key
                 if key.encode('utf8') in encMsg:
+                    log.msg("attaching {}".format(key))
                     # send header
                     header = {
                         "wslink": "1.0",
                         "method": "wslink.binary.attachment",
                         "args": [key],
                     }
-                    self.sendMessage(json.dumps(header, ensure_ascii = False).encode('utf8'))
-                    # Send binary message
-                    self.sendMessage(self.attachmentMap[key], True)
+                    if publish:
+                        self.factory.broadcast(json.dumps(header, ensure_ascii = False).encode('utf8'))
+                        # Send binary message
+                        self.factory.broadcast(self.attachmentMap[key], True)
+                    else:
+                        self.sendMessage(json.dumps(header, ensure_ascii = False).encode('utf8'))
+                        # Send binary message
+                        self.sendMessage(self.attachmentMap[key], True)
+                else:
+                    log.msg("extra key {}".format(key))
 
-        self.sendMessage(encMsg)
+        if publish:
+            self.factory.broadcast(encMsg)
+        else:
+            self.sendMessage(encMsg)
 
     def sendWrappedError(self, rpcid, code, message, data = None):
         wrapper = {
@@ -378,14 +406,14 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         # The client is unknown - we send to any client who is subscribed to the topic
         rpcid = 'publish:{0}:{1}'.format(topic, self.publishCount)
         self.publishCount += 1
-        self.sendWrappedMessage(rpcid, data)
+        self.sendWrappedMessage(rpcid, data, publish=True)
 
     def addAttachment(self, payload):
-        # print("attachment", self, self.attachmentId)
         # use a string flag in place of the binary attachment.
         # (Using rpcid would prevent re-use of the attachment in publish)
         binaryId = 'wslink_bin{0}'.format(self.attachmentId)
         self.attachmentMap[binaryId] = payload
+        log.msg("addAttachment ", self, self.attachmentMap.keys(), self.attachmentId, logLevel=logging.DEBUG)
         self.attachmentId += 1
         return binaryId
 

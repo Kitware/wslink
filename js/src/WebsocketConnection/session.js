@@ -131,7 +131,7 @@ function Session(publicAPI, model) {
 
   // split out to support a message with a bare binary attachment.
   function getAttachment(binaryKey) {
-    // console.log('Adding binary attachment', binaryKey);
+    console.log('Adding binary attachment', binaryKey);
     const index = attachments.findIndex((att) => (att.key === binaryKey));
     if (index !== -1) {
       const result = attachments[index].data;
