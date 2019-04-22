@@ -147,7 +147,11 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
         self._connection_count = 0
         self.clientCount = 0
         self._timeout = kwargs['timeout']
-        self._reaper = reactor.callLater(self._timeout, lambda: reactor.stop())
+        # _timeout of 0 indicates no timeout.
+        if self._timeout > 0:
+            self._reaper = reactor.callLater(self._timeout, lambda: reactor.stop())
+        else:
+            self._reaper = None
         self._protocolHandler = None
 
         del kwargs['timeout']
@@ -168,7 +172,7 @@ class TimeoutWebSocketServerFactory(WebSocketServerFactory):
             self._connection_count -= 1
         log.msg("connection_lost: connection count = %s" % self._connection_count, logLevel=logging.DEBUG)
 
-        if self._connection_count == 0 and not self._reaper:
+        if self._connection_count == 0 and not self._reaper and self._timeout > 0:
             log.msg("Starting timer, process will terminate in: %ssec" % self._timeout, logLevel=logging.DEBUG)
             self._reaper = reactor.callLater(self._timeout, lambda: reactor.stop())
 
@@ -220,7 +224,10 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
         self.clientID = self.factory.getClientCount()
         log.msg("client connected, id: {}".format(self.clientID), logLevel=logging.INFO)   # request)
         # Build the rpc method dictionary. self.factory isn't set until connected.
-        protocolList = (self.factory.getServerProtocol().getLinkProtocols() if self.factory.getServerProtocol() else [])
+        if not self.factory.getServerProtocol():
+            return
+        protocolList = self.factory.getServerProtocol().getLinkProtocols()
+        protocolList.append(self.factory.getServerProtocol())
         for protocolObject in protocolList:
             protocolObject.init(self.publish, self.addAttachment)
             test = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
