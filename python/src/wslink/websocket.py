@@ -36,8 +36,9 @@ class LinkProtocol(object):
     objects provide rpc and pub/sub actions.
     """
     def __init__(self):
-        self.publish = None
-        self.addAttachment = None
+        # need a no-op in case they are called before connect.
+        self.publish = lambda x, y: None
+        self.addAttachment = lambda x: None
         self.coreServer = None
 
     def init(self, publish, addAttachment):
@@ -198,6 +199,48 @@ class TimeoutWebSocketServerProtocol(WebSocketServerProtocol, object):
         WebSocketServerProtocol.connectionLost(self, reason)
         self.factory.connectionLost(reason)
 
+
+# =============================================================================
+# singleton publish manager
+
+class PublishManager(object):
+    def __init__(self):
+        self.protocols = []
+        self.attachmentMap = {}
+        self.attachmentId = 0
+        self.publishCount = 0
+
+    def registerProtocol(self, protocol):
+        self.protocols.append(protocol)
+
+    def unregisterProtocol(self, protocol):
+        if protocol in self.protocols:
+            self.protocols.remove(protocol)
+
+    def getAttachmentMap(self):
+        return self.attachmentMap
+
+    def clearAttachmentMap(self):
+        self.attachmentMap.clear()
+
+    def addAttachment(self, payload):
+        # print("attachment", self, self.attachmentId)
+        # use a string flag in place of the binary attachment.
+        binaryId = 'wslink_bin{0}'.format(self.attachmentId)
+        self.attachmentMap[binaryId] = payload
+        self.attachmentId += 1
+        return binaryId
+
+    def publish(self, topic, data):
+        for protocol in self.protocols:
+            # The client is unknown - we send to any client who is subscribed to the topic
+            rpcid = 'publish:{0}:{1}'.format(topic, self.publishCount)
+            protocol.sendWrappedMessage(rpcid, data)
+        self.clearAttachmentMap()
+
+# singleton, used by all instances of WslinkWebSocketServerProtocol
+publishManager = PublishManager()
+
 # from http://www.jsonrpc.org/specification, section 5.1
 METHOD_NOT_FOUND = -32601
 AUTHENTICATION_ERROR = -32000
@@ -214,11 +257,8 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
     def __init__(self):
         super(WslinkWebSocketServerProtocol, self).__init__()
         self.functionMap = {}
-        self.attachmentMap = {}
         self.attachmentsReceived = {}
         self.attachmentsRecvQueue = []
-        self.attachmentId = 0
-        self.publishCount = 0
 
     def onConnect(self, request):
         self.clientID = self.factory.getClientCount()
@@ -238,9 +278,11 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
                     if "uri" in uri_info:
                         uri = uri_info["uri"]
                         self.functionMap[uri] = (protocolObject, proc)
+        publishManager.registerProtocol(self)
 
     def onClose(self, wasClean, code, reason):
         log.msg("client closed, clean: {}, code: {}, reason: {}".format(wasClean, code, reason), logLevel=logging.INFO)
+        publishManager.unregisterProtocol(self)
 
     def handleSystemMessage(self, rpcid, methodName, args):
         rpcList = rpcid.split(":")
@@ -332,8 +374,8 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             return
 
         self.sendWrappedMessage(rpcid, results, method=methodName)
-        # TODO is this enough to clear the attachment map? Not if publish is called without RPC calls.
-        self.attachmentMap.clear()
+        # sent reply to RPC, no attachment re-use.
+        publishManager.clearAttachmentMap()
 
     def sendWrappedMessage(self, rpcid, content, method=''):
         wrapper = {
@@ -350,8 +392,9 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             return
 
         # Check if any attachments in the map go with this message
-        if self.attachmentMap:
-            for key in self.attachmentMap:
+        attachments = publishManager.getAttachmentMap()
+        if attachments:
+            for key in attachments:
                 # string match the encoded attachment key
                 if key.encode('utf8') in encMsg:
                     # send header
@@ -362,7 +405,7 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
                     }
                     self.sendMessage(json.dumps(header, ensure_ascii = False).encode('utf8'))
                     # Send binary message
-                    self.sendMessage(self.attachmentMap[key], True)
+                    self.sendMessage(attachments[key], True)
 
         self.sendMessage(encMsg)
 
@@ -382,19 +425,10 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
 
 
     def publish(self, topic, data):
-        # The client is unknown - we send to any client who is subscribed to the topic
-        rpcid = 'publish:{0}:{1}'.format(topic, self.publishCount)
-        self.publishCount += 1
-        self.sendWrappedMessage(rpcid, data)
+        publishManager.publish(topic, data)
 
     def addAttachment(self, payload):
-        # print("attachment", self, self.attachmentId)
-        # use a string flag in place of the binary attachment.
-        # (Using rpcid would prevent re-use of the attachment in publish)
-        binaryId = 'wslink_bin{0}'.format(self.attachmentId)
-        self.attachmentMap[binaryId] = payload
-        self.attachmentId += 1
-        return binaryId
+        return publishManager.addAttachment(payload)
 
     def setSecret(self, newSecret):
         self.secret = newSecret

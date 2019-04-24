@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 import json, os, sys
 
-# from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
 from wslink.websocket import ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
 from autobahn.twisted.resource import WebSocketResource
 
@@ -9,8 +8,12 @@ from myProtocol import MyProtocol
 
 class ExampleServer(ServerProtocol):
     def initialize(self):
-        self.registerLinkProtocol(MyProtocol())
+        self.protocol = MyProtocol()
+        self.registerLinkProtocol(self.protocol)
         self.updateSecret("wslink-secret")
+
+    def pushImage(self):
+        self.protocol.pushImage()
 
 # -----------------------------------------------------------------------------
 # Web server definition
@@ -22,23 +25,25 @@ from twisted.internet import reactor
 
 log.startLogging(sys.stdout)
 
-# get the compiled library next to index.html
-# from shutil import copy2
-# copy2(os.path.join(os.path.dirname(__file__), "../client/dist/wslink.js"), os.path.join(os.path.dirname(__file__), "www/"))
-
-#TODO warning if client examples hasn't been built.
+# Warning if client examples haven't been built.
+clientDir = os.path.join(os.path.dirname(__file__), "../../js/dist/examples")
+if not os.path.exists(clientDir) or not os.path.exists(os.path.join(clientDir, "index.html")):
+    print("Example client hasn't been built, please run 'npm run build:example' in ../js ")
 
 exampleServer = ExampleServer()
 
 # Static file delivery
-root = File(os.path.join(os.path.dirname(__file__), "../../js/dist/examples"))
+root = File(clientDir)
 
-# WS endpoint
+# WS endpoint. Use timeout=0 to never timeout the server.
 factory = TimeoutWebSocketServerFactory(url=u"ws://127.0.0.1:8080", timeout=60)
 factory.protocol = WslinkWebSocketServerProtocol
 factory.setServerProtocol(exampleServer)
 resource = WebSocketResource(factory)
 root.putChild(b"ws", resource)
+
+# a test for publishing before a connection is made:
+# reactor.callLater(2, exampleServer.pushImage)
 
 # WebServer
 print("launching webserver")
