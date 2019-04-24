@@ -36,8 +36,9 @@ class LinkProtocol(object):
     objects provide rpc and pub/sub actions.
     """
     def __init__(self):
-        self.publish = None
-        self.addAttachment = None
+        # need a no-op in case they are called before connect.
+        self.publish = lambda x, y: None
+        self.addAttachment = lambda x: None
         self.coreServer = None
 
     def init(self, publish, addAttachment):

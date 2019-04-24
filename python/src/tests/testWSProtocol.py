@@ -88,8 +88,12 @@ class MyProtocol(LinkProtocol):
 
 class ExampleServer(ServerProtocol):
     def initialize(self):
-        self.registerLinkProtocol(MyProtocol())
+        self.protocol = MyProtocol()
+        self.registerLinkProtocol(self.protocol)
         self.updateSecret("vtkweb-secret")
+
+    def pushImage(self):
+        self.protocol.pushImage()
 
 
 # Client is created for each test, connects and disconnects.
@@ -131,9 +135,9 @@ class TestWSProtocol(unittest.TestCase):
     """
     def setUp(self):
         t = FakeTransport()
-        exampleServer = ExampleServer()
+        self.server = ExampleServer()
         f = TimeoutWebSocketServerFactory(timeout=5)
-        f.setServerProtocol(exampleServer)
+        f.setServerProtocol(self.server)
         p = WslinkWebSocketServerProtocol()
         p.factory = f
         p.transport = t
@@ -165,6 +169,10 @@ class TestWSProtocol(unittest.TestCase):
         # We closed properly
         self.assertEqual(self.transport._written, b"\x88\x00")
         self.assertEqual(self.protocol.state, self.protocol.STATE_CLOSING)
+
+    def test_pushBeforeConnect(self):
+        self.server.pushImage()
+        # test for no exceptions, otherwise no-op.
 
     def test_onConnect(self):
         self.protocol.onConnect({})
