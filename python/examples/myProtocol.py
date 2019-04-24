@@ -11,7 +11,9 @@ from twisted.internet import task
 class MyProtocol(LinkProtocol):
     def __init__(self):
         super(MyProtocol, self).__init__()
-        self.subscribers = {}
+        self.loopTask = None
+        self.topic = "image"
+        self.subscribers = 0
         self.subMsgCount = 0
 
     @exportRPC("myprotocol.add")
@@ -56,8 +58,8 @@ class MyProtocol(LinkProtocol):
     def pushImage(self):
         print("push image", self.subMsgCount)
         msg = self.image(self.subMsgCount % 2 is 0)
-        # publish binary message. TODO, how to get topic?
-        self.publish("image", msg)
+        # publish binary message.
+        self.publish(self.topic, msg)
         self.subMsgCount += 1
 
     @exportRPC("myprotocol.postbinary")
@@ -69,19 +71,21 @@ class MyProtocol(LinkProtocol):
         print("start", topic)
         # set up repeated send of images until unsubscribed.
         # http://twistedmatrix.com/documents/current/core/howto/time.html
-        loopTask = task.LoopingCall(self.pushImage)
-        loopTask.start(2.0)
-        self.subscribers['topic'] = topic
-        self.subscribers['loopTask'] = loopTask
+        if not self.loopTask:
+            self.loopTask = task.LoopingCall(self.pushImage)
+            self.loopTask.start(2.0)
+        self.topic = topic
+        self.subscribers += 1
         return { "subscribed": topic }
 
     @exportRPC("myprotocol.stop")
     def stopStream(self, topic):
         print("stop", topic)
-        if 'topic' in self.subscribers and self.subscribers['topic'] == topic:
-            loopTask = self.subscribers['loopTask']
-            loopTask.stop()
-            self.subscribers.clear()
+        if self.topic == topic and self.subscribers > 0:
+            self.subscribers -= 1
+            if self.subscribers == 0 and self.loopTask:
+                self.loopTask.stop()
+                self.loopTask = None
             return { "unsubscribed": topic }
         return 0
 
