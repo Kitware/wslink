@@ -9,6 +9,8 @@ module.exports = {
     filename: 'example.js',
     path: path.resolve(__dirname, 'dist/examples'),
   },
+  mode: 'development',
+  devtool: 'inline-source-map',
   devServer: {
     contentBase: path.resolve(__dirname, 'dist/examples'),
   },
@@ -17,14 +19,15 @@ module.exports = {
       { test: entry, loader: 'expose-loader?app' },
       {
         test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader',
-        options: {
-          presets: [
-            [ 'es2015', { modules: false } ]
-          ]
-        }
-      }
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env'],
+            },
+          },
+        ],
+      },
     ]
   },
   plugins: [
