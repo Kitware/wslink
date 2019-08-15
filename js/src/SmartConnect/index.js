@@ -37,6 +37,9 @@ function smartConnect(publicAPI, model) {
   };
 
   publicAPI.connect = () => {
+    if (model.configDecorator) {
+      model.config = model.configDecorator(model.config);
+    }
     if (model.config.sessionURL) {
       // We have a direct connection URL
       session = wsConnect(publicAPI, model);
@@ -45,7 +48,12 @@ function smartConnect(publicAPI, model) {
       const launcher = ProcessLauncher.newInstance({ endPoint: model.config.sessionManagerURL || DEFAULT_SESSION_MANAGER_URL });
 
       model.subscriptions.push(launcher.onProcessReady((data) => {
-        model.config = Object.assign({}, model.config, data);
+        if (model.configDecorator) {
+          model.config = model.configDecorator(Object.assign({}, model.config, data));
+        } else {
+          model.config = Object.assign({}, model.config, data);
+        }
+
         session = wsConnect(publicAPI, model);
       }));
       model.subscriptions.push(launcher.onError((data) => {
@@ -85,6 +93,7 @@ function smartConnect(publicAPI, model) {
 
 const DEFAULT_VALUES = {
   config: {},
+  // configDecorator: null,
 };
 
 export function extend(publicAPI, model, initialValues = {}) {
@@ -95,7 +104,8 @@ export function extend(publicAPI, model, initialValues = {}) {
   CompositeClosureHelper.event(publicAPI, model, 'ConnectionClose');
   CompositeClosureHelper.event(publicAPI, model, 'ConnectionError');
   CompositeClosureHelper.isA(publicAPI, model, 'SmartConnect');
-  CompositeClosureHelper.get(publicAPI, model, ['config']);
+  CompositeClosureHelper.get(publicAPI, model, ['config', 'configDecorator']);
+  CompositeClosureHelper.set(publicAPI, model, ['configDecorator']);
 
   smartConnect(publicAPI, model);
 }
