@@ -246,6 +246,7 @@ function Session(publicAPI, model) {
           }
         }
       }
+      delete inFlightRpc[payload.id];
     }
   };
 
