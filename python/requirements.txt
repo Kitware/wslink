@@ -1,5 +1,7 @@
-autobahn==17.7.1
-twisted==19.2.1
+autobahn==19.11.2 ; python_version < '3.0'
+autobahn==20.3.1  ; python_version > '2.7'
+
+twisted==19.10.0
 
 # platform specific
 pypiwin32==223; sys_platform == 'win32'
