@@ -12,7 +12,7 @@ from twisted.web            import resource
 from twisted.python         import log
 from twisted.internet       import reactor
 from twisted.internet       import defer
-from twisted.internet.defer import Deferred, returnValue
+from twisted.internet.defer import Deferred, returnValue, maybeDeferred
 
 from . import register as exportRpc
 from autobahn.twisted.websocket import WebSocketServerFactory
@@ -250,6 +250,19 @@ RESULT_SERIALIZE_ERROR = -32002
 CLIENT_ERROR = -32099
 
 # -----------------------------------------------------------------------------
+# Deferred helpers
+# -----------------------------------------------------------------------------
+
+def createSuccessCallback(self, rpcid, methodName):
+    return lambda results: self.sendWrappedMessage(rpcid, results, method=methodName)
+
+
+def createErrorCallback(self, rpcid, methodName):
+    return lambda e: self.sendWrappedError(rpcid, EXCEPTION_ERROR, "Exception raised",
+        { "method": methodName, "exception": repr(e), "trace": traceback.format_exc() }
+    )
+
+# -----------------------------------------------------------------------------
 # WS protocol definition
 # -----------------------------------------------------------------------------
 
@@ -367,15 +380,16 @@ class WslinkWebSocketServerProtocol(TimeoutWebSocketServerProtocol):
             args = findAttachments(args)
             kwargs = findAttachments(kwargs)
 
-            results = func(obj, *args, **kwargs)
+            args.insert(0, obj)
+            results = maybeDeferred(func, *args, **kwargs)
+
+            results.addCallback(createSuccessCallback(self, rpcid, methodName))
+            results.addErrback(createErrorCallback(self, rpcid, methodName))
         except Exception as e:
             self.sendWrappedError(rpcid, EXCEPTION_ERROR, "Exception raised",
                 { "method": methodName, "exception": repr(e), "trace": traceback.format_exc() })
             return
 
-        self.sendWrappedMessage(rpcid, results, method=methodName)
-        # sent reply to RPC, no attachment re-use.
-        publishManager.clearAttachmentMap()
 
     def sendWrappedMessage(self, rpcid, content, method=''):
         wrapper = {
