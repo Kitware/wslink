@@ -7,15 +7,17 @@ This is a test application that illustrate how to setup a Python server with a W
 If you have `wslink` installed on your python you can run the following command
 
 ```sh
-$ python ./server/server.py --content ./www --port 8080
+python ./server/server.py --content ./www --port 8080
 ```
+
+You can also use `ParaView/pvpython` to run the same command so you don't have to worry about Python and wslink availability.
 
 ## Web client
 
 ```sh
-$ cd clients/js
-$ npm install
-$ npm run build
+cd clients/js
+npm install
+npm run build
 ```
 
 Then open your browser on `http://localhost:8080/`
