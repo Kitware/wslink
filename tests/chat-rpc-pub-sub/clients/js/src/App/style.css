@@ -1,0 +1,24 @@
+.container {
+  width: 400px;
+}
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.button {
+  width: 100px;
+}
+
+.input {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.textarea {
+  width: 390px;
+  display: block;
+  resize: none;
+}

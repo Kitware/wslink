@@ -1,0 +1,19 @@
+<div>
+  Welcome to WSLink demo application
+  <div :class="$style.container">
+    <div :class="$style.line">
+      <input v-model="txt" v-on:keyup.enter="send" :class="$style.input">
+      <button @click="clear" :class="$style.button">Clear</button>
+    </div>
+    <div :class="$style.line">
+      <button @click="startTalking" :class="$style.button">Start</button>
+      <button @click="stopTalking" :class="$style.button">Stop</button>
+    </div>
+    <textarea
+      :value="allMessages"
+      disabled
+      rows="20"
+      :class="$style.textarea"
+    />
+  </div>
+</div>
