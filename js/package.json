@@ -1,6 +1,6 @@
 {
   "name": "wslink",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "doc:publish": "kw-doc -c ../documentation/config.js -p",
     "start": "webpack-dev-server"
   },
-  "author": "Aron Helser",
+  "author": "Kitware",
   "license": "BSD-3-Clause",
   "devDependencies": {
     "@babel/core": "7.1.2",

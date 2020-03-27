@@ -111,7 +111,7 @@ function event(publicAPI, model, eventName, asynchrounous = true) {
     }
 
     if (asynchrounous) {
-      setImmediate(processCallbacks);
+      setTimeout(processCallbacks, 0);
     } else {
       processCallbacks();
     }
