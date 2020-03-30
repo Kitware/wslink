@@ -18,6 +18,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <regex>
+#include <future>
+#include <mutex>
+#include <queue>
+#include <condition_variable>
 
 namespace beast = boost::beast;     // from <boost/beast.hpp>
 namespace http = beast::http;       // from <boost/beast/http.hpp>
@@ -234,11 +239,25 @@ protected:
 class wsWebsocketConnection
 {
 public:
+  using TopicCallBackType = std::function<void(const json&)>;
+
   wsWebsocketConnection(std::string secret) : Secret(secret) {
+    {
+      isPolling = true;
+      ThreadPolling = std::thread(&wsWebsocketConnection::ThreadPollingFn, this);
+    }
   }
 
   bool close()
   {
+    {
+      std::unique_lock<std::mutex> lock (MutexPolling);
+      if (isPolling)
+      {
+        isPolling = false;
+        ThreadPolling.join();
+      }
+    }
     // currently the below does not work due to
     // https://github.com/Kitware/wslink/issues/21
     // so it is commented out
@@ -348,28 +367,33 @@ public:
       return false;
     }
 
-    // Read a message into our buffer
-    // This buffer will hold the incoming message
-    beast::multi_buffer buffer;
-    ws.read(buffer, ec);
-    if(ec)
-    {
-      this->HandleError("read", ec);
-      return false;
-    }
-
     if (result)
     {
-      *result = json::parse(beast::buffers_to_string(buffer.data()));
+      std::unique_lock<std::mutex> lock (MutexRPCMessages);
+      while (QueueRPCMessages.empty()) {
+        CVRPCMessages.wait(lock);
+      }
+
+      *result = QueueRPCMessages.front();
+      QueueRPCMessages.pop();
     }
 
-    // The make_printable() function helps print a ConstBufferSequence
-    if (this->Debug)
-    {
-      std::cout << beast::buffers_to_string(buffer.data()) << std::endl;
-    }
+    return true;
+  }
 
-    this->MessageCount++;
+  // return true on success
+  bool subscribe(std::string topic, TopicCallBackType callback)
+  {
+    std::unique_lock<std::mutex> lock (MutexSubscriptions);
+    this->Subscriptions[topic] = callback;
+    return true;
+  }
+
+  // return true on success
+  bool unsubscribe(std::string topic)
+  {
+    std::unique_lock<std::mutex> lock (MutexSubscriptions);
+    Subscriptions.erase(topic);
     return true;
   }
 
@@ -395,6 +419,66 @@ protected:
     }
   }
 
+  void ThreadPollingFn()
+  {
+    while (isPolling)
+    {
+      beast::multi_buffer buffer;
+      boost::system::error_code ec;
+      this->ws.read(buffer, ec);
+
+      if(ec)
+      {
+        this->HandleError("read", ec);
+        continue;
+      }
+
+      auto result = json::parse(beast::buffers_to_string(buffer.data()));
+
+      if (this->Debug)
+      {
+        std::cout << beast::buffers_to_string(buffer.data()) << std::endl;
+      }
+
+      std::string id = result["id"];
+
+      std::regex e ("^(rpc|publish|system):([a-z0-1A-Z.]+):(?:\\d+)$");
+      std::smatch matches;
+      std::regex_match(id, matches, e);
+
+      if (matches.size() >= 3)
+      {
+        std::string type = matches[1];
+        std::string topic = matches[2];
+
+        if (type == "publish")
+        {
+          decltype(Subscriptions)::iterator it;
+          {
+            std::unique_lock<std::mutex> lock (MutexSubscriptions);
+            it = Subscriptions.find(topic);
+          }
+
+          if (it != Subscriptions.end())
+          {
+            it->second(result);
+          }
+        }
+        else if (type == "rpc")
+        {
+          std::unique_lock<std::mutex> lock (MutexRPCMessages);
+          QueueRPCMessages.push(result);
+          CVRPCMessages.notify_all();
+
+        } else {
+          std::cerr << "unsupported type of message: " << type << std::endl;
+        }
+
+        this->MessageCount++;
+      }
+    }
+  }
+
   // The io_context is required for all I/O
   net::io_context ioc;
   websocket::stream<tcp::socket> ws{ioc};
@@ -402,5 +486,14 @@ protected:
   std::string ClientID;
   unsigned int MessageCount = 0;
   bool Debug = false;
+  bool isPolling = false;
   std::string ErrorText;
+
+  std::unordered_map<std::string, TopicCallBackType> Subscriptions;
+  std::mutex MutexSubscriptions;
+  std::mutex MutexPolling;
+  std::mutex MutexRPCMessages;
+  std::condition_variable CVRPCMessages;
+  std::thread ThreadPolling;
+  std::queue<json> QueueRPCMessages;
 };
