@@ -241,12 +241,7 @@ class wsWebsocketConnection
 public:
   using TopicCallBackType = std::function<void(const json&)>;
 
-  wsWebsocketConnection(std::string secret) : Secret(secret) {
-    {
-      isPolling = true;
-      ThreadPolling = std::thread(&wsWebsocketConnection::ThreadPollingFn, this);
-    }
-  }
+  wsWebsocketConnection(std::string secret) : Secret(secret) { }
 
   bool close()
   {
@@ -333,6 +328,12 @@ public:
     this->ClientID = result["result"]["clientID"];
 
     this->MessageCount = 1;
+
+    if (!isPolling) {
+      isPolling = true;
+      ThreadPolling = std::thread(&wsWebsocketConnection::ThreadPollingFn, this);
+    }
+
     return true;
   }
 

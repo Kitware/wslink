@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
   wsWebsocketConnection ws{SECRET};
   ws.connect(HOST, PORT, TARGET);
 
-  ws.subscribe(TOPIC, 
-      [](const json& json) -> void 
+  ws.subscribe(TOPIC,
+      [](const json& json) -> void
       {
         cout << json["id"] << " -> " << json["result"] << endl;
       });
