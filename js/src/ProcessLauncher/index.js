@@ -10,6 +10,14 @@ function ProcessLauncher(publicAPI, model) {
       url = model.endPoint;
 
     xhr.open('POST', url, true);
+
+    if (config.headers) {
+      Object.entries(config.headers).forEach(([key, value]) =>
+        xhr.setRequestHeader(key, value)
+      );
+      delete config.headers;
+    }
+
     xhr.responseType = 'json';
     const supportsJson = 'response' in xhr && xhr.responseType === 'json';
 
