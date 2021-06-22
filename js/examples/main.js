@@ -37,7 +37,7 @@ function log(msg) {
   logOutput.innerHTML += '\n';
 }
 function logerr(err) {
-  logOutput.innerHTML += `error: ${err.code}, "${err.message}", ${err.data}`;
+  logOutput.innerHTML += `error: ${err.code}, "${err.message}", ${JSON.stringify(err.data)}`;
   logOutput.innerHTML += '\n';
 }
 
@@ -105,7 +105,7 @@ export function wsclose() {
   // ws = null;
 }
 
-export function connect(direct=false) {
+export function connect(direct=true) {
   ws = null;
   if (direct) {
     ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });

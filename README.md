@@ -27,11 +27,11 @@ to the point-to-point communication we actually use.
 
 ## Examples
 
-* Set up a Python (2.7 or 3.5+) [virtualenv] using requirements.txt. Roughly:
+* Set up a Python (3.3+) [virtualenv] using requirements.txt. Roughly:
   - `cd wslink/python`
   - `pip install virtualenv`
-  - `virtualenv runtime_37`
-  - `source runtime_37/Scripts/activate` (on Windows)
+  - `virtualenv runtime`
+  - `source runtime/Scripts/activate` (on Windows)
   - `pip install -r requirements.txt`
   - `pip install -e .` (to use current wslink for development)
 * Install node.js 6+ for the javascript client
@@ -44,13 +44,6 @@ to the point-to-point communication we actually use.
   - starts a webserver at [localhost](http://localhost:8080/) with buttons to test RPC and pub/sub methods
 * `python examples/simple.py --content ../js/dist/examples`
   - starts the same example using the configurable server
-
-## Testing
-
-* additional testing dependencies are in requirements-dev.txt
-* `cd python/src`
-* `python tests/testWSProtocol.py`
-* Uses a 'mock' of the WslinkWebSocketServerProtocol's sendMessage, to check that the expected messages or errors are generated.
 
 ## Existing API
 
