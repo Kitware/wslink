@@ -20,16 +20,18 @@ Trigger the connection request.
 
 Register callback for when the connection became ready.
 
-## onConnectionClose(callback, err) : subscription
+## onConnectionClose(callback) : subscription
 
-Register callback for when the connection close.  Err is a websocket event. If
-the server closes the connection after sending a close frame
-(https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.1), the err object
-will have shape {code: number, reason: string}.
+Register callback for when the connection close.  Callback takes
+two arguments, the connection object and a websocket event.
+If the server closes the connection after sending a close frame
+(https://datatracker.ietf.org/doc/html/rfc6455#section-5.5.1), the event
+will have the shape {code: number, reason: string}.
 
-## onConnectionError(callback, err) : subscription
+## onConnectionError(callback) : subscription
 
 Register callback for when the connection request failed.
+Callback takes two arguments, the connection object and a websocket event.
 
 ## getSession() : session
 

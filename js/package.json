@@ -1,6 +1,6 @@
 {
   "name": "wslink",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
   "repository": {
     "type": "git",
