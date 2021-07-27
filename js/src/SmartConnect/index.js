@@ -32,8 +32,8 @@ function smartConnect(publicAPI, model) {
   publicAPI.errorForwarder = (data, err) => {
     publicAPI.fireConnectionError(data, err);
   };
-  publicAPI.closeForwarder = (data) => {
-    publicAPI.fireConnectionClose(data);
+  publicAPI.closeForwarder = (data, err) => {
+    publicAPI.fireConnectionClose(data, err);
   };
 
   publicAPI.connect = () => {
