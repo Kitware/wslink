@@ -78,7 +78,7 @@ function WebsocketConnection(publicAPI, model) {
     };
 
     model.connection.onclose = (event) => {
-      publicAPI.fireConnectionClose(publicAPI);
+      publicAPI.fireConnectionClose(publicAPI, event);
       model.connection = null;
       // return !model.retry; // true => Stop retry
     };
