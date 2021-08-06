@@ -1,14 +1,8 @@
 -r requirements.txt
 
-# testing on 2.7:
-mock ; python_version < '3.0'
-
 # doc checking
 collective.checkdocs
 
 # publishing
 twine
 wheel
-
-# TLS
-service_identity>=17.0.0

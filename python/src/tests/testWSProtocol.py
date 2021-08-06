@@ -7,17 +7,14 @@ except ImportError:
     from mock import MagicMock
 
 try:
-    from wslink import register as exportRPC
+    from wslink import schedule_callback, schedule_coroutine, register as exportRPC
 except ImportError:
     print("loading wslink directly from src/ directory, as fallback")
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-    from wslink import register as exportRPC
+    from wslink import schedule_callback, schedule_coroutine, register as exportRPC
 
-from wslink.websocket import LinkProtocol, ServerProtocol, TimeoutWebSocketServerFactory, WslinkWebSocketServerProtocol
-from autobahn.twisted.resource import WebSocketResource
-from autobahn.twisted.websocket import WebSocketClientProtocol, WebSocketClientFactory
-
-from twisted.internet import reactor, task
+from wslink.websocket import LinkProtocol, ServerProtocol
+from wslink.aiohttp_websocket_server_protocol import create_wslink_server
 
 class MyProtocol(LinkProtocol):
     def __init__(self):
@@ -64,16 +61,15 @@ class MyProtocol(LinkProtocol):
         # publish binary message. TODO, how to get topic?
         self.publish("image", msg)
         self.subMsgCount += 1
+        self.subscribers['loopTask'] = schedule_callback(2, self.pushImage)
 
     @exportRPC("myprotocol.stream")
     def startStream(self, topic):
         print("start", topic)
         # set up repeated send of images until unsubscribed.
-        # http://twistedmatrix.com/documents/current/core/howto/time.html
-        loopTask = task.LoopingCall(self.pushImage)
-        loopTask.start(2.0)
-        self.subscribers['topic'] = topic
-        self.subscribers['loopTask'] = loopTask
+        if not self.subscribers['loopTask']:
+            self.subscribers['loopTask'] = schedule_callback(0, self.pushImage)
+            self.subscribers['topic'] = topic
         return { "subscribed": topic }
 
     @exportRPC("myprotocol.stop")
@@ -95,102 +91,63 @@ class ExampleServer(ServerProtocol):
     def pushImage(self):
         self.protocol.pushImage()
 
+class MockRequest(object):
+    def __init__(self, app):
+        self.app = app
 
-# Client is created for each test, connects and disconnects.
-# class MyClientProtocol(WebSocketClientProtocol):
+class MockMessage(object):
+    def __init__(self, msg_type, msg_data):
+        self.type = msg_type
+        self.data = msg_data
 
-#    def onOpen(self):
-#       self.sendMessage(u"Hello, world!".encode('utf8'))
+def encMsg(msg_type=None, msg_data=None):
+    if not msg_type:
+        import aiohttp
+        msg_type = aiohttp.WSMsgType.TEXT
 
-#    def onMessage(self, payload, isBinary):
-#       if isBinary:
-#          print("Binary message received: {0} bytes".format(len(payload)))
-#       else:
-#          print("Text message received: {0}".format(payload.decode('utf8')))
+    # return json.dumps(msg, ensure_ascii = False).encode('utf8')
+    return MockMessage(msg_type, json.dumps(msg_data, ensure_ascii = False).encode('utf8'))
 
-# clientFactory = WebSocketClientFactory(u"ws://127.0.0.1:9090")
-# clientFactory.protocol = MyClientProtocol
 
-# -----------------------------------------------------------------------------
-# Testing Taken from autobahn/test/__init__.py
-# -----------------------------------------------------------------------------
-class FakeTransport(object):
-    _written = b""
-    _open = True
+class TestWSProtocol(unittest.IsolatedAsyncioTestCase):
 
-    def write(self, msg):
-        if not self._open:
-            raise Exception("Can't write to a closed connection")
-        self._written = self._written + msg
-
-    def loseConnection(self):
-        self._open = False
-
-def encMsg(msg):
-    return json.dumps(msg, ensure_ascii = False).encode('utf8')
-
-class TestWSProtocol(unittest.TestCase):
-    """
-    Taken from autobahn/websocket/test/test_protocol.py
-    """
-    def setUp(self):
-        t = FakeTransport()
+    async def asyncSetUp(self):
         self.server = ExampleServer()
-        f = TimeoutWebSocketServerFactory(timeout=5)
-        f.setServerProtocol(self.server)
-        p = WslinkWebSocketServerProtocol()
-        p.factory = f
-        p.transport = t
 
-        p._connectionMade()
-        p.state = p.STATE_OPEN
-        p.websocket_version = 18
+        config = {
+            "host": "0.0.0.0",
+            "port": 4567,
+            "timeout": 300,
+            "handle_signals": False,
+            "ws": {
+                "/websock": self.server
+            }
+        }
 
-        self.protocol = p
-        self.transport = t
+        self.wslink_server = create_wslink_server(config)
+        self.server_config = self.wslink_server.get_config()
+        self.protocol = self.server_config["ws"]["/websock"]
+        self.mock_request = MockRequest(self.wslink_server.get_app())
 
-    def tearDown(self):
-        for call in [
-                self.protocol.autoPingPendingCall,
-                self.protocol.autoPingTimeoutCall,
-                self.protocol.openHandshakeTimeoutCall,
-                self.protocol.closeHandshakeTimeoutCall,
-        ]:
-            if call is not None:
-                call.cancel()
+        schedule_coroutine(0, self.wslink_server.start)
 
-    # copied autobahn test
-    def test_sendClose_none(self):
-        """
-        sendClose with no code or reason works.
-        """
-        self.protocol.sendClose()
-
-        # We closed properly
-        self.assertEqual(self.transport._written, b"\x88\x00")
-        self.assertEqual(self.protocol.state, self.protocol.STATE_CLOSING)
+    async def asyncTearDown(self):
+        await self.wslink_server.stop()
 
     def test_pushBeforeConnect(self):
         self.server.pushImage()
         # test for no exceptions, otherwise no-op.
 
-    def test_onConnect(self):
-        self.protocol.onConnect({})
-        self.protocol.sendClose()
-        self.protocol.onClose(True, None, None)
-        self.assertEqual(self.transport._written, b"\x88\x00")
-        # self.fail("see stdout")
-
-    def test_messageNoConnect(self):
+    async def test_messageNoConnect(self):
         msg = {
             "wslink": "1.0",
             "id": "rpc:c0:0",
             "method": "myprotocol.add",
             "args": [1,2],
         }
-        msgMock = MagicMock(spec=self.protocol.sendMessage)
-        self.protocol.sendMessage = msgMock
-        self.protocol.onMessage(encMsg(msg), False)
+        msgMock = MagicMock(spec=self.protocol.sendWrappedMessage)
+        self.protocol.sendWrappedMessage = msgMock
+        await self.protocol.onMessage(encMsg(msg_data=msg), False)
         msgMock.assert_called()
         self.assertIsNotNone(msgMock.call_args[0])
         self.assertIsNotNone(msgMock.call_args[0][0])
@@ -198,8 +155,8 @@ class TestWSProtocol(unittest.TestCase):
         self.assertIn(b'"error":', msg_bytes)
         self.assertIn(b"Unregistered method called", msg_bytes)
 
-    def handshake(self):
-        self.protocol.onConnect({})
+    async def handshake(self):
+        await self.protocol.onConnect(self.mock_request)
         msg = {
             "wslink": "1.0",
             "id": "system:c0:0",
@@ -207,9 +164,9 @@ class TestWSProtocol(unittest.TestCase):
             "args": [{ "secret": "vtkweb-secret" }],
             "kwargs": {},
         }
-        msgMock = MagicMock(spec=self.protocol.sendMessage)
-        self.protocol.sendMessage = msgMock
-        self.protocol.onMessage(encMsg(msg), False)
+        msgMock = MagicMock(spec=self.protocol.sendWrappedMessage)
+        self.protocol.sendWrappedMessage = msgMock
+        await self.protocol.onMessage(encMsg(msg_data=msg), False)
         msgMock.assert_called_once()
         self.assertIsNotNone(msgMock.call_args[0])
         self.assertIsNotNone(msgMock.call_args[0][0])
@@ -222,7 +179,7 @@ class TestWSProtocol(unittest.TestCase):
         msgMock.reset_mock()
         return msgMock
 
-    def message(self, msgMock, method, args, kwargs):
+    async def message(self, msgMock, method, args, kwargs):
         msg = {
             "wslink": "1.0",
             "id": "rpc:{0}:{1}".format(self.clientID, self.msgCount),
@@ -230,14 +187,14 @@ class TestWSProtocol(unittest.TestCase):
             "args": args,
             "kwargs": kwargs,
         }
-        self.protocol.onMessage(encMsg(msg), False)
+        await self.protocol.onMessage(encMsg(msg_data=msg), False)
         return msgMock.call_args[0][0]
 
-    def test_hello(self):
-        self.handshake()
+    async def test_hello(self):
+        await self.handshake()
 
-    def test_badSecret(self):
-        self.protocol.onConnect({})
+    async def test_badSecret(self):
+        await self.protocol.onConnect(self.mock_request)
         msg = {
             "wslink": "1.0",
             "id": "system:c0:0",
@@ -245,9 +202,9 @@ class TestWSProtocol(unittest.TestCase):
             "args": [{ "secret": "bad-secret" }],
             "kwargs": {},
         }
-        msgMock = MagicMock(spec=self.protocol.sendMessage)
-        self.protocol.sendMessage = msgMock
-        self.protocol.onMessage(encMsg(msg), False)
+        msgMock = MagicMock(spec=self.protocol.sendWrappedMessage)
+        self.protocol.sendWrappedMessage = msgMock
+        await self.protocol.onMessage(encMsg(msg_data=msg), False)
         msgMock.assert_called()
         self.assertIsNotNone(msgMock.call_args[0])
         self.assertIsNotNone(msgMock.call_args[0][0])
@@ -257,54 +214,54 @@ class TestWSProtocol(unittest.TestCase):
         self.assertIn(b"Authentication failed", msg_bytes)
         # how about no "secret" key?
         msg["args"] = [{ "foo": "bar" }]
-        self.protocol.onMessage(encMsg(msg), False)
+        await self.protocol.onMessage(encMsg(msg_data=msg), False)
         msg_bytes = msgMock.call_args[0][0]
         self.assertIn(b'"error":', msg_bytes)
         self.assertIn(b"Authentication failed", msg_bytes)
 
-    def test_badRPC(self):
-        msgMock = self.handshake()
+    async def test_badRPC(self):
+        msgMock = await self.handshake()
 
-        msg_bytes = self.message(msgMock, "bogus.rpc.method", [1, 2, 3], {})
+        msg_bytes = await self.message(msgMock, "bogus.rpc.method", [1, 2, 3], {})
         self.assertIn(b'"error":', msg_bytes)
         self.assertNotIn(b'"result":', msg_bytes)
         self.assertIn(b"Unregistered method called", msg_bytes)
 
-    def test_goodRPC(self):
-        msgMock = self.handshake()
-        msg_bytes = self.message(msgMock, "myprotocol.add", [[1, 2, 3]], {})
+    async def test_goodRPC(self):
+        msgMock = await self.handshake()
+        msg_bytes = await self.message(msgMock, "myprotocol.add", [[1, 2, 3]], {})
         self.assertEqual(msg_bytes,
             b'{"wslink": "1.0", "id": "rpc:c0:0", "result": 6}')
 
-    def test_nonReturnRPC(self):
-        msgMock = self.handshake()
-        msg_bytes = self.message(msgMock, "myprotocol.nothing", [], {})
+    async def test_nonReturnRPC(self):
+        msgMock = await self.handshake()
+        msg_bytes = await self.message(msgMock, "myprotocol.nothing", [], {})
         self.assertEqual(msg_bytes,
             b'{"wslink": "1.0", "id": "rpc:c0:0", "result": null}')
 
-    def test_throwsRPC(self):
-        msgMock = self.handshake()
+    async def test_throwsRPC(self):
+        msgMock = await self.handshake()
         # with self.assertRaisesRegex(Exception, "I don't like"):
         # exception issued with raise()
-        msg_bytes = self.message(msgMock, "myprotocol.throw", [[1, 2, 3]], {})
+        msg_bytes = await self.message(msgMock, "myprotocol.throw", [[1, 2, 3]], {})
         self.assertIn(b'"error":', msg_bytes)
         self.assertIn(b"Exception raised", msg_bytes)
         self.assertIn(b"I don't like args", msg_bytes)
         # illegal operation
-        msg_bytes = self.message(msgMock, "myprotocol.throw", [0], {})
+        msg_bytes = await self.message(msgMock, "myprotocol.throw", [0], {})
         self.assertIn(b'"error":', msg_bytes)
         self.assertIn(b"Exception raised", msg_bytes)
         self.assertIn(b"TypeError", msg_bytes)
         # result of method can't be made into JSON
-        msg_bytes = self.message(msgMock, "myprotocol.throw", [1], {})
+        msg_bytes = await self.message(msgMock, "myprotocol.throw", [1], {})
         self.assertIn(b'"error":', msg_bytes)
         self.assertNotIn(b'"result":', msg_bytes)
         self.assertIn(b"cannot be serialized", msg_bytes)
         self.assertIn(b"myprotocol.throw", msg_bytes)
 
-    def test_goodBinaryRPC(self):
-        msgMock = self.handshake()
-        msg_bytes = self.message(msgMock, "myprotocol.binary", [5], {})
+    async def test_goodBinaryRPC(self):
+        msgMock = await self.handshake()
+        msg_bytes = await self.message(msgMock, "myprotocol.binary", [5], {})
         self.assertEqual(msgMock.call_count, 3)
         self.assertIn(b'"method": "wslink.binary.attachment"', msgMock.call_args_list[0][0][0])
         self.assertIn(b'"args": ["wslink_bin0"]', msgMock.call_args_list[0][0][0])

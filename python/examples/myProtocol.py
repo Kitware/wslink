@@ -1,8 +1,10 @@
+import asyncio
 import os
 
 from wslink import register as exportRPC
+from wslink import schedule_callback
 from wslink.websocket import LinkProtocol
-from twisted.internet import task
+
 
 # -----------------------------------------------------------------------------
 # WS protocol definition
@@ -57,10 +59,12 @@ class MyProtocol(LinkProtocol):
 
     def pushImage(self):
         print("push image", self.subMsgCount)
-        msg = self.image(self.subMsgCount % 2 is 0)
+        msg = self.image(self.subMsgCount % 2 == 0)
         # publish binary message.
         self.publish(self.topic, msg)
         self.subMsgCount += 1
+
+        self.loopTask = schedule_callback(2, self.pushImage)
 
     @exportRPC("myprotocol.postbinary")
     def postBinary(self, data):
@@ -70,10 +74,9 @@ class MyProtocol(LinkProtocol):
     def startStream(self, topic):
         print("start", topic)
         # set up repeated send of images until unsubscribed.
-        # http://twistedmatrix.com/documents/current/core/howto/time.html
         if not self.loopTask:
-            self.loopTask = task.LoopingCall(self.pushImage)
-            self.loopTask.start(2.0)
+            self.loopTask = schedule_callback(0, self.pushImage)
+
         self.topic = topic
         self.subscribers += 1
         return { "subscribed": topic }
@@ -84,7 +87,8 @@ class MyProtocol(LinkProtocol):
         if self.topic == topic and self.subscribers > 0:
             self.subscribers -= 1
             if self.subscribers == 0 and self.loopTask:
-                self.loopTask.stop()
+                print('canceling loop task')
+                self.loopTask.cancel()
                 self.loopTask = None
             return { "unsubscribed": topic }
         return 0
