@@ -48,16 +48,20 @@ function logerr(err) {
 export function sendInput(type) {
   if (!session) return;
   const data = JSON.parse('[' + inputElement.value + ']');
-  session.call(`myprotocol.${type}`, [data])
-    .then((result) => log('result ' + result), (err) => logerr(err));
+  session.call(`myprotocol.${type}`, [data]).then(
+    (result) => log('result ' + result),
+    (err) => logerr(err)
+  );
 }
 export function sendImage(type) {
   if (!session) return;
-  session.call(`myprotocol.${type}`, [])
-    .then((result) => {
+  session.call(`myprotocol.${type}`, []).then(
+    (result) => {
       log('result ' + result);
       handleMessage(result);
-    }, (err) => logerr(err));
+    },
+    (err) => logerr(err)
+  );
 }
 function handleMessage(inData) {
   let data = Array.isArray(inData) ? inData[0] : inData;
@@ -68,7 +72,7 @@ function handleMessage(inData) {
 
     const img = new Image();
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function (e) {
       img.onload = () => ctx.drawImage(img, 0, 0);
       img.src = e.target.result;
     };
@@ -80,8 +84,8 @@ function handleMessage(inData) {
 
 export function testNesting() {
   if (!session) return;
-  session.call('myprotocol.nested.image', [])
-    .then((data) => {
+  session.call('myprotocol.nested.image', []).then(
+    (data) => {
       if (data['image']) handleMessage(data['image']);
       const onload = (e) => {
         const arr = new Uint8Array(e.target.result);
@@ -97,37 +101,47 @@ export function testNesting() {
           console.error('Size mismatch', arr.length);
         }
       };
-      data.bytesList.forEach(bl => {
+      data.bytesList.forEach((bl) => {
         const reader = new FileReader();
         reader.onload = onload;
         reader.readAsArrayBuffer(bl);
       });
 
       console.log('Nesting:', data);
-    }, (err) => logerr(err));
+    },
+    (err) => logerr(err)
+  );
 }
 
 export function sendMistake() {
   if (!session) return;
-  session.call('myprotocol.mistake.TYPO', ['ignored'])
+  session
+    .call('myprotocol.mistake.TYPO', ['ignored'])
     .then(handleMessage, (err) => logerr(err));
 }
 
 export function sendServerQuit() {
   if (!session) return;
-  session.call('application.exit.later', [5])
-    .then((result) => log('result ' + result), (err) => logerr(err));
+  session.call('application.exit.later', [5]).then(
+    (result) => log('result ' + result),
+    (err) => logerr(err)
+  );
 }
 
 export function toggleStream() {
   if (!subscription) {
-    session.subscribe('image', handleMessage).then((result) => (subscription = result));
-    session.call('myprotocol.stream', ['image'])
-      .then((result) => log('result ' + result), (err) => logerr(err));
+    subscription = session.subscribe('image', handleMessage);
+    session.call('myprotocol.stream', ['image']).then(
+      (result) => log('result ' + result),
+      (err) => logerr(err)
+    );
   } else {
-    session.call('myprotocol.stop', ['image'])
-      .then((result) => log('result ' + result), (err) => logerr(err));
-    session.unsubscribe(subscription);
+    session.call('myprotocol.stop', ['image']).then(
+      (result) => log('result ' + result),
+      (err) => logerr(err)
+    );
+    // session.unsubscribe(subscription);
+    subscription.unsubscribe();
     subscription = null;
   }
 }
@@ -140,7 +154,7 @@ export function wsclose() {
   // ws = null;
 }
 
-export function connect(direct=false) {
+export function connect(direct = false) {
   ws = null;
   if (direct) {
     ws = WebsocketConnection.newInstance({ urls: 'ws://localhost:8080/ws' });

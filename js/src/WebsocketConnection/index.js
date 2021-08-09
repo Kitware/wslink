@@ -14,7 +14,9 @@ function getTransportObject(url) {
     };
   }
 
-  throw new Error(`Unknown protocol (${protocol}) for url (${url}).  Unable to create transport object.`);
+  throw new Error(
+    `Unknown protocol (${protocol}) for url (${url}).  Unable to create transport object.`
+  );
 }
 
 function WebsocketConnection(publicAPI, model) {
@@ -42,7 +44,10 @@ function WebsocketConnection(publicAPI, model) {
     if (model.connection) {
       if (model.connection.url !== transports[0].url) {
         model.connection.close();
-      } else if (model.connection.readyState === 0 || model.connection.readyState === 1) {
+      } else if (
+        model.connection.readyState === 0 ||
+        model.connection.readyState === 1
+      ) {
         // already connected.
         return model.session;
       }
@@ -59,8 +64,10 @@ function WebsocketConnection(publicAPI, model) {
 
     model.connection.binaryType = 'blob';
     if (!model.secret) model.secret = DEFAULT_SECRET;
-    model.session = Session.newInstance({ ws: model.connection, secret: model.secret });
-
+    model.session = Session.newInstance({
+      ws: model.connection,
+      secret: model.secret,
+    });
 
     model.connection.onopen = (event) => {
       if (model.session) {
@@ -92,9 +99,10 @@ function WebsocketConnection(publicAPI, model) {
     return model.session;
   };
 
-  publicAPI.getSession = () => (model.session);
+  publicAPI.getSession = () => model.session;
 
-  publicAPI.getUrl = () => (model.connection ? model.connection.url : undefined);
+  publicAPI.getUrl = () =>
+    model.connection ? model.connection.url : undefined;
 
   function cleanUp(timeout = 10) {
     if (model.session && timeout > 0) {

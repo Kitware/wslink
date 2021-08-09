@@ -12,6 +12,7 @@
   "homepage": "https://github.com/kitware/wslink#readme",
   "main": "dist/wslink.js",
   "scripts": {
+    "prettier": "prettier --config ./prettier.config.js --write \"src/**/*.js\" \"test/**/*.js\"",
     "test": "npm run build:test && python ../tests/simple/server/simple.py --content ../tests/simple/www --debug",
     "build": "webpack",
     "build:test": "webpack --config webpack-test-simple.config.js",
@@ -25,6 +26,7 @@
   "author": "Kitware",
   "license": "BSD-3-Clause",
   "devDependencies": {
+    "prettier": "2.2.1",
     "@babel/core": "7.15.0",
     "@babel/preset-env": "7.15.0",
     "@semantic-release/changelog": "^5.0.1",

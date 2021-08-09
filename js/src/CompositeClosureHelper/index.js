@@ -20,7 +20,7 @@ function isA(publicAPI, model = {}, name = null) {
   }
 
   if (!publicAPI.isA) {
-    publicAPI.isA = className => (model.isA.indexOf(className) !== -1);
+    publicAPI.isA = (className) => model.isA.indexOf(className) !== -1;
   }
 }
 
@@ -135,217 +135,11 @@ function event(publicAPI, model, eventName, asynchrounous = true) {
 }
 
 // ----------------------------------------------------------------------------
-// Fetch handling: setXXXFetchCallback / return { addRequest }
-// ----------------------------------------------------------------------------
-function fetch(publicAPI, model, name) {
-  let fetchCallback = null;
-  const requestQueue = [];
-
-  publicAPI[`set${capitalize(name)}FetchCallback`] = (fetchMethod) => {
-    if (requestQueue.length) {
-      fetchMethod(requestQueue);
-    }
-    fetchCallback = fetchMethod;
-  };
-
-  return {
-    addRequest(request) {
-      requestQueue.push(request);
-      if (fetchCallback) {
-        fetchCallback(requestQueue);
-      }
-    },
-    resetRequests(requestList) {
-      while (requestQueue.length) {
-        requestQueue.pop();
-      }
-      if (requestList) {
-        // Rebuild request list
-        requestList.forEach((req) => {
-          requestQueue.push(req);
-        });
-        // Also trigger a request
-        if (fetchCallback) {
-          fetchCallback(requestQueue);
-        }
-      }
-    },
-  };
-}
-
-// ----------------------------------------------------------------------------
-// Dynamic array handler
-//   - add${xxx}(item)
-//   - remove${xxx}(item)
-//   - get${xxx}() => [items...]
-//   - removeAll${xxx}()
-// ----------------------------------------------------------------------------
-
-function dynamicArray(publicAPI, model, name) {
-  if (!model[name]) {
-    model[name] = [];
-  }
-
-  publicAPI[`set${capitalize(name)}`] = (items) => {
-    model[name] = [].concat(items);
-  };
-
-  publicAPI[`add${capitalize(name)}`] = (item) => {
-    model[name].push(item);
-  };
-
-  publicAPI[`remove${capitalize(name)}`] = (item) => {
-    const index = model[name].indexOf(item);
-    model[name].splice(index, 1);
-  };
-
-  publicAPI[`get${capitalize(name)}`] = () => model[name];
-
-  publicAPI[`removeAll${capitalize(name)}`] = () => (model[name] = []);
-}
-
-// ----------------------------------------------------------------------------
 // Chain function calls
 // ----------------------------------------------------------------------------
 
 function chain(...fn) {
-  return (...args) => fn.filter(i => !!i).forEach(i => i(...args));
-}
-
-// ----------------------------------------------------------------------------
-// Data Subscription
-//   => dataHandler = {
-//         // Set of default values you would expect in your metadata
-//         defaultMetadata: {
-//            numberOfBins: 32,
-//         },
-//
-//         // Method used internally to store the data
-//         set(model, data) { return !!sameAsBefore; }, // Return true if nothing has changed
-//
-//         // Method used internally to extract the data from the cache based on a given subscription
-//         // This should return null/undefined if the data is not available (yet).
-//         get(model, request, dataChanged) {},
-//      }
-// ----------------------------------------------------------------------------
-// Methods generated with dataName = 'mutualInformation'
-// => publicAPI
-//     - onMutualInformationSubscriptionChange(callback) => subscription[unsubscribe() + update(variables = [], metadata = {})]
-//     - fireMutualInformationSubscriptionChange(request)
-//     - subscribeToMutualInformation(onDataReady, variables = [], metadata = {})
-//     - setMutualInformation(data)
-//     - hasMutualInformation(request, variable)
-//     - destroy()
-// ----------------------------------------------------------------------------
-
-function dataSubscriber(publicAPI, model, dataName, dataHandler) {
-  // Private members
-  const dataSubscriptions = [];
-  let forceFlushRequests = 0;
-  const eventName = `${dataName}SubscriptionChange`;
-  const fireMethodName = `fire${capitalize(eventName)}`;
-  const dataContainerName = `${dataName}_storage`;
-
-  // Add data container to model if not exist
-  if (!model[dataContainerName]) {
-    model[dataContainerName] = {};
-  }
-
-  // Add event handling methods
-  event(publicAPI, model, eventName);
-
-  function off() {
-    let count = dataSubscriptions.length;
-    while (count) {
-      count -= 1;
-      dataSubscriptions[count] = null;
-    }
-  }
-
-  // Internal function that will notify any subscriber with its data in a synchronous manner
-  function flushDataToListener(dataListener, dataChanged) {
-    try {
-      if (dataListener) {
-        const dataToForward = dataHandler.get(model[dataContainerName], dataListener.request, dataChanged);
-        if (dataToForward
-          && (JSON.stringify(dataToForward) !== dataListener.request.lastPush || dataListener.request.metadata.forceFlush)) {
-          dataListener.request.lastPush = JSON.stringify(dataToForward);
-          dataListener.onDataReady(dataToForward);
-        }
-      }
-    } catch (err) {
-      console.log(`flush ${dataName} error caught:`, err);
-    }
-  }
-
-  // onDataReady function will be called each time the setXXX method will be called and
-  // when the actual subscription correspond to the data that has been set.
-  // This is performed synchronously.
-  // The default behavior is to avoid pushing data to subscribers if nothing has changed
-  // since the last push.  However, by providing "forceFlush: true" in the metadata,
-  // subscribers can indicate that they want data pushed to them even if there has been
-  // no change since the last push.
-  publicAPI[`subscribeTo${capitalize(dataName)}`] = (onDataReady, variables = [], metadata = {}) => {
-    const id = dataSubscriptions.length;
-    const request = {
-      id,
-      variables,
-      metadata: Object.assign({}, dataHandler.defaultMetadata, metadata),
-    };
-    if (request.metadata.forceFlush) {
-      forceFlushRequests += 1;
-    }
-    const dataListener = { onDataReady, request };
-    dataSubscriptions.push(dataListener);
-    publicAPI[fireMethodName](request);
-    flushDataToListener(dataListener, null);
-    return {
-      unsubscribe() {
-        request.action = 'unsubscribe';
-        if (request.metadata.forceFlush) {
-          forceFlushRequests -= 1;
-        }
-        publicAPI[fireMethodName](request);
-        dataSubscriptions[id] = null;
-      },
-      update(vars, meta) {
-        request.variables = [].concat(vars);
-        if (meta && meta.forceFlush !== request.metadata.forceFlush) {
-          forceFlushRequests += (meta.forceFlush ? 1 : -1);
-        }
-        request.metadata = Object.assign({}, request.metadata, meta);
-        publicAPI[fireMethodName](request);
-        flushDataToListener(dataListener, null);
-      },
-    };
-  };
-
-  // Method use to store data
-  publicAPI[`set${capitalize(dataName)}`] = (data) => {
-    // Process all subscription to see if we can trigger a notification
-    if (!dataHandler.set(model[dataContainerName], data) || forceFlushRequests > 0) {
-      dataSubscriptions.forEach(dataListener => flushDataToListener(dataListener, data));
-    }
-  };
-  // Retrieve data for a single variable from our cache, given current request.
-  // Call from inside on{dataName}SubscriptionChange to find out if
-  // cache needs to be updated.
-  publicAPI[`has${capitalize(dataName)}`] = (inRequest, variable) => {
-    try {
-      if (inRequest) {
-        const request = Object.assign({}, inRequest, { variables: [variable] });
-        const dataToForward = dataHandler.get(model[dataContainerName], request, null);
-        if (dataToForward) {
-          return true;
-        }
-      }
-    } catch (err) {
-      console.log(`has ${dataName} error caught:`, err);
-    }
-    return false;
-  }
-
-  publicAPI.destroy = chain(off, publicAPI.destroy);
+  return (...args) => fn.filter((i) => !!i).forEach((i) => i(...args));
 }
 
 // ----------------------------------------------------------------------------
@@ -363,11 +157,8 @@ function newInstance(extend) {
 
 export default {
   chain,
-  dataSubscriber,
   destroy,
-  dynamicArray,
   event,
-  fetch,
   get,
   isA,
   newInstance,

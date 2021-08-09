@@ -4,7 +4,6 @@ import CompositeClosureHelper from '../CompositeClosureHelper';
 const connections = [];
 
 function ProcessLauncher(publicAPI, model) {
-
   publicAPI.start = (config) => {
     var xhr = new XMLHttpRequest(),
       url = model.endPoint;
@@ -49,7 +48,9 @@ function ProcessLauncher(publicAPI, model) {
 
     xhr.onload = (e) => {
       if (this.status === 200) {
-        publicAPI.fireFetch(supportsJson ? xhr.response : JSON.parse(xhr.response));
+        publicAPI.fireFetch(
+          supportsJson ? xhr.response : JSON.parse(xhr.response)
+        );
         return;
       }
       publicAPI.fireError(xhr);
@@ -60,7 +61,7 @@ function ProcessLauncher(publicAPI, model) {
     };
 
     xhr.send();
-  }
+  };
 
   publicAPI.stop = (connection) => {
     var xhr = new XMLHttpRequest(),
@@ -84,11 +85,11 @@ function ProcessLauncher(publicAPI, model) {
       publicAPI.fireError(xhr);
     };
     xhr.send();
-  }
+  };
 
   publicAPI.listConnections = () => {
     return connections;
-  }
+  };
 }
 
 const DEFAULT_VALUES = {

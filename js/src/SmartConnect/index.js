@@ -5,14 +5,25 @@ import ProcessLauncher from '../ProcessLauncher';
 import WebsocketConnection from '../WebsocketConnection';
 
 export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/paraview/`,
-  DEFAULT_SESSION_URL = `${(window.location.protocol === 'https') ? 'wss' : 'ws'}://${window.location.hostname}:${window.location.port}/ws`;
-
+  DEFAULT_SESSION_URL = `${
+    window.location.protocol === 'https' ? 'wss' : 'ws'
+  }://${window.location.hostname}:${window.location.port}/ws`;
 
 function wsConnect(publicAPI, model) {
-  const wsConnection = WebsocketConnection.newInstance({ urls: model.config.sessionURL, secret: model.config.secret, retry: model.config.retry });
-  model.subscriptions.push(wsConnection.onConnectionReady(publicAPI.readyForwarder));
-  model.subscriptions.push(wsConnection.onConnectionError(publicAPI.errorForwarder));
-  model.subscriptions.push(wsConnection.onConnectionClose(publicAPI.closeForwarder));
+  const wsConnection = WebsocketConnection.newInstance({
+    urls: model.config.sessionURL,
+    secret: model.config.secret,
+    retry: model.config.retry,
+  });
+  model.subscriptions.push(
+    wsConnection.onConnectionReady(publicAPI.readyForwarder)
+  );
+  model.subscriptions.push(
+    wsConnection.onConnectionError(publicAPI.errorForwarder)
+  );
+  model.subscriptions.push(
+    wsConnection.onConnectionClose(publicAPI.closeForwarder)
+  );
 
   // Add to the garbage collector
   model.gc.push(wsConnection);
@@ -45,26 +56,34 @@ function smartConnect(publicAPI, model) {
       session = wsConnect(publicAPI, model);
     } else {
       // We need to use the Launcher
-      const launcher = ProcessLauncher.newInstance({ endPoint: model.config.sessionManagerURL || DEFAULT_SESSION_MANAGER_URL });
+      const launcher = ProcessLauncher.newInstance({
+        endPoint: model.config.sessionManagerURL || DEFAULT_SESSION_MANAGER_URL,
+      });
 
-      model.subscriptions.push(launcher.onProcessReady((data) => {
-        if (model.configDecorator) {
-          model.config = model.configDecorator(Object.assign({}, model.config, data));
-        } else {
-          model.config = Object.assign({}, model.config, data);
-        }
+      model.subscriptions.push(
+        launcher.onProcessReady((data) => {
+          if (model.configDecorator) {
+            model.config = model.configDecorator(
+              Object.assign({}, model.config, data)
+            );
+          } else {
+            model.config = Object.assign({}, model.config, data);
+          }
 
-        session = wsConnect(publicAPI, model);
-      }));
-      model.subscriptions.push(launcher.onError((data) => {
-        if (data && data.response && data.response.error) {
-          publicAPI.errorForwarder(data, data.response.error);
-        } else {
-          // Try to use standard connection URL
-          model.config.sessionURL = DEFAULT_SESSION_URL;
           session = wsConnect(publicAPI, model);
-        }
-      }));
+        })
+      );
+      model.subscriptions.push(
+        launcher.onError((data) => {
+          if (data && data.response && data.response.error) {
+            publicAPI.errorForwarder(data, data.response.error);
+          } else {
+            // Try to use standard connection URL
+            model.config.sessionURL = DEFAULT_SESSION_URL;
+            session = wsConnect(publicAPI, model);
+          }
+        })
+      );
 
       launcher.start(model.config);
 
