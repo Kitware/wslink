@@ -24,7 +24,7 @@ class MyProtocol(LinkProtocol):
 
     @exportRPC("myprotocol.add")
     def add(self, listOfNumbers):
-        if (type(listOfNumbers) is list):
+        if (type(listOfNumbers) == list):
             result = 0
             for value in listOfNumbers:
                 result += value
@@ -57,7 +57,7 @@ class MyProtocol(LinkProtocol):
 
     def pushImage(self):
         print("push image", self.subMsgCount)
-        msg = self.binary(5 if self.subMsgCount % 2 is 0 else 2)
+        msg = self.binary(5 if self.subMsgCount % 2 == 0 else 2)
         # publish binary message. TODO, how to get topic?
         self.publish("image", msg)
         self.subMsgCount += 1
@@ -280,4 +280,3 @@ class TestWSProtocol(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == '__main__':
     unittest.main(buffer=True)
-
