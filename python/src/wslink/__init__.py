@@ -10,9 +10,7 @@ import functools
 
 from .uri import checkURI
 
-__version__ = "1.0.0"
 __license__ = "BSD-3-Clause"
-
 
 def register(uri):
     """

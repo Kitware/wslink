@@ -15,16 +15,8 @@ readme = ''
 with open('README.rst') as f:
     readme = f.read()
 
-init = os.path.join(os.path.dirname(__file__), 'src', 'wslink', '__init__.py')
-with open(init) as fd:
-    version = re.search(
-        r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-        fd.read(), re.MULTILINE).group(1)
-
-# perform the install
 setup(
     name='wslink',
-    version=version,
     description='Python/JavaScript library for communicating over WebSocket',
     long_description=readme,
     author='Kitware, Inc.',
