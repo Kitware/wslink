@@ -1,0 +1,28 @@
+name: Build on all the platforms
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    env:
+      webclient: ./js
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-10.15, windows-2019]
+        node: [10, 12]
+    name: ${{ matrix.os }} and node ${{ matrix.node }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Build
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{env.webclient}}
+      - name: Build Web client
+        run: npm run build:release
+        working-directory: ${{env.webclient}}
