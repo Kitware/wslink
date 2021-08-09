@@ -9,7 +9,7 @@ module.exports = {
     library: "wslink",
     libraryTarget: "umd"
   },
-  mode: 'production',
+  mode: 'development',
   devtool: 'source-map',
   module: {
     rules: [

@@ -1,46 +1,38 @@
 {
   "name": "wslink",
-  "version": "0.1.16",
+  "version": "0.0.0-semantically-release",
   "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kitware/wslink.git"
+    "url": "https://github.com/kitware/wslink.git"
   },
   "bugs": {
     "url": "https://github.com/kitware/wslink/issues"
   },
   "homepage": "https://github.com/kitware/wslink#readme",
-  "engines": {
-    "npm": ">=3.0.0",
-    "node": ">=4.0.0"
-  },
   "main": "dist/wslink.js",
   "scripts": {
-    "test": "webpack --config webpack-test.config.js && python ../python/examples/simple.py --content dist/test --debug",
+    "test": "npm run build:test && python ../tests/simple/server/simple.py --content ../tests/simple/www --debug",
     "build": "webpack",
-    "build:example": "webpack --config webpack-example.config.js",
-    "build:test": "webpack --config webpack-test.config.js",
-    "build:release": "webpack -p",
+    "build:test": "webpack --config webpack-test-simple.config.js",
+    "build:release": "webpack --mode production",
     "doc": "kw-doc -c ../documentation/config.js",
     "doc:www": "kw-doc -c ../documentation/config.js -s",
-    "doc:publish": "kw-doc -c ../documentation/config.js -p",
-    "start": "webpack-dev-server"
+    "doc:publish": "kw-doc -c ../documentation/config.js -p"
   },
   "author": "Kitware",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "@babel/core": "7.1.2",
-    "@babel/polyfill": "7.0.0",
-    "@babel/preset-env": "7.1.0",
-    "babel-loader": "8.0.5",
-    "expose-loader": "0.7.5",
-    "html-webpack-plugin": "3.2.0",
-    "kw-doc": "^1.3.1",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "@babel/core": "7.15.0",
+    "@babel/preset-env": "7.15.0",
+    "babel-loader": "8.2.2",
+    "expose-loader": "3.0.0",
+    "html-webpack-plugin": "5.3.2",
+    "kw-doc": "3.1.0",
+    "webpack": "^5.49.0",
+    "webpack-cli": "4.7.2"
   },
   "dependencies": {
-    "json5": "2.1.0"
+    "json5": "2.2.0"
   }
 }
