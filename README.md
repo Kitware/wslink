@@ -1,7 +1,5 @@
 # wslink
 
-[![Build Status](https://travis-ci.org/Kitware/wslink.svg?branch=master)](https://travis-ci.org/Kitware/wslink)
-
 Wslink allows easy, bi-directional communication between a python server and a
 javascript or C++ client over a [websocket]. The client can make remote procedure
 calls (RPC) to the server, and the server can publish messages to topics that
@@ -32,18 +30,15 @@ to the point-to-point communication we actually use.
   - `pip install virtualenv`
   - `virtualenv runtime`
   - `source runtime/Scripts/activate` (on Windows)
-  - `pip install -r requirements.txt`
   - `pip install -e .` (to use current wslink for development)
 * Install node.js 6+ for the javascript client
 * `cd wslink/js`
 * `npm run test`
   - or:
 * `npm run build:example`
-* `cd ../python`
-* `python examples/webserver.py`
+* `cd ../tests/simple`
+* `python server/simple.py`
   - starts a webserver at [localhost](http://localhost:8080/) with buttons to test RPC and pub/sub methods
-* `python examples/simple.py --content ../js/dist/examples`
-  - starts the same example using the configurable server
 
 ## Existing API
 

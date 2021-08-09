@@ -11,6 +11,7 @@ import asyncio
 import logging
 
 from wslink import websocket as wsl
+from wslink import backends
 
 ws_server = None
 
@@ -146,15 +147,8 @@ def stop_webserver():
 #     },
 # }
 # =============================================================================
-def create_webserver(server_config, ws_impl="aiohttp"):
-    if ws_impl == "aiohttp":
-        from wslink import aiohttp_websocket_server_protocol as ws_handler
-    # elif ws_impl == 'tornado':
-    #     from wslink import tornado_websocket_server_protocol as ws_handler
-    else:
-        raise Exception("Only aiohttp is implemented so far")
-
-    return ws_handler.create_wslink_server(server_config)
+def create_webserver(server_config, backend="aiohttp"):
+    return backends.create_webserver(server_config, backend=backend)
 
 
 # =============================================================================
@@ -162,7 +156,7 @@ def create_webserver(server_config, ws_impl="aiohttp"):
 # and start it.
 # =============================================================================
 def start_webserver(
-    options, protocol=wsl.ServerProtocol, disableLogging=False, ws_impl="aiohttp"
+    options, protocol=wsl.ServerProtocol, disableLogging=False, backend="aiohttp"
 ):
     """
     Starts the web-server with the given protocol. Options must be an object
@@ -214,15 +208,8 @@ def start_webserver(
 
     server_config["handle_signals"] = not options.nosignalhandlers
 
-    if ws_impl == "aiohttp":
-        from wslink import aiohttp_websocket_server_protocol as ws_handler
-    # elif ws_impl == 'tornado':
-    #     from wslink import tornado_websocket_server_protocol as ws_handler
-    else:
-        raise Exception("Only aiohttp is implemented so far")
-
     # Create the webserver and start it
-    ws_server = ws_handler.create_wslink_server(server_config)
+    ws_server = create_webserver(server_config, backend=backend)
 
     # Once we have python 3.7 minimum, we can start the server with asyncio.run()
     # asyncio.run(ws_server.start())

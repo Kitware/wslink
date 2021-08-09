@@ -12,6 +12,7 @@ from .uri import checkURI
 
 __license__ = "BSD-3-Clause"
 
+
 def register(uri):
     """
     Decorator for RPC procedure endpoints.

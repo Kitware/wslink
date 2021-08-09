@@ -7,12 +7,13 @@ import sys
 import traceback
 import uuid
 
-import aiohttp
-import aiohttp.web as aiohttp_web
 
-from . import schedule_coroutine
+from wslink import schedule_coroutine
 from wslink import publish as pub
 
+# Backend specific imports
+import aiohttp
+import aiohttp.web as aiohttp_web
 
 async def _on_startup(app):
     # Emit an expected log message so launcher.py knows we've started up.
@@ -99,7 +100,7 @@ class AiohttpWslinkServer(object):
         await _stop_server(self.app)
 
 
-def create_wslink_server(server_config):
+def create_webserver(server_config):
     web_app = aiohttp_web.Application()
 
     if "ws" in server_config:
