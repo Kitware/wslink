@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head prefix="og: http://ogp.me/ns#"><meta name="generator" content="Hexo 3.9.0">
+<head prefix="og: http://ogp.me/ns#">
   <meta charset="utf-8">
   <title>Contributing | Wslink</title>
   <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
@@ -31,13 +31,15 @@
   <meta name="msapplication-TileImage" content="/wslink/icon/mstile-144x144.png">
   <!-- CSS -->
   <!-- build:css build/css/navy.css -->
-  <link rel="stylesheet" href="/wslink/css/navy.css">
+  
+<link rel="stylesheet" href="/wslink/css/navy.css">
+
   <!-- endbuild -->
   <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css">
   <!-- RSS -->
-  <link rel="alternate" href="/wslink/atom.xml" title="Wslink">
+  <link rel="alternate" href="/wslink/atom.xml" title="Wslink" type="application/atom+xml">
   <!-- Open Graph -->
   <meta name="description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease follow the coding style:  Follow Airbnb JavaScript Style Guide. Use spa">
 <meta property="og:type" content="website">
@@ -45,14 +47,16 @@
 <meta property="og:url" content="https://kitware.github.io/wslink/docs/contributing.html">
 <meta property="og:site_name" content="Wslink">
 <meta property="og:description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease follow the coding style:  Follow Airbnb JavaScript Style Guide. Use spa">
-<meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2020-08-07T20:58:51.276Z">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-08-09T20:49:24.607Z">
+<meta property="article:modified_time" content="2021-08-09T20:49:24.607Z">
+<meta property="article:author" content="Kitware Inc.">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Contributing">
-<meta name="twitter:description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease follow the coding style:  Follow Airbnb JavaScript Style Guide. Use spa">
   <!-- Google Analytics -->
   
-</head>
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
 
 <body>
   <div id="container">
@@ -63,7 +67,7 @@
     </h1>
     <nav id="main-nav">
       <a href="/wslink/docs/" class="main-nav-link">Docs</a>
-      <a href="https://github.com/kitware/wslink" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
+      <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
       <div id="search-input-wrap">
         <div id="search-input-icon">
           <i class="fa fa-search"></i>
@@ -93,42 +97,40 @@
                 <p>We welcome your contributions to the development of wslink. This document will help you with the process.</p>
 <h2 id="Before-You-Start" class="article-heading"><a href="#Before-You-Start" class="headerlink" title="Before You Start"></a>Before You Start<a class="article-anchor" href="#Before-You-Start" aria-hidden="true"></a></h2><p>Please follow the coding style:</p>
 <ul>
-<li>Follow <a href="https://github.com/airbnb/javascript" target="_blank" rel="noopener">Airbnb JavaScript Style Guide</a>.</li>
+<li>Follow <a target="_blank" rel="noopener" href="https://github.com/airbnb/javascript">Airbnb JavaScript Style Guide</a>.</li>
 <li>Use spaces, not tabs, with a two space indent.</li>
 <li>Don’t put commas first.</li>
 </ul>
 <h2 id="Workflow" class="article-heading"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow<a class="article-anchor" href="#Workflow" aria-hidden="true"></a></h2><ol>
-<li>Fork <a href="https://github.com/kitware/wslink" target="_blank" rel="noopener">kitware/wslink</a>.</li>
+<li><p>Fork <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink">kitware/wslink</a>.</p>
+</li>
 <li><p>Clone the repository to your computer and install dependencies.</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ git clone https://github.com/&lt;username&gt;/wslink.git</span><br><span class="line">$ cd wslink/js</span><br><span class="line">$ npm install</span><br><span class="line">$ npm install -g commitizen</span><br><span class="line">$ cd ../python</span><br><span class="line">$ pip install -r requirements-dev.txt</span><br></pre></td></tr></table></figure>
-</li>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git clone https://github.com/&lt;username&gt;/wslink.git</span><br><span class="line">$ cd wslink/js</span><br><span class="line">$ npm install</span><br><span class="line">$ npm install -g commitizen</span><br><span class="line">$ cd ../python</span><br><span class="line">$ pip install -r requirements-dev.txt</span><br></pre></td></tr></table></figure></li>
 <li><p>Create a feature branch.</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ git checkout -b new_feature</span><br></pre></td></tr></table></figure>
-</li>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git checkout -b new_feature</span><br></pre></td></tr></table></figure></li>
 <li><p>Start hacking.</p>
 </li>
-<li>Test.</li>
+<li><p>Test.</p>
+</li>
 <li><p>Use Commitizen for commit message</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ git cz</span><br></pre></td></tr></table></figure>
-</li>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git cz</span><br></pre></td></tr></table></figure></li>
 <li><p>Push the branch:</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ git push origin new_feature</span><br></pre></td></tr></table></figure>
-</li>
+ <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git push origin new_feature</span><br></pre></td></tr></table></figure></li>
 <li><p>Create a pull request and describe the change.</p>
 </li>
 </ol>
 <h2 id="Notice" class="article-heading"><a href="#Notice" class="headerlink" title="Notice"></a>Notice<a class="article-anchor" href="#Notice" aria-hidden="true"></a></h2><ul>
-<li>Don’t modify the version number in <code>package.json</code>. It is modified automatically.</li>
-<li><p>Your pull request will only get merged when tests have passed. Don’t forget to run tests before submission.</p>
-  <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ python src/tests/testWSProtocol.py</span><br></pre></td></tr></table></figure>
+<li><p>Don’t modify the version number in <code>package.json</code>. It is modified automatically.</p>
 </li>
+<li><p>Your pull request will only get merged when tests have passed. Don’t forget to run tests before submission.</p>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ python src/tests/testWSProtocol.py</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h2 id="Updating-Documentation" class="article-heading"><a href="#Updating-Documentation" class="headerlink" title="Updating Documentation"></a>Updating Documentation<a class="article-anchor" href="#Updating-Documentation" aria-hidden="true"></a></h2><p>The wslink documentation is part of the code repository.</p>
-<h2 id="Reporting-Issues" class="article-heading"><a href="#Reporting-Issues" class="headerlink" title="Reporting Issues"></a>Reporting Issues<a class="article-anchor" href="#Reporting-Issues" aria-hidden="true"></a></h2><p>When you encounter some problems when using wslink, you can ask me on <a href="https://github.com/kitware/wslink/issues" target="_blank" rel="noopener">GitHub</a>. If you can’t find the answer, please report it on GitHub.</p>
+<h2 id="Reporting-Issues" class="article-heading"><a href="#Reporting-Issues" class="headerlink" title="Reporting Issues"></a>Reporting Issues<a class="article-anchor" href="#Reporting-Issues" aria-hidden="true"></a></h2><p>When you encounter some problems when using wslink, you can ask me on <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink/issues">GitHub</a>. If you can’t find the answer, please report it on GitHub.</p>
 
               </div>
               <footer class="article-footer">
-                <time class="article-footer-updated" datetime="2020-08-07T20:58:51.276Z" itemprop="dateModified">Last updated: 2020-08-07</time>
+                <time class="article-footer-updated" datetime="2021-08-09T20:49:24.607Z" itemprop="dateModified">Last updated: 2021-08-09</time>
                 <a href="tools.html" class="article-footer-prev" title="Developer guide"><i class="fa fa-chevron-left"></i><span>Prev</span></a>
               </footer>
               
@@ -153,7 +155,7 @@
     <footer id="footer" class="wrapper">
   <div class="inner">
     <div id="footer-copyright">
-      &copy; 2020 <a href="https://www.kitware.com/" target="_blank">Kitware Inc.</a>
+      &copy; 2021 <a href="https://www.kitware.com/" target="_blank">Kitware Inc.</a>
     </div>
     <div id="footer-links">
       <a href="https://github.com/kitware/wslink" class="footer-link" target="_blank"><i class="fa fa-github-alt"></i></a>
@@ -186,9 +188,15 @@
 </nav>
   <!-- Scripts -->
 <!-- build:js build/js/main.js -->
+
 <script src="/wslink/js/lang_select.js"></script>
+
+
 <script src="/wslink/js/toc.js"></script>
+
+
 <script src="/wslink/js/mobile_nav.js"></script>
+
 <!-- endbuild -->
 <script src="https://cdn.jsdelivr.net/retinajs/1.3.0/retina.min.js" async></script>
 
