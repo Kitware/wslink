@@ -160,8 +160,10 @@ class WslinkHandler(object):
 
     async def disconnectClients(self):
         logging.info("Closing client connections:")
-        for client_id, ws in self.connections.items():
+        keys = list(self.connections.keys())
+        for client_id in keys:
             logging.info("  {0}".format(client_id))
+            ws = self.connections[client_id]
             await ws.close(
                 code=aiohttp.WSCloseCode.GOING_AWAY, message="Server shutdown"
             )

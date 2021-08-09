@@ -114,5 +114,5 @@ class ServerProtocol(object):
     @exportRpc("application.exit.later")
     def exitLater(self, secondsLater=60):
         """RPC callback to exit after a short delay"""
-        print("schedule exit for {0} seconds from now")
+        print(f"schedule exit for {secondsLater} seconds from now")
         schedule_callback(secondsLater, self.stopServer)
