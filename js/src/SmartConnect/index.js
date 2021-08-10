@@ -4,6 +4,14 @@ import CompositeClosureHelper from '../CompositeClosureHelper';
 import ProcessLauncher from '../ProcessLauncher';
 import WebsocketConnection from '../WebsocketConnection';
 
+function DEFAULT_CONFIG_DECORATOR(config) {
+  if (config.sessionURL) {
+    config.sessionURL = config.sessionURL.replaceAll('USE_HOSTNAME', window.location.hostname);
+    config.sessionURL = config.sessionURL.replaceAll('USE_HOST', window.location.host);
+  }
+  return config;
+}
+
 export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/paraview/`,
   DEFAULT_SESSION_URL = `${
     window.location.protocol === 'https' ? 'wss' : 'ws'
@@ -51,6 +59,8 @@ function smartConnect(publicAPI, model) {
     if (model.configDecorator) {
       model.config = model.configDecorator(model.config);
     }
+    model.config = DEFAULT_CONFIG_DECORATOR(model.config);
+
     if (model.config.sessionURL) {
       // We have a direct connection URL
       session = wsConnect(publicAPI, model);
