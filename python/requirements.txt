@@ -1,4 +1,4 @@
-aiohttp==3.7.4.post0
+aiohttp>=3.7.4
 
 # platform specific
 pypiwin32==223; sys_platform == 'win32'
