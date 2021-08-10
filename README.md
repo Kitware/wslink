@@ -9,7 +9,7 @@ the overhead of encoding and decoding.
 
 ## RPC and publish/subscribe
 
-The initial users of wslink driving its development are [VTK] and [ParaViewWeb].
+The initial users of wslink driving its development are [VTK] and [ParaView].
 ParaViewWeb and vtkWeb require:
 * RPC - a remote procedure call that can be fired by the client and return
   sometime later with a response from the server, possibly an error.
@@ -31,7 +31,7 @@ to the point-to-point communication we actually use.
   - `virtualenv runtime`
   - `source runtime/Scripts/activate` (on Windows)
   - `pip install -e .` (to use current wslink for development)
-* Install node.js 6+ for the javascript client
+* Install node.js 10+ for the javascript client
 * `cd wslink/js`
 * `npm run test`
   - or:
@@ -115,7 +115,7 @@ client must embed in the rpc "id" field of its messages to the server.
 
 More extensive discussion in the [design](design.md) document.
 
-[ParaViewWeb]: https://www.paraview.org/web/
+[ParaView]: https://www.paraview.org/web/
 [virtualenv]: https://virtualenv.pypa.io/
 [VTK]: http://www.vtk.org/
 [websocket]: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket

@@ -11,7 +11,7 @@ encoding and decoding.
 RPC and publish/subscribe
 -------------------------
 
-The initial users of wslink driving its development are VTK_ and ParaViewWeb_.
+The initial users of wslink driving its development are VTK_ and ParaView_.
 ParaViewWeb and vtkWeb require:
 
 * RPC - a remote procedure call that can be fired by the client and return
@@ -33,6 +33,6 @@ License
 Free to use in open-source and commercial projects, under the BSD-3-Clause license.
 
 .. _github repo: https://github.com/kitware/wslink
-.. _ParaViewWeb: https://www.paraview.org/web/
+.. _ParaView: https://www.paraview.org/
 .. _VTK: http://www.vtk.org/
 .. _websocket: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket

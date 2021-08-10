@@ -1,64 +1,81 @@
 title: Documentation
 ---
 
-Wslink is a library that allows useful communication between a JavaScript
-client and a Python webserver over websockets.
+Wslink allows easy, bi-directional communication between a python server and a
+javascript or C++ client over a [websocket]. The client can make remote procedure
+calls (RPC) to the server, and the server can publish messages to topics that
+the client can subscribe to. The server can include binary attachments in
+these messages, which are communicated as a binary websocket message, avoiding
+the overhead of encoding and decoding.
 
-## Installation
+## RPC and publish/subscribe
 
-It only takes few minutes to set up wslink. If you encounter a problem and can't find the solution here, please [submit a GitHub issue](https://github.com/kitware/wslink/issues).
+The initial users of wslink driving its development are [VTK] and [ParaView].
+ParaViewWeb and vtkWeb require:
+* RPC - a remote procedure call that can be fired by the client and return
+  sometime later with a response from the server, possibly an error.
 
-### Requirements
+* Publish/subscribe - client can subscribe to a topic provided by the server,
+  possibly with a filter on the parts of interest. When the topic has updated
+  results, the server publishes them to the client, without further action on
+  the client's part.
 
-Installing wslink as a dependency inside your Web project is quite easy. However, you do need to have a couple of things installed first:
+Wslink is replacing a communication layer based on Autobahn WAMP, and so one
+of the goals is to be fairly compatible with WAMP, but simplify the interface
+to the point-to-point communication we actually use.
 
-- [Node.js](http://nodejs.org/)
-- [Git](http://git-scm.com/)
+## Examples
 
-If your computer already has these, congratulations! Just install wslink with npm:
-
-``` bash
-$ npm install wslink --save
+```
+git clone https://github.com/Kitware/wslink.git
+cd wslink
+python3 -m venv py-env
+source ./py-env/bin/activate
+pip install wslink
+cd ./tests/chat-rpc-pub-sub/
+python ./server/server.py --content ./www --port 1234
+> open http://localhost:1234/
 ```
 
-If not, please follow these steps to install all the requirements.
+## Existing API
 
-{% note warn For Mac users %}
-Please install Xcode from the App Store first. After Xcode is installed, open Xcode and go to **Preferences -> Download -> Command Line Tools -> Install** to install command line tools. This will avoid some problems when compiling.
-{% endnote %}
+Existing ParaViewWeb applications use these code patterns:
+* @exportRPC decorator in Python server code to register a method as being remotely callable
+* session.call("method.uri", [args]) in the JavaScript client to make an RPC call. Usually wrapped as an object method so it appears to be a normal class method.
+* session.subscribe("method.uri", callback) in JS client to initiate a pub/sub relationship.
+    * server calls self.publish("method.uri", result) to push info back to the client
 
-### Install Git
+We don't support introspection or initial handshake about which methods are
+supported - the client and server must be in sync.
 
-- Windows: Download & install [git](https://git-scm.com/download/win).
-- Mac: Install it with [Homebrew](http://mxcl.github.com/homebrew/), [MacPorts](http://www.macports.org/) or [installer](http://sourceforge.net/projects/git-osx-installer/).
-- Linux (Ubuntu, Debian): `sudo apt-get install git-core`
-- Linux (Fedora, Red Hat, CentOS): `sudo yum install git-core`
+### Binary attachments
 
-### Install Node.js
+session.addAttachment() takes binary data and stores it, returning a string key
+that will be associated with the attachment. When a message is sent that uses
+the attachment key, a text header message and a binary message is sent
+beforehand with each attachment. The client will then substitute the binary
+buffer for the string key when it receives the final message.
 
-The best way to install Node.js is with [nvm](https://github.com/creationix/nvm).
+### Subscribe
 
-Once nvm is installed, restart the terminal and run the following command to install Node.js.
+The client tracks subscriptions - the server currently blindly sends out
+messages for any data it produces which might be subscribed to. This is not
+very efficient - if the client notifies the server of a subscription, it can
+send the data only when someone is listening. The ParaViewWeb app Visualizer
+makes an RPC call after subscribing to tell the server to start publishing.
 
-``` bash
-$ nvm install 6
-```
+### Handshake
 
-Alternatively, download and run [node](http://nodejs.org/).
+When the client initially connects, it sends a 'hello' to authenticate with
+the server, so the server knows this client can handle the messages it sends,
+and the server can provide the client with a unique client ID - which the
+client must embed in the rpc "id" field of its messages to the server.
 
-### Install wslink
+* The first message the client sends should be hello, with the secret key provided by its launcher.
+* Server authenticates the key, and responds with the client ID.
+* If the client sends the wrong key or no key, the server responds with an authentication error message.
 
-This is useful if you want to embed wslink within your own application or just use some wslink components. 
-
-``` bash
-$ npm install wslink --save
-```
-
-### Getting wslink source code for contributing
-
-``` bash
-$ git clone https://github.com/kitware/wslink.git
-$ cd wslink/js
-$ npm install
-$ npm run build
-```
+[ParaView]: https://www.paraview.org/
+[virtualenv]: https://virtualenv.pypa.io/
+[VTK]: http://www.vtk.org/
+[websocket]: https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
