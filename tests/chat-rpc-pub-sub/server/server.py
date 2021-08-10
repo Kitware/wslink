@@ -56,4 +56,4 @@ if __name__ == "__main__":
     WebServer.configure(args)
 
     # Start web server
-    server.start_webserver(options=args, protocol=WebServer)
+    server.start(None, WebServer)

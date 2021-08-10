@@ -2,10 +2,7 @@ import os, time
 
 from wslink import register as exportRpc
 from wslink.websocket import LinkProtocol
-from twisted.internet import task
-
-# import Twisted reactor for later callback
-from twisted.internet import reactor
+from wslink import schedule_callback
 
 MESSAGE_LIST = [
     'Nice to meet you',
@@ -35,7 +32,7 @@ class PubSubAPI(LinkProtocol):
         self.publish(self.topic, MESSAGE_LIST[self.msgIdx])
 
         if self.keepTalking:
-            reactor.callLater(self.frequency, lambda: self.saySomething())
+            schedule_callback(self.frequency, lambda: self.saySomething())
 
 
     @exportRpc("wslink.say.hello")
