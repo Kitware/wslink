@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/kitware/wslink/compare/v1.0.3...v1.0.4) (2021-08-10)
+
+
+### Bug Fixes
+
+* **JavaScript:** SmartConnector default decorator ([2973c8f](https://github.com/kitware/wslink/commit/2973c8f0038f6a5f4106820fae833aeea24ed281))
+
 ## [1.0.3](https://github.com/kitware/wslink/compare/v1.0.2...v1.0.3) (2021-08-10)
 
 
