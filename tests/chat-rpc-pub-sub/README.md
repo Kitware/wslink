@@ -28,3 +28,9 @@ npm run build
 ## C++ client
 
 ...todo...
+
+## Running via the launcher
+
+```
+python -m wslink.launcher ./launcher.config
+```

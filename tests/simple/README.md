@@ -48,3 +48,9 @@ Then run the following steps while having the dev console open:
     1.  Redo 2-9
 12. Server Quit
     1.  Make sure the console running the server does not have any error
+
+## Running via the launcher
+
+```
+python -m wslink.launcher ./launcher.config
+```

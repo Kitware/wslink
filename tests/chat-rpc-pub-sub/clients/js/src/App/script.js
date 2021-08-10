@@ -14,7 +14,6 @@ export default {
   methods: {
     send() {
       if (this.session) {
-        console.log('say hello');
         this.session.call('wslink.say.hello', [this.txt]);
         this.txt = '';
       } else {
@@ -33,7 +32,6 @@ export default {
   },
   mounted() {
     this.allMessages += `Try to connect\n`;
-
     const smartConnect = SmartConnect.newInstance({ config: { application: 'chat'} });
 
     smartConnect.onConnectionClose((event) => {
@@ -45,9 +43,10 @@ export default {
       this.allMessages += 'WS Error\n';
       this.allMessages += JSON.stringify(event, null, 2);
     });
-    smartConnect.onConnectionReady(() => {
+
+    smartConnect.onConnectionReady((connection) => {
       this.allMessages += 'WS Connected\n';
-      this.session = smartConnect.getSession();
+      this.session = connection.getSession();
 
       this.session.subscribe(TOPIC, ([msg]) => {
         console.log('receive msg from subscription')

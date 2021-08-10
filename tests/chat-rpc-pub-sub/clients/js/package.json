@@ -10,7 +10,7 @@
   "dependencies": {
     "core-js": "^3.6.4",
     "vue": "^2.6.14",
-    "wslink": "1.0.1"
+    "wslink": "1.0.4"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.13",
