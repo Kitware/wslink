@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/kitware/wslink/compare/v1.0.2...v1.0.3) (2021-08-10)
+
+
+### Bug Fixes
+
+* **javascript:** smartConnect will apply a default config decorator ([11ce5a6](https://github.com/kitware/wslink/commit/11ce5a66372bd338080a8527b2e8c8268ac8187b))
+* **publish:** Only send publish msgs to each client once ([65ab38d](https://github.com/kitware/wslink/commit/65ab38dde2851dd8a590c4a0ccc967ba86f64bb1))
+
 ## [1.0.2](https://github.com/kitware/wslink/compare/v1.0.1...v1.0.2) (2021-08-10)
 
 
