@@ -37,6 +37,7 @@ class PubSubAPI(LinkProtocol):
 
     @exportRpc("wslink.say.hello")
     def sayHello(self, message):
+        print('sayHello', message)
         msgToPost = 'py server: %s' % message
         self.publish(self.topic, msgToPost)
         return msgToPost

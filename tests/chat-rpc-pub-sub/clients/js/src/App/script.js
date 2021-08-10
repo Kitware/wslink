@@ -1,4 +1,4 @@
-import WebsocketConnection from 'wslink/src/WebsocketConnection';
+import SmartConnect from 'wslink/src/SmartConnect';
 
 const TOPIC = 'wslink.communication.channel';
 
@@ -14,6 +14,7 @@ export default {
   methods: {
     send() {
       if (this.session) {
+        console.log('say hello');
         this.session.call('wslink.say.hello', [this.txt]);
         this.txt = '';
       } else {
@@ -31,28 +32,30 @@ export default {
     },
   },
   mounted() {
-    this.allMessages += `Try to connect to ws://${window.location.host}/ws\n`;
-    const ws = WebsocketConnection.newInstance({ urls: `ws://${window.location.host}/ws` });
-    ws.onConnectionClose((event) => {
+    this.allMessages += `Try to connect\n`;
+
+    const smartConnect = SmartConnect.newInstance({ config: { application: 'chat'} });
+
+    smartConnect.onConnectionClose((event) => {
       this.allMessages += 'WS Close\n';
       this.allMessages += JSON.stringify(event, null, 2);
     });
 
-    ws.onConnectionError((event) => {
+    smartConnect.onConnectionError((event) => {
       this.allMessages += 'WS Error\n';
       this.allMessages += JSON.stringify(event, null, 2);
     });
-
-    ws.onConnectionReady(() => {
+    smartConnect.onConnectionReady(() => {
       this.allMessages += 'WS Connected\n';
-      this.session = ws.getSession();
+      this.session = smartConnect.getSession();
 
       this.session.subscribe(TOPIC, ([msg]) => {
+        console.log('receive msg from subscription')
         this.allMessages += msg;
         this.allMessages += '\n';
       });
     });
 
-    ws.connect();
+    smartConnect.connect();
   },
 }

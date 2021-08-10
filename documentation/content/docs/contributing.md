@@ -96,7 +96,7 @@ Make sure your venv is activated (`source ./py-env/bin/activate`).
 __chat-rpc-pub-sub__
 ```
 cd ./tests/chat-rpc-pub-sub
-python ./server/server.py --port 1234 --content ./www/ --host 0.0.0.0
+python ./server/chat.py --port 1234 --content ./www/ --host 0.0.0.0
 
 # Open several web clients
 # => http://localhost:1234/

@@ -7,7 +7,7 @@ This is a test application that illustrate how to setup a Python server with a W
 If you have `wslink` installed on your python you can run the following command
 
 ```sh
-python ./server/server.py --content ./www --port 8080
+python ./server/chat.py --content ./www --port 8080
 ```
 
 Then open your browser on `http://localhost:8080/`
