@@ -79,6 +79,7 @@ function smartConnect(publicAPI, model) {
           } else {
             model.config = Object.assign({}, model.config, data);
           }
+          model.config = DEFAULT_CONFIG_DECORATOR(model.config);
 
           session = wsConnect(publicAPI, model);
         })
@@ -90,6 +91,7 @@ function smartConnect(publicAPI, model) {
           } else {
             // Try to use standard connection URL
             model.config.sessionURL = DEFAULT_SESSION_URL;
+            model.config = DEFAULT_CONFIG_DECORATOR(model.config);
             session = wsConnect(publicAPI, model);
           }
         })
