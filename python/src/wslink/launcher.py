@@ -587,6 +587,13 @@ def start(argv=None, description="wslink Web Launcher"):
     backends.launcher_start(args, config, backend=args.backend)
 
 
+# Used for backward compatibility
+
+
+def startWebServer(args, config, backend="aiohttp"):
+    return backends.launcher_start(args, config, backend=backend)
+
+
 # =============================================================================
 # Main
 # =============================================================================

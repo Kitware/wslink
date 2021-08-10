@@ -16,6 +16,8 @@ from random import choice
 
 import aiohttp.web as aiohttp_web
 
+from . import _root_handler
+
 from wslink.launcher import (
     SessionManager,
     ProxyMappingManagerTXT,
@@ -237,6 +239,7 @@ def startWebServer(options, config):
     )
 
     if len(content) > 0:
+        web_app.router.add_route("GET", "/", _root_handler)
         web_app.add_routes([aiohttp_web.static("/", content)])
 
     aiohttp_web.run_app(web_app, host=host, port=port)

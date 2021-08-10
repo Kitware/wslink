@@ -15,6 +15,7 @@ from wslink import publish as pub
 import aiohttp
 import aiohttp.web as aiohttp_web
 
+
 async def _on_startup(app):
     # Emit an expected log message so launcher.py knows we've started up.
     logging.critical("wslink: Starting factory")
@@ -28,6 +29,10 @@ async def _on_startup(app):
 def _schedule_shutdown(app):
     timeout = app["state"]["server_config"]["timeout"]
     app["state"]["shutdown_task"] = schedule_coroutine(timeout, _stop_server, app)
+
+
+async def _root_handler(request):
+    return aiohttp.web.HTTPFound("/index.html")
 
 
 async def _stop_server(app):
@@ -123,6 +128,8 @@ def create_webserver(server_config):
         for route, server_path in static_routes.items():
             routes.append(aiohttp_web.static(_fix_path(route), server_path))
 
+        # Resolve / => /index.html
+        web_app.router.add_route("GET", "/", _root_handler)
         web_app.add_routes(routes)
 
     if "logging_level" in server_config and server_config["logging_level"]:
