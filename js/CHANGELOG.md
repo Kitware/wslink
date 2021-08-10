@@ -1,3 +1,11 @@
+## [1.0.1](https://github.com/kitware/wslink/compare/v1.0.0...v1.0.1) (2021-08-10)
+
+
+### Bug Fixes
+
+* **js:** Small code cleanup ([58e025e](https://github.com/kitware/wslink/commit/58e025efd4f4f3f6deca3c8b88a6046d601fe183))
+* **Python:** Better isolate backends implementations ([457b181](https://github.com/kitware/wslink/commit/457b181840804831272c5820ce77dfccf16c3d6e))
+
 # [1.0.0](https://github.com/kitware/wslink/compare/v0.1.10...v1.0.0) (2021-08-09)
 
 
