@@ -41,15 +41,15 @@
   <!-- RSS -->
   <link rel="alternate" href="/wslink/atom.xml" title="Wslink" type="application/atom+xml">
   <!-- Open Graph -->
-  <meta name="description" content="Wslink is a library that allows useful communication between a JavaScriptclient and a Python webserver over websockets. InstallationIt only takes few minutes to set up wslink. If you encounter a probl">
+  <meta name="description" content="Wslink allows easy, bi-directional communication between a python server and ajavascript or C++ client over a websocket. The client can make remote procedurecalls (RPC) to the server, and the server c">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Documentation">
 <meta property="og:url" content="https://kitware.github.io/wslink/docs/index.html">
 <meta property="og:site_name" content="Wslink">
-<meta property="og:description" content="Wslink is a library that allows useful communication between a JavaScriptclient and a Python webserver over websockets. InstallationIt only takes few minutes to set up wslink. If you encounter a probl">
+<meta property="og:description" content="Wslink allows easy, bi-directional communication between a python server and ajavascript or C++ client over a websocket. The client can make remote procedurecalls (RPC) to the server, and the server c">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2021-08-10T17:33:02.706Z">
-<meta property="article:modified_time" content="2021-08-10T17:33:02.706Z">
+<meta property="article:published_time" content="2021-08-10T19:04:34.357Z">
+<meta property="article:modified_time" content="2021-08-10T19:04:34.357Z">
 <meta property="article:author" content="Kitware Inc.">
 <meta name="twitter:card" content="summary">
   <!-- Google Analytics -->
@@ -94,40 +94,40 @@
                 <h1 class="article-title" itemprop="name">Documentation</h1>
               </header>
               <div class="article-content" itemprop="articleBody">
-                <p>Wslink is a library that allows useful communication between a JavaScript<br>client and a Python webserver over websockets.</p>
-<h2 id="Installation" class="article-heading"><a href="#Installation" class="headerlink" title="Installation"></a>Installation<a class="article-anchor" href="#Installation" aria-hidden="true"></a></h2><p>It only takes few minutes to set up wslink. If you encounter a problem and can’t find the solution here, please <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink/issues">submit a GitHub issue</a>.</p>
-<h3 id="Requirements" class="article-heading"><a href="#Requirements" class="headerlink" title="Requirements"></a>Requirements<a class="article-anchor" href="#Requirements" aria-hidden="true"></a></h3><p>Installing wslink as a dependency inside your Web project is quite easy. However, you do need to have a couple of things installed first:</p>
+                <p>Wslink allows easy, bi-directional communication between a python server and a<br>javascript or C++ client over a <a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket">websocket</a>. The client can make remote procedure<br>calls (RPC) to the server, and the server can publish messages to topics that<br>the client can subscribe to. The server can include binary attachments in<br>these messages, which are communicated as a binary websocket message, avoiding<br>the overhead of encoding and decoding.</p>
+<h2 id="RPC-and-publish-subscribe" class="article-heading"><a href="#RPC-and-publish-subscribe" class="headerlink" title="RPC and publish/subscribe"></a>RPC and publish/subscribe<a class="article-anchor" href="#RPC-and-publish-subscribe" aria-hidden="true"></a></h2><p>The initial users of wslink driving its development are <a target="_blank" rel="noopener" href="http://www.vtk.org/">VTK</a> and <a target="_blank" rel="noopener" href="https://www.paraview.org/">ParaView</a>.<br>ParaViewWeb and vtkWeb require:</p>
 <ul>
-<li><a target="_blank" rel="noopener" href="http://nodejs.org/">Node.js</a></li>
-<li><a target="_blank" rel="noopener" href="http://git-scm.com/">Git</a></li>
+<li><p>RPC - a remote procedure call that can be fired by the client and return<br>sometime later with a response from the server, possibly an error.</p>
+</li>
+<li><p>Publish/subscribe - client can subscribe to a topic provided by the server,<br>possibly with a filter on the parts of interest. When the topic has updated<br>results, the server publishes them to the client, without further action on<br>the client’s part.</p>
+</li>
 </ul>
-<p>If your computer already has these, congratulations! Just install wslink with npm:</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ npm install wslink --save</span><br></pre></td></tr></table></figure>
+<p>Wslink is replacing a communication layer based on Autobahn WAMP, and so one<br>of the goals is to be fairly compatible with WAMP, but simplify the interface<br>to the point-to-point communication we actually use.</p>
+<h2 id="Examples" class="article-heading"><a href="#Examples" class="headerlink" title="Examples"></a>Examples<a class="article-anchor" href="#Examples" aria-hidden="true"></a></h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/Kitware/wslink.git</span><br><span class="line">cd wslink</span><br><span class="line">python3 -m venv py-env</span><br><span class="line">source ./py-env/bin/activate</span><br><span class="line">pip install wslink</span><br><span class="line">cd ./tests/chat-rpc-pub-sub/</span><br><span class="line">python ./server/server.py --content ./www --port 1234</span><br><span class="line">&gt; open http://localhost:1234/</span><br></pre></td></tr></table></figure>
 
-<p>If not, please follow these steps to install all the requirements.</p>
-<blockquote class="note warn"><strong class="note-title">For Mac users</strong><p>Please install Xcode from the App Store first. After Xcode is installed, open Xcode and go to <strong>Preferences -&gt; Download -&gt; Command Line Tools -&gt; Install</strong> to install command line tools. This will avoid some problems when compiling.</p>
-</blockquote>
-
-<h3 id="Install-Git" class="article-heading"><a href="#Install-Git" class="headerlink" title="Install Git"></a>Install Git<a class="article-anchor" href="#Install-Git" aria-hidden="true"></a></h3><ul>
-<li>Windows: Download &amp; install <a target="_blank" rel="noopener" href="https://git-scm.com/download/win">git</a>.</li>
-<li>Mac: Install it with <a target="_blank" rel="noopener" href="http://mxcl.github.com/homebrew/">Homebrew</a>, <a target="_blank" rel="noopener" href="http://www.macports.org/">MacPorts</a> or <a target="_blank" rel="noopener" href="http://sourceforge.net/projects/git-osx-installer/">installer</a>.</li>
-<li>Linux (Ubuntu, Debian): <code>sudo apt-get install git-core</code></li>
-<li>Linux (Fedora, Red Hat, CentOS): <code>sudo yum install git-core</code></li>
+<h2 id="Existing-API" class="article-heading"><a href="#Existing-API" class="headerlink" title="Existing API"></a>Existing API<a class="article-anchor" href="#Existing-API" aria-hidden="true"></a></h2><p>Existing ParaViewWeb applications use these code patterns:</p>
+<ul>
+<li>@exportRPC decorator in Python server code to register a method as being remotely callable</li>
+<li>session.call(“method.uri”, [args]) in the JavaScript client to make an RPC call. Usually wrapped as an object method so it appears to be a normal class method.</li>
+<li>session.subscribe(“method.uri”, callback) in JS client to initiate a pub/sub relationship.<ul>
+<li>server calls self.publish(“method.uri”, result) to push info back to the client</li>
 </ul>
-<h3 id="Install-Node-js" class="article-heading"><a href="#Install-Node-js" class="headerlink" title="Install Node.js"></a>Install Node.js<a class="article-anchor" href="#Install-Node-js" aria-hidden="true"></a></h3><p>The best way to install Node.js is with <a target="_blank" rel="noopener" href="https://github.com/creationix/nvm">nvm</a>.</p>
-<p>Once nvm is installed, restart the terminal and run the following command to install Node.js.</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ nvm install 6</span><br></pre></td></tr></table></figure>
-
-<p>Alternatively, download and run <a target="_blank" rel="noopener" href="http://nodejs.org/">node</a>.</p>
-<h3 id="Install-wslink" class="article-heading"><a href="#Install-wslink" class="headerlink" title="Install wslink"></a>Install wslink<a class="article-anchor" href="#Install-wslink" aria-hidden="true"></a></h3><p>This is useful if you want to embed wslink within your own application or just use some wslink components. </p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ npm install wslink --save</span><br></pre></td></tr></table></figure>
-
-<h3 id="Getting-wslink-source-code-for-contributing" class="article-heading"><a href="#Getting-wslink-source-code-for-contributing" class="headerlink" title="Getting wslink source code for contributing"></a>Getting wslink source code for contributing<a class="article-anchor" href="#Getting-wslink-source-code-for-contributing" aria-hidden="true"></a></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> https://github.com/kitware/wslink.git</span><br><span class="line">$ <span class="built_in">cd</span> wslink/js</span><br><span class="line">$ npm install</span><br><span class="line">$ npm run build</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>We don’t support introspection or initial handshake about which methods are<br>supported - the client and server must be in sync.</p>
+<h3 id="Binary-attachments" class="article-heading"><a href="#Binary-attachments" class="headerlink" title="Binary attachments"></a>Binary attachments<a class="article-anchor" href="#Binary-attachments" aria-hidden="true"></a></h3><p>session.addAttachment() takes binary data and stores it, returning a string key<br>that will be associated with the attachment. When a message is sent that uses<br>the attachment key, a text header message and a binary message is sent<br>beforehand with each attachment. The client will then substitute the binary<br>buffer for the string key when it receives the final message.</p>
+<h3 id="Subscribe" class="article-heading"><a href="#Subscribe" class="headerlink" title="Subscribe"></a>Subscribe<a class="article-anchor" href="#Subscribe" aria-hidden="true"></a></h3><p>The client tracks subscriptions - the server currently blindly sends out<br>messages for any data it produces which might be subscribed to. This is not<br>very efficient - if the client notifies the server of a subscription, it can<br>send the data only when someone is listening. The ParaViewWeb app Visualizer<br>makes an RPC call after subscribing to tell the server to start publishing.</p>
+<h3 id="Handshake" class="article-heading"><a href="#Handshake" class="headerlink" title="Handshake"></a>Handshake<a class="article-anchor" href="#Handshake" aria-hidden="true"></a></h3><p>When the client initially connects, it sends a ‘hello’ to authenticate with<br>the server, so the server knows this client can handle the messages it sends,<br>and the server can provide the client with a unique client ID - which the<br>client must embed in the rpc “id” field of its messages to the server.</p>
+<ul>
+<li>The first message the client sends should be hello, with the secret key provided by its launcher.</li>
+<li>Server authenticates the key, and responds with the client ID.</li>
+<li>If the client sends the wrong key or no key, the server responds with an authentication error message.</li>
+</ul>
 
               </div>
               <footer class="article-footer">
-                <time class="article-footer-updated" datetime="2021-08-10T17:33:02.706Z" itemprop="dateModified">Last updated: 2021-08-10</time>
-                <a href="tools.html" class="article-footer-next" title="Developer guide"><span>Next</span><i class="fa fa-chevron-right"></i></a>
+                <time class="article-footer-updated" datetime="2021-08-10T19:04:34.357Z" itemprop="dateModified">Last updated: 2021-08-10</time>
+                <a href="contributing.html" class="article-footer-next" title="Contributing"><span>Next</span><i class="fa fa-chevron-right"></i></a>
               </footer>
               
             </div>
@@ -135,14 +135,14 @@
           <aside id="article-toc" role="navigation">
             <div id="article-toc-inner">
               <strong class="sidebar-title">Contents</strong>
-              <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Installation"><span class="toc-text">Installation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Requirements"><span class="toc-text">Requirements</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Install-Git"><span class="toc-text">Install Git</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Install-Node-js"><span class="toc-text">Install Node.js</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Install-wslink"><span class="toc-text">Install wslink</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Getting-wslink-source-code-for-contributing"><span class="toc-text">Getting wslink source code for contributing</span></a></li></ol></li></ol>
+              <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#RPC-and-publish-subscribe"><span class="toc-text">RPC and publish&#x2F;subscribe</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Examples"><span class="toc-text">Examples</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Existing-API"><span class="toc-text">Existing API</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Binary-attachments"><span class="toc-text">Binary attachments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Subscribe"><span class="toc-text">Subscribe</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Handshake"><span class="toc-text">Handshake</span></a></li></ol></li></ol>
               <a href="#" id="article-toc-top">Back to Top</a>
             </div>
           </aside>
         </div>
       </article>
       <aside id="sidebar" role="navigation">
-  <div class="inner"><strong class="sidebar-title">Getting Started</strong><a href="index.html" class="sidebar-link current">Overview</a><strong class="sidebar-title">Development</strong><a href="tools.html" class="sidebar-link">Developer guide</a><a href="contributing.html" class="sidebar-link">Contributing</a></div>
+  <div class="inner"><strong class="sidebar-title">Getting Started</strong><a href="index.html" class="sidebar-link current">Overview</a><a href="contributing.html" class="sidebar-link">Contributing</a></div>
 </aside>
     </div>
   </div>
@@ -170,7 +170,7 @@
       </li>
     </ul>
     
-      <strong class="mobile-nav-title">Getting Started</strong><a href="index.html" class="mobile-nav-link current">Overview</a><strong class="mobile-nav-title">Development</strong><a href="tools.html" class="mobile-nav-link">Developer guide</a><a href="contributing.html" class="mobile-nav-link">Contributing</a>
+      <strong class="mobile-nav-title">Getting Started</strong><a href="index.html" class="mobile-nav-link current">Overview</a><a href="contributing.html" class="mobile-nav-link">Contributing</a>
     
   </div>
   <div id="mobile-lang-select-wrap">

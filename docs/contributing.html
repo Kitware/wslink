@@ -41,15 +41,15 @@
   <!-- RSS -->
   <link rel="alternate" href="/wslink/atom.xml" title="Wslink" type="application/atom+xml">
   <!-- Open Graph -->
-  <meta name="description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease follow the coding style:  Follow Airbnb JavaScript Style Guide. Use spa">
+  <meta name="description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease format the code using black for Python and prettier for JavaScript. Ple">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Contributing">
 <meta property="og:url" content="https://kitware.github.io/wslink/docs/contributing.html">
 <meta property="og:site_name" content="Wslink">
-<meta property="og:description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease follow the coding style:  Follow Airbnb JavaScript Style Guide. Use spa">
+<meta property="og:description" content="We welcome your contributions to the development of wslink. This document will help you with the process. Before You StartPlease format the code using black for Python and prettier for JavaScript. Ple">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2021-08-10T17:33:02.706Z">
-<meta property="article:modified_time" content="2021-08-10T17:33:02.706Z">
+<meta property="article:published_time" content="2021-08-10T19:04:34.357Z">
+<meta property="article:modified_time" content="2021-08-10T19:04:34.357Z">
 <meta property="article:author" content="Kitware Inc.">
 <meta name="twitter:card" content="summary">
   <!-- Google Analytics -->
@@ -95,43 +95,69 @@
               </header>
               <div class="article-content" itemprop="articleBody">
                 <p>We welcome your contributions to the development of wslink. This document will help you with the process.</p>
-<h2 id="Before-You-Start" class="article-heading"><a href="#Before-You-Start" class="headerlink" title="Before You Start"></a>Before You Start<a class="article-anchor" href="#Before-You-Start" aria-hidden="true"></a></h2><p>Please follow the coding style:</p>
-<ul>
-<li>Follow <a target="_blank" rel="noopener" href="https://github.com/airbnb/javascript">Airbnb JavaScript Style Guide</a>.</li>
-<li>Use spaces, not tabs, with a two space indent.</li>
-<li>Don’t put commas first.</li>
-</ul>
+<h2 id="Before-You-Start" class="article-heading"><a href="#Before-You-Start" class="headerlink" title="Before You Start"></a>Before You Start<a class="article-anchor" href="#Before-You-Start" aria-hidden="true"></a></h2><p>Please format the code using <code>black</code> for Python and <code>prettier</code> for JavaScript. Please find below how to use them:</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># For JavaScript</span><br><span class="line">cd ./js</span><br><span class="line">npm ci</span><br><span class="line">npm run prettier</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># For Python</span><br><span class="line">black ./python</span><br></pre></td></tr></table></figure>
+
 <h2 id="Workflow" class="article-heading"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow<a class="article-anchor" href="#Workflow" aria-hidden="true"></a></h2><ol>
-<li><p>Fork <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink">kitware/wslink</a>.</p>
-</li>
-<li><p>Clone the repository to your computer and install dependencies.</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git clone https://github.com/&lt;username&gt;/wslink.git</span><br><span class="line">$ cd wslink/js</span><br><span class="line">$ npm install</span><br><span class="line">$ npm install -g commitizen</span><br><span class="line">$ cd ../python</span><br><span class="line">$ pip install -r requirements-dev.txt</span><br></pre></td></tr></table></figure></li>
-<li><p>Create a feature branch.</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git checkout -b new_feature</span><br></pre></td></tr></table></figure></li>
-<li><p>Start hacking.</p>
-</li>
-<li><p>Test.</p>
-</li>
-<li><p>Use Commitizen for commit message</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git cz</span><br></pre></td></tr></table></figure></li>
-<li><p>Push the branch:</p>
- <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git push origin new_feature</span><br></pre></td></tr></table></figure></li>
-<li><p>Create a pull request and describe the change.</p>
-</li>
+<li>Fork <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink">kitware/wslink</a>.</li>
+<li>Clone the repository to your computer and install dependencies.</li>
 </ol>
-<h2 id="Notice" class="article-heading"><a href="#Notice" class="headerlink" title="Notice"></a>Notice<a class="article-anchor" href="#Notice" aria-hidden="true"></a></h2><ul>
-<li><p>Don’t modify the version number in <code>package.json</code>. It is modified automatically.</p>
-</li>
-<li><p>Your pull request will only get merged when tests have passed. Don’t forget to run tests before submission.</p>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ python src/tests/testWSProtocol.py</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git clone https://github.com/&lt;username&gt;/wslink.git</span><br><span class="line">$ cd wslink/js</span><br><span class="line">$ npm install</span><br><span class="line">$ cd ../python</span><br><span class="line">$ pip install -r requirements-dev.txt</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Create a feature branch.</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git checkout -b new_feature</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>Start hacking.</li>
+<li>Test.</li>
+<li>Use Commitizen for commit message</li>
+</ol>
+<p>It does not matter if your changes only happened outside of the JavaScript client. Commitizen is just well integrated into JavaScript and therefore you can use it for commiting any changes.</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ cd ./js</span><br><span class="line">$ npm run commit</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>Push the branch:</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">$ git push origin new_feature</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>Create a pull request and describe the change.</li>
+</ol>
+<h2 id="Notice" class="article-heading"><a href="#Notice" class="headerlink" title="Notice"></a>Notice<a class="article-anchor" href="#Notice" aria-hidden="true"></a></h2><p>Semantic-release <a target="_blank" rel="noopener" href="https://gist.github.com/stephenparish/9941e89d80e2bc58a153">convention</a> is used to write commit messages so we can automate change-log generation along with creating a new release for the JavaScript (npm) and Python (PyPI) based on your commit. No need to edit any version number, it will be automatically generated.</p>
+<p>Unfortunately we did not managed to fully automate the testing. This means the testing will need to happen manually. Please refer to the testing checklist for running them on your system.</p>
+<h2 id="Testing-checklist" class="article-heading"><a href="#Testing-checklist" class="headerlink" title="Testing checklist"></a>Testing checklist<a class="article-anchor" href="#Testing-checklist" aria-hidden="true"></a></h2><h3 id="Dev-environment-setup" class="article-heading"><a href="#Dev-environment-setup" class="headerlink" title="Dev environment setup"></a>Dev environment setup<a class="article-anchor" href="#Dev-environment-setup" aria-hidden="true"></a></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">python3 -m venv py-env</span><br><span class="line">source ./py-env/bin/activate</span><br><span class="line">pip install --upgrade -e ./python</span><br></pre></td></tr></table></figure>
+
+<h3 id="Build-web-tests" class="article-heading"><a href="#Build-web-tests" class="headerlink" title="Build web tests"></a>Build web tests<a class="article-anchor" href="#Build-web-tests" aria-hidden="true"></a></h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ./js</span><br><span class="line">npm ci</span><br><span class="line">npm run build:test</span><br></pre></td></tr></table></figure>
+
+<p>And</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ./tests/chat-rpc-pub-sub/clients/js</span><br><span class="line">npm ci</span><br><span class="line">npm run build</span><br></pre></td></tr></table></figure>
+
+<h3 id="Running-tests" class="article-heading"><a href="#Running-tests" class="headerlink" title="Running tests"></a>Running tests<a class="article-anchor" href="#Running-tests" aria-hidden="true"></a></h3><p>Make sure your venv is activated (<code>source ./py-env/bin/activate</code>).</p>
+<p><strong>chat-rpc-pub-sub</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ./tests/chat-rpc-pub-sub</span><br><span class="line">python ./server/server.py --port 1234 --content ./www/ --host 0.0.0.0</span><br><span class="line"></span><br><span class="line"># Open several web clients</span><br><span class="line"># =&gt; http://localhost:1234/</span><br><span class="line"></span><br><span class="line">1. Make sure each client see the messages from any other clients</span><br><span class="line">2. When n clients are connected, each message should be seen only</span><br><span class="line">   once on each client.</span><br></pre></td></tr></table></figure>
+
+<p><strong>simple</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cd ./tests/simple</span><br><span class="line">python ./server/simple.py --port 1234 --content ./www/ --host 0.0.0.0</span><br><span class="line"></span><br><span class="line"># Open 1 web clients</span><br><span class="line"># =&gt; http://localhost:1234/</span><br><span class="line"></span><br><span class="line">Then run the following steps while having the dev console open:</span><br><span class="line">1. Connect</span><br><span class="line">   &gt; WS open</span><br><span class="line">2. Send Add</span><br><span class="line">   &gt; result 15</span><br><span class="line">3. Send Mult</span><br><span class="line">   &gt; result 120</span><br><span class="line">4. Send Image</span><br><span class="line">   &gt; result [object Blob]</span><br><span class="line">   The GreenBlue Kitware logo should be visible in the page</span><br><span class="line">5. Test Nesting</span><br><span class="line">   In the debug console you should see `Nesting: &#123; bytesList: [Blob, Blob], # image: &#123; blob: Blob &#125; &#125;</span><br><span class="line">6. Sub/Unsub</span><br><span class="line">   &gt; result [object Object]</span><br><span class="line">   You should see the picture toggle between GreenBlue / ~RedPurple</span><br><span class="line">7. Sub/Unsub</span><br><span class="line">   &gt; result [object Object]</span><br><span class="line">   The picture update should stop</span><br><span class="line">8. Mistake</span><br><span class="line">   &gt; error: -32601, &quot;Unregistered method called&quot;, myprotocol.mistake.TYPO</span><br><span class="line">9. Test NaN</span><br><span class="line">   &gt; result Infinity,NaN,-Infinity</span><br><span class="line">10. Disconnect</span><br><span class="line">11. Connect</span><br><span class="line">    Redo 2-9</span><br><span class="line">12. Server Quit</span><br><span class="line">    Make sure the console running the server does not have any error</span><br></pre></td></tr></table></figure>
+
+<h2 id="Updating-Documentation" class="article-heading"><a href="#Updating-Documentation" class="headerlink" title="Updating Documentation"></a>Updating Documentation<a class="article-anchor" href="#Updating-Documentation" aria-hidden="true"></a></h2><p>The wslink documentation is part of the code repository. Feel free to update any guide <code>./documentation/content/docs/*.md</code>.</p>
+<p>wslink’s webpages are on <a href="https://kitware.github.io/wslink/">Github Pages</a> and are generated using <a target="_blank" rel="noopener" href="https://github.com/Kitware/kw-doc">kw-doc</a>. It should be automatically updated by our CI when a commit is made to the master branch. To test what website will look locally, follow those steps:</p>
+<ul>
+<li><code>cd js/</code></li>
+<li><code>npm run doc:www</code><ul>
+<li>test the docs locally</li>
 </ul>
-<h2 id="Updating-Documentation" class="article-heading"><a href="#Updating-Documentation" class="headerlink" title="Updating Documentation"></a>Updating Documentation<a class="article-anchor" href="#Updating-Documentation" aria-hidden="true"></a></h2><p>The wslink documentation is part of the code repository.</p>
+</li>
+</ul>
 <h2 id="Reporting-Issues" class="article-heading"><a href="#Reporting-Issues" class="headerlink" title="Reporting Issues"></a>Reporting Issues<a class="article-anchor" href="#Reporting-Issues" aria-hidden="true"></a></h2><p>When you encounter some problems when using wslink, you can ask me on <a target="_blank" rel="noopener" href="https://github.com/kitware/wslink/issues">GitHub</a>. If you can’t find the answer, please report it on GitHub.</p>
 
               </div>
               <footer class="article-footer">
-                <time class="article-footer-updated" datetime="2021-08-10T17:33:02.706Z" itemprop="dateModified">Last updated: 2021-08-10</time>
-                <a href="tools.html" class="article-footer-prev" title="Developer guide"><i class="fa fa-chevron-left"></i><span>Prev</span></a>
+                <time class="article-footer-updated" datetime="2021-08-10T19:04:34.357Z" itemprop="dateModified">Last updated: 2021-08-10</time>
+                <a href="index.html" class="article-footer-prev" title="Overview"><i class="fa fa-chevron-left"></i><span>Prev</span></a>
               </footer>
               
             </div>
@@ -139,14 +165,14 @@
           <aside id="article-toc" role="navigation">
             <div id="article-toc-inner">
               <strong class="sidebar-title">Contents</strong>
-              <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Before-You-Start"><span class="toc-text">Before You Start</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Workflow"><span class="toc-text">Workflow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Notice"><span class="toc-text">Notice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Updating-Documentation"><span class="toc-text">Updating Documentation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reporting-Issues"><span class="toc-text">Reporting Issues</span></a></li></ol>
+              <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Before-You-Start"><span class="toc-text">Before You Start</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Workflow"><span class="toc-text">Workflow</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Notice"><span class="toc-text">Notice</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Testing-checklist"><span class="toc-text">Testing checklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dev-environment-setup"><span class="toc-text">Dev environment setup</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Build-web-tests"><span class="toc-text">Build web tests</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running-tests"><span class="toc-text">Running tests</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Updating-Documentation"><span class="toc-text">Updating Documentation</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reporting-Issues"><span class="toc-text">Reporting Issues</span></a></li></ol>
               <a href="#" id="article-toc-top">Back to Top</a>
             </div>
           </aside>
         </div>
       </article>
       <aside id="sidebar" role="navigation">
-  <div class="inner"><strong class="sidebar-title">Getting Started</strong><a href="index.html" class="sidebar-link">Overview</a><strong class="sidebar-title">Development</strong><a href="tools.html" class="sidebar-link">Developer guide</a><a href="contributing.html" class="sidebar-link current">Contributing</a></div>
+  <div class="inner"><strong class="sidebar-title">Getting Started</strong><a href="index.html" class="sidebar-link">Overview</a><a href="contributing.html" class="sidebar-link current">Contributing</a></div>
 </aside>
     </div>
   </div>
@@ -174,7 +200,7 @@
       </li>
     </ul>
     
-      <strong class="mobile-nav-title">Getting Started</strong><a href="index.html" class="mobile-nav-link">Overview</a><strong class="mobile-nav-title">Development</strong><a href="tools.html" class="mobile-nav-link">Developer guide</a><a href="contributing.html" class="mobile-nav-link current">Contributing</a>
+      <strong class="mobile-nav-title">Getting Started</strong><a href="index.html" class="mobile-nav-link">Overview</a><a href="contributing.html" class="mobile-nav-link current">Contributing</a>
     
   </div>
   <div id="mobile-lang-select-wrap">
