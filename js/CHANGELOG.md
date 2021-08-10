@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/kitware/wslink/compare/v1.0.1...v1.0.2) (2021-08-10)
+
+
+### Bug Fixes
+
+* **http:** Automatically server index.html ([e43dde4](https://github.com/kitware/wslink/commit/e43dde43af797ed73f92d1b6a1b6adbd2078ea49))
+* **scheduling:** Support scheduling tasks before server starts ([17c6750](https://github.com/kitware/wslink/commit/17c6750cc98424ae6e28067b08a34fbb428f19c1))
+
 ## [1.0.1](https://github.com/kitware/wslink/compare/v1.0.0...v1.0.1) (2021-08-10)
 
 
