@@ -46,7 +46,10 @@ def schedule_callback(delay, callback, *args, **kwargs):
     asyncio.TimerHandle on which cancel() can be called to cancel the
     eventual invocation of the callback.
     """
-    loop = asyncio.get_running_loop()
+    # Using "asyncio.get_running_loop()" requires the event loop to be running
+    # already, so we use "asyncio.get_event_loop()" here so that we can support
+    # scheduling tasks before the server is started.
+    loop = asyncio.get_event_loop()
     return loop.call_later(delay, functools.partial(callback, *args, **kwargs))
 
 
@@ -66,6 +69,7 @@ def schedule_coroutine(delay, coro_func, *args, **kwargs):
     returned by "call_later", python prints "RuntimeWarning: coroutine
     '<coro-name>' was never awaited".
     """
-    loop = asyncio.get_running_loop()
+    # See method above for comment on "get_event_loop()" vs "get_running_loop()".
+    loop = asyncio.get_event_loop()
     coro_partial = functools.partial(coro_func, *args, **kwargs)
     return loop.call_later(delay, lambda: asyncio.ensure_future(coro_partial()))
