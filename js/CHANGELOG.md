@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/kitware/wslink/compare/v1.0.4...v1.0.5) (2021-08-13)
+
+
+### Bug Fixes
+
+* **python:** prevent raise condition when sending attachements ([667e68e](https://github.com/kitware/wslink/commit/667e68e947d4e6b6ef253cfc06891fd703e0c592))
+
 ## [1.0.4](https://github.com/kitware/wslink/compare/v1.0.3...v1.0.4) (2021-08-10)
 
 
