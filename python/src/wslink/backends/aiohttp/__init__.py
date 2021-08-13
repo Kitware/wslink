@@ -160,6 +160,7 @@ class WslinkHandler(object):
         self.attachmentsReceived = {}
         self.attachmentsRecvQueue = []
         self.connections = {}
+        self.attachment_atomic = asyncio.Lock()
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
         if self.getServerProtocol():
@@ -426,20 +427,28 @@ class WslinkHandler(object):
                         found_keys.append(key)
                     # increment  for key
                     pub.publishManager.registerAttachment(key)
-                    # send header
-                    header = {
-                        "wslink": "1.0",
-                        "method": "wslink.binary.attachment",
-                        "args": [key],
-                    }
-                    json_header = json.dumps(header, ensure_ascii=False)
+
+            for key in found_keys:
+                # send header
+                header = {
+                    "wslink": "1.0",
+                    "method": "wslink.binary.attachment",
+                    "args": [key],
+                }
+                json_header = json.dumps(header, ensure_ascii=False)
+
+                # aiohttp can not handle pending ws.send_bytes()
+                # tried with semaphore but got exception with >1
+                # https://github.com/aio-libs/aiohttp/issues/2934
+                async with self.attachment_atomic:
                     for ws in websockets:
+                        # Send binary header
                         await ws.send_str(json_header)
                         # Send binary message
                         await ws.send_bytes(attachments[key])
 
-                    # decrement for key
-                    pub.publishManager.unregisterAttachment(key)
+                # decrement for key
+                pub.publishManager.unregisterAttachment(key)
 
             pub.publishManager.freeAttachments(keys=found_keys)
 
