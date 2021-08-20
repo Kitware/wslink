@@ -47,8 +47,8 @@ def add_arguments(parser):
         "-i",
         "--host",
         type=str,
-        default="localhost",
-        help="the interface for the web-server to listen on (default: localhost)",
+        default="0.0.0.0",
+        help="the interface for the web-server to listen on (default: 0.0.0.0)",
     )
     parser.add_argument(
         "-p",
