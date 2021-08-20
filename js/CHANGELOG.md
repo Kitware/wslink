@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/kitware/wslink/compare/v1.0.5...v1.0.6) (2021-08-20)
+
+
+### Bug Fixes
+
+* **cli:** Update default --host arg to 0.0.0.0 ([ddbdda9](https://github.com/kitware/wslink/commit/ddbdda9af0b0cf05cfb4e660633d9c77d20f9e01))
+
 ## [1.0.5](https://github.com/kitware/wslink/compare/v1.0.4...v1.0.5) (2021-08-13)
 
 
