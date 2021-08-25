@@ -125,7 +125,9 @@ def create_webserver(server_config):
         static_routes = server_config["static"]
         routes = []
 
-        for route, server_path in static_routes.items():
+        # Ensure longer path are registered first
+        for route in sorted(static_routes.keys(), reverse=True):
+            server_path = static_routes[route]
             routes.append(aiohttp_web.static(_fix_path(route), server_path))
 
         # Resolve / => /index.html
