@@ -20,6 +20,7 @@ ws_server = None
 # Setup default arguments to be parsed
 #   -s, --nosignalhandlers
 #   -d, --debug
+#   -i, --host     localhost
 #   -p, --port     8080
 #   -t, --timeout  300 (seconds)
 #   -c, --content  '/www'  (No content means WebSocket only)
@@ -47,7 +48,7 @@ def add_arguments(parser):
         "-i",
         "--host",
         type=str,
-        default="0.0.0.0",
+        default="localhost",
         help="the interface for the web-server to listen on (default: 0.0.0.0)",
     )
     parser.add_argument(
