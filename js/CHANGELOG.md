@@ -1,3 +1,11 @@
+## [1.0.7](https://github.com/kitware/wslink/compare/v1.0.6...v1.0.7) (2021-08-25)
+
+
+### Bug Fixes
+
+* **cli:** Revert default host arg to localhost ([a39d8cf](https://github.com/kitware/wslink/commit/a39d8cf936d414c5aad21ed7bf590f791bfdb9ea))
+* **static:** fix routes order definition for static content ([60457ab](https://github.com/kitware/wslink/commit/60457ab41bef4f0e6d1be94a605da0f6ea33b1a6))
+
 ## [1.0.6](https://github.com/kitware/wslink/compare/v1.0.5...v1.0.6) (2021-08-20)
 
 
