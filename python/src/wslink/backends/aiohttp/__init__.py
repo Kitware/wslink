@@ -1,4 +1,5 @@
 import asyncio
+import os
 import inspect
 import json
 import logging
@@ -14,6 +15,10 @@ from wslink import publish as pub
 # Backend specific imports
 import aiohttp
 import aiohttp.web as aiohttp_web
+
+
+# 4MB is the default inside aiohttp
+MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 
 
 async def _on_startup(app):
@@ -206,7 +211,7 @@ class WslinkHandler(object):
         aiohttp_app = request.app
 
         client_id = str(uuid.uuid4()).replace("-", "")
-        current_ws = aiohttp_web.WebSocketResponse()
+        current_ws = aiohttp_web.WebSocketResponse(max_msg_size=MAX_MSG_SIZE)
         self.connections[client_id] = current_ws
 
         logging.info("client {0} connected".format(client_id))
