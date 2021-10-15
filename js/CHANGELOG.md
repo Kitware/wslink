@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/kitware/wslink/compare/v1.0.7...v1.1.0) (2021-10-15)
+
+
+### Features
+
+* **aiohttp:** Control max wslink msg with env var ([a30c5b2](https://github.com/kitware/wslink/commit/a30c5b2df908047a99ceed9d7fb89538ba251a94))
+
 ## [1.0.7](https://github.com/kitware/wslink/compare/v1.0.6...v1.0.7) (2021-08-25)
 
 
