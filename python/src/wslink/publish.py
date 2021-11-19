@@ -36,7 +36,7 @@ class PublishManager(object):
         keys_to_check = keys if keys is not None else [k for k in self.attachmentMap]
 
         for key in keys_to_check:
-            if self.attachmentRefCounts[key] == 0:
+            if self.attachmentRefCounts.get(key) == 0:
                 keys_to_delete.append(key)
 
         for key in keys_to_delete:

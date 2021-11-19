@@ -457,10 +457,11 @@ class WslinkHandler(object):
                 # decrement for key
                 pub.publishManager.unregisterAttachment(key)
 
-            pub.publishManager.freeAttachments(keys=found_keys)
-
         for ws in websockets:
             await ws.send_str(encMsg)
+
+        loop = asyncio.get_running_loop()
+        loop.call_soon(pub.publishManager.freeAttachments, found_keys)
 
     async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
         wrapper = {
