@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/kitware/wslink/compare/v1.1.0...v1.1.1) (2021-11-19)
+
+
+### Bug Fixes
+
+* **attachments:** Better scheduleing for free ([289f3df](https://github.com/kitware/wslink/commit/289f3dfaf186ffc72a1e3fd4eeae538c81254792))
+
 # [1.1.0](https://github.com/kitware/wslink/compare/v1.0.7...v1.1.0) (2021-10-15)
 
 
