@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/kitware/wslink/compare/v1.1.1...v1.2.0) (2021-12-06)
+
+
+### Features
+
+* **port=0:** Add infrastructure to handle dynamically assigned port ([eca3e23](https://github.com/kitware/wslink/commit/eca3e238d86c18fd28d99869fe4bd93138727ec0))
+
 ## [1.1.1](https://github.com/kitware/wslink/compare/v1.1.0...v1.1.1) (2021-11-19)
 
 
