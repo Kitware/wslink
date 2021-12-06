@@ -129,7 +129,16 @@ def start(argv=None, protocol=wsl.ServerProtocol, description="wslink web-server
 # =============================================================================
 def stop_webserver():
     if ws_server:
-        ws_server.stop()
+        loop = asyncio.get_event_loop()
+        return loop.create_task(ws_server.stop())
+
+# =============================================================================
+# Get webserver port (useful when 0 is provided and a dynamic one was picked)
+# =============================================================================
+def get_port():
+    if ws_server:
+        return ws_server.get_port()
+    return -1
 
 
 # =============================================================================
@@ -218,8 +227,12 @@ def start_webserver(
     # Until then, we can start the server this way
     loop = asyncio.get_event_loop()
 
+    port_callback = None
+    if hasattr(wslinkServer, "port_callback"):
+        port_callback = wslinkServer.port_callback
+
     try:
-        loop.run_until_complete(ws_server.start())
+        loop.run_until_complete(ws_server.start(port_callback))
     finally:
         loop.close()
 

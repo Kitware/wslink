@@ -80,7 +80,10 @@ class AiohttpWslinkServer(object):
     def set_config(self, config):
         self.config = config
 
-    async def start(self):
+    def get_port(self):
+        return self.app["state"]["runner"].addresses[0][1]
+
+    async def start(self, port_callback=None):
         app = self.app
         server_config = self.config
         host = self.config["host"]
@@ -102,6 +105,9 @@ class AiohttpWslinkServer(object):
 
         logging.info("awaiting site startup")
         await my_site.start()
+
+        if port_callback is not None:
+            port_callback(self.get_port())
 
         logging.info("awaiting running future")
         await running
@@ -418,7 +424,7 @@ class WslinkHandler(object):
             return
 
         websockets = (
-            [self.connections[client_id]]
+            [self.connections.get(client_id)]
             if client_id
             else [self.connections[c] for c in self.connections]
         )
@@ -458,7 +464,8 @@ class WslinkHandler(object):
                 pub.publishManager.unregisterAttachment(key)
 
         for ws in websockets:
-            await ws.send_str(encMsg)
+            if ws is not None:
+                await ws.send_str(encMsg)
 
         loop = asyncio.get_running_loop()
         loop.call_soon(pub.publishManager.freeAttachments, found_keys)
