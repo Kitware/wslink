@@ -217,7 +217,7 @@ class WslinkHandler(object):
         aiohttp_app = request.app
 
         client_id = str(uuid.uuid4()).replace("-", "")
-        current_ws = aiohttp_web.WebSocketResponse(max_msg_size=MAX_MSG_SIZE)
+        current_ws = aiohttp_web.WebSocketResponse(max_msg_size=MAX_MSG_SIZE, heartbeat=30)
         self.connections[client_id] = current_ws
 
         logging.info("client {0} connected".format(client_id))
