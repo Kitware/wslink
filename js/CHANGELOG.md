@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/kitware/wslink/compare/v1.2.0...v1.2.1) (2021-12-12)
+
+
+### Bug Fixes
+
+* **aiohttp:** register 30s heartbeat on ws ([2f0cc9a](https://github.com/kitware/wslink/commit/2f0cc9a212bfa5a538f5c34f62146e56fcf6fea8))
+
 # [1.2.0](https://github.com/kitware/wslink/compare/v1.1.1...v1.2.0) (2021-12-06)
 
 
