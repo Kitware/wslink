@@ -229,12 +229,12 @@ class WslinkHandler(object):
 
         await current_ws.prepare(request)
 
-        await self.onConnect()
+        await self.onConnect(request, client_id)
 
         async for msg in current_ws:
             await self.onMessage(msg, client_id)
 
-        await self.onClose()
+        await self.onClose(client_id)
 
         del self.connections[client_id]
 
@@ -246,11 +246,23 @@ class WslinkHandler(object):
 
         return current_ws
 
-    async def onConnect(self):
-        pass
+    async def onConnect(self, request, client_id):
+        if not self.serverProtocol:
+            return
+        if hasattr(self.serverProtocol, "onConnect"):
+            self.serverProtocol.onConnect(request, client_id)
+        for linkProtocol in self.serverProtocol.getLinkProtocols():
+            if hasattr(linkProtocol, "onConnect"):
+                linkProtocol.onConnect(request, client_id)
 
-    async def onClose(self):
-        pass
+    async def onClose(self, client_id):
+        if not self.serverProtocol:
+            return
+        if hasattr(self.serverProtocol, "onClose"):
+            self.serverProtocol.onClose(client_id)
+        for linkProtocol in self.serverProtocol.getLinkProtocols():
+            if hasattr(linkProtocol, "onClose"):
+                linkProtocol.onClose(client_id)
 
     async def handleSystemMessage(self, rpcid, methodName, args, client_id):
         rpcList = rpcid.split(":")
