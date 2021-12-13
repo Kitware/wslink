@@ -9,9 +9,11 @@ Use "--help" to list the supported arguments.
 import argparse
 import asyncio
 import logging
+from typing import Any, Callable, Dict, List, Optional, Protocol, Sequence, cast
 
 from wslink import websocket as wsl
 from wslink import backends
+from wslink import wslinktypes
 
 ws_server = None
 
@@ -28,7 +30,7 @@ ws_server = None
 # =============================================================================
 
 
-def add_arguments(parser):
+def add_arguments(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     Add arguments known to this module. parser must be
     argparse.ArgumentParser instance.
@@ -106,7 +108,7 @@ def add_arguments(parser):
 # =============================================================================
 
 
-def start(argv=None, protocol=wsl.ServerProtocol, description="wslink web-server"):
+def start(argv: Sequence[str]=None, protocol: Callable[[], wslinktypes.ServerProtocol]=wsl.ServerProtocol, description="wslink web-server"):
     """
     Sets up the web-server using with __name__ == '__main__'. This can also be
     called directly. Pass the optional protocol to override the protocol used.
@@ -117,7 +119,7 @@ def start(argv=None, protocol=wsl.ServerProtocol, description="wslink web-server
     args = parser.parse_args(argv)
     # configure protocol, if available
     try:
-        protocol.configure(args)
+        cast(Any, protocol).configure(args)
     except AttributeError:
         pass
 
@@ -157,17 +159,50 @@ def get_port():
 #     },
 # }
 # =============================================================================
-def create_webserver(server_config, backend="aiohttp"):
+def create_webserver(server_config: wslinktypes.ServerConfig, backend: str="aiohttp"):
     return backends.create_webserver(server_config, backend=backend)
 
+class Options(Protocol):
+    """Options specifies an interface that options to start_webserver need to
+    satisfy.
+
+    Typically, you create a argparse.Namespace object that fills the fields from
+    commandline flags.
+
+    """
+
+    # The interface to listen on.
+    # If None, listen on all interfaces.
+    host: Optional[str]
+    # The port to listen to. Must be set.
+    port: int
+    # Idle timeout, in seconds.
+    timeout: float
+    # If nonempty, local filesystem dir containing files served through "/".
+    content: str
+    # If true, disable websocket, and the value of the ws field is
+    # ignored.
+    nows: bool
+    # Websocket mount point. Typical value is "ws". If "", websocket is
+    # disabled.
+    ws: Optional[str]
+    # File system endpoints.
+    # Value is of form "endpoint0=path0|endpoint1=path1|..."
+    fsEndpoints: str
+    # If set, enable debug logging.
+    debug: bool
+    nosignalhandlers: bool
 
 # =============================================================================
 # Generate a webserver config from command line options, create a webserver,
 # and start it.
 # =============================================================================
 def start_webserver(
-    options, protocol=wsl.ServerProtocol, disableLogging=False, backend="aiohttp"
-):
+    options: Options,
+    protocol: Callable[[], wslinktypes.ServerProtocol]=wsl.ServerProtocol,
+    disableLogging: bool=False,
+    backend: str="aiohttp"
+) -> None:
     """
     Starts the web-server with the given protocol. Options must be an object
     with the following members:
@@ -181,20 +216,24 @@ def start_webserver(
     # Create default or custom ServerProtocol
     wslinkServer = protocol()
 
-    server_config = {
+    server_config: wslinktypes.ServerConfig = {
         "host": options.host,
         "port": options.port,
         "timeout": options.timeout,
+        "ws": {},
+        "static": {},
     }
 
     # Configure websocket endpoint
     if not options.nows:
-        server_config["ws"] = {}
-        server_config["ws"][options.ws] = wslinkServer
+        assert isinstance(options.ws, str)
+        server_config["ws"] = {
+            options.ws: wslinkServer
+        }
 
     # Configure default static route if --content requested
     if len(options.content) > 0:
-        server_config["static"] = {}
+        assert isinstance(options.content, str)
         # Static HTTP + WebSocket
         server_config["static"]["/"] = options.content
 
@@ -229,7 +268,7 @@ def start_webserver(
 
     port_callback = None
     if hasattr(wslinkServer, "port_callback"):
-        port_callback = wslinkServer.port_callback
+        port_callback = cast(Any, wslinkServer).port_callback
 
     try:
         loop.run_until_complete(ws_server.start(port_callback))

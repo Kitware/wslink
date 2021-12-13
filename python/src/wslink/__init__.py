@@ -7,13 +7,13 @@ wslink.websocket handles the communication
 """
 import asyncio
 import functools
-
+from typing import Awaitable, Callable
 from .uri import checkURI
 
 __license__ = "BSD-3-Clause"
 
 
-def register(uri):
+def register(uri: str):
     """
     Decorator for RPC procedure endpoints.
     """
@@ -39,7 +39,7 @@ def register(uri):
 #############################################################################
 
 
-def schedule_callback(delay, callback, *args, **kwargs):
+def schedule_callback(delay: float, callback: Callable[..., None], *args, **kwargs) -> asyncio.TimerHandle:
     """
     Schedule callback (which is passed args and kwargs) to be called on
     running event loop after delay seconds (can be floating point).  Returns
@@ -53,7 +53,7 @@ def schedule_callback(delay, callback, *args, **kwargs):
     return loop.call_later(delay, functools.partial(callback, *args, **kwargs))
 
 
-def schedule_coroutine(delay, coro_func, *args, **kwargs):
+def schedule_coroutine(delay: float, coro_func: Callable[..., Awaitable[None]], *args, **kwargs) -> asyncio.TimerHandle:
     """
     Creates a coroutine out of the provided coroutine function coro_func and
     the provided args and kwargs, then schedules the coroutine to be called
