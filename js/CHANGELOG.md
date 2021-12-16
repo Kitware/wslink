@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/kitware/wslink/compare/v1.2.1...v1.3.0) (2021-12-16)
+
+
+### Features
+
+* **connection:** forward request+client_id to life cycle methods ([6c82264](https://github.com/kitware/wslink/commit/6c82264261344d245e3874a30bc65dfd7bb0fa6e))
+
 ## [1.2.1](https://github.com/kitware/wslink/compare/v1.2.0...v1.2.1) (2021-12-12)
 
 
