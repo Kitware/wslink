@@ -39,6 +39,22 @@ class LinkProtocol(object):
             return self.coreServer.getSharedObject(key)
         return None
 
+    def onConnect(self, request, client_id):
+        """Called when a new websocket connection is established.
+
+        request is the HTTP request header, and client_id an opaque string that
+        identifies the connection.  The default implementation is a noop. A
+        subclass may redefine it.
+
+        """
+
+        pass
+
+    def onClose(self, client_id):
+        """Called when a websocket connection is closed.
+        """
+
+        pass
 
 # =============================================================================
 #
@@ -105,6 +121,23 @@ class ServerProtocol(object):
 
     def updateSecret(self, newSecret):
         self.secret = newSecret
+
+    def onConnect(self, request, client_id):
+        """Called when a new websocket connection is established.
+
+        request is the HTTP request header, and client_id an opaque string that
+        identifies the connection.  The default implementation is a noop. A
+        subclass may redefine it.
+
+        """
+
+        pass
+
+    def onClose(self, client_id):
+        """Called when a websocket connection is closed.
+        """
+
+        pass
 
     @exportRpc("application.exit")
     def exit(self):
