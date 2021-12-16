@@ -6,7 +6,7 @@
   <link href="https://kitware.github.io/wslink/atom.xml" rel="self"/>
   
   <link href="https://kitware.github.io/wslink/"/>
-  <updated>2021-12-12T17:56:39.038Z</updated>
+  <updated>2021-12-16T18:27:01.278Z</updated>
   <id>https://kitware.github.io/wslink/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://kitware.github.io/wslink/2016/04/29/kw-doc/"/>
     <id>https://kitware.github.io/wslink/2016/04/29/kw-doc/</id>
     <published>2016-04-29T00:00:00.000Z</published>
-    <updated>2021-12-12T17:56:39.038Z</updated>
+    <updated>2021-12-16T18:27:01.278Z</updated>
     
     <content type="html"><![CDATA[<p>Thanks for using kw-doc which is based on Hexo and its template from its own documentation.</p>]]></content>
     
