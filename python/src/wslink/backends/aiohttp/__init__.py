@@ -23,7 +23,7 @@ MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 
 async def _on_startup(app):
     # Emit an expected log message so launcher.py knows we've started up.
-    logging.critical("wslink: Starting factory")
+    print("wslink: Starting factory")
     # We've seen some issues with stdout buffering - be conservative.
     sys.stdout.flush()
 
