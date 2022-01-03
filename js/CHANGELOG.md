@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/kitware/wslink/compare/v1.3.0...v1.3.1) (2022-01-03)
+
+
+### Bug Fixes
+
+* **python:** use print for the startup message, not log.critical ([bee2f52](https://github.com/kitware/wslink/commit/bee2f520f010a6d2010a8039cd0b734489f10379))
+
 # [1.3.0](https://github.com/kitware/wslink/compare/v1.2.1...v1.3.0) (2021-12-16)
 
 
