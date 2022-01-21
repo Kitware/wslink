@@ -36,9 +36,9 @@ export function newInstance(initialValues: IWebsocketConnectionInitialValues): W
  */
 export function extend(publicAPI: object, model: object, initialValues?: IWebsocketConnectionInitialValues): void;
 
-export declare const WebSocketConnection: {
+export declare const WebsocketConnection: {
   newInstance: typeof newInstance;
   extend: typeof extend;
 }
 
-export default WebSocketConnection;
+export default WebsocketConnection;
