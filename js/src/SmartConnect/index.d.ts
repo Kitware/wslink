@@ -1,4 +1,4 @@
-import WebsocketConnection from '../WebsocketConneciot';
+import WebsocketConnection, {WebsocketSession} from '../WebsocketConnection';
 
 export declare const DEFAULT_SESSION_MANAGER_URL: string;
 
@@ -29,7 +29,7 @@ export interface WebsocketCloseEvent {
 export interface SmartConnect {
   // Starts connecting to the server.
   connect(): void;
-  getSession(): WebSocket;
+  getSession(): WebSocketSession;
   // Called when the connection is established
   onConnectionReady(cb: (c: WebsocketConnection) => void): void;
   // Called when the connection cannot be established.
@@ -47,7 +47,7 @@ export interface SmartConnect {
 /**
  * Creates a new SmartConnect object with the given configuration.
  */
-dexport function newInstance(config: ISmartConnectInitialValues): SmartConnect;
+export function newInstance(config: ISmartConnectInitialValues): SmartConnect;
 
 /**
  * Decorates a given object (publicAPI+model) with SmartConnect characteristics.
