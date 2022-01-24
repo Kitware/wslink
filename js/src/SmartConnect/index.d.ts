@@ -13,8 +13,12 @@ export interface ISmartConnectConfig {
   retry?: number;
 }
 
+// A function that rewrites the configuration.  It is called on connect.
+type ConfigDecorator = (config: ISmartConnectConfig) => ISmartConnectConfig;
+
 export interface ISmartConnectInitialValues {
   config: ISmartConnectConfig;
+  configDecorator?: ConfigDecorator;
 }
 
 export type Event = any;
@@ -29,7 +33,7 @@ export interface WebsocketCloseEvent {
 export interface SmartConnect {
   // Starts connecting to the server.
   connect(): void;
-  getSession(): WebSocketSession;
+  getSession(): WebsocketSession;
   // Called when the connection is established
   onConnectionReady(cb: (c: WebsocketConnection) => void): void;
   // Called when the connection cannot be established.
@@ -40,8 +44,8 @@ export interface SmartConnect {
   destroy(): void;
   // Return the config passed to newInstance.
   getConfig(): ISmartConnectConfig;
-  getConfigDecorator(): any;
-  setConfigDecorator(c: any): void;
+  getConfigDecorator(): ConfigDecorator | null;
+  setConfigDecorator(c: ConfigDecorator): void;
 }
 
 /**
