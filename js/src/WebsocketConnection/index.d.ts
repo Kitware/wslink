@@ -1,15 +1,22 @@
-
-export interface SubscriberId { topic: string }
+export interface SubscriberInfo {
+  topic: string
+  callback: (args: any[]) => Promise<any>;
+}
 
 // Provides a generic RPC stub built on top of websocket.
 export interface WebsocketSession {
   // Issue a single-shot RPC.
   call(methodName: string, args: any[]): Promise<any>;
   // Subscribe to one-way messages from the server.
-  subscribe(methodName: string, callback: (args: any[]) => Promise<any>): Promise<SubscriberId>;
-  // Cancel an existing subscription.
-  unsubscribe(id: SubscriberId): Promise<void>;
-  close(): void;
+  subscribe(topic: string, callback: (args: any[]) => Promise<any>): {
+    // A promise to be resolved once subscription succeeds.
+    promise: Promise<SubscriberInfo>;
+    // Cancels the subscription.
+    unsubscribe: () => Promise<void>;
+  }
+  // Cancels the subscription.
+  unsubscribe(info: SubscriberInfo): Promise<void>;
+  close(): Promise<void>;
 }
 
 export interface IWebsocketConnectionInitialValues {
