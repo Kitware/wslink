@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/kitware/wslink/compare/v1.3.1...v1.3.2) (2022-01-24)
+
+
+### Bug Fixes
+
+* **js:** Add more type annotations ([5870064](https://github.com/kitware/wslink/commit/58700644712c4ed87144cf33ac086015b34bc4af))
+
 ## [1.3.1](https://github.com/kitware/wslink/compare/v1.3.0...v1.3.1) (2022-01-03)
 
 
