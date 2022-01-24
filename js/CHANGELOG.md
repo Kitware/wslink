@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/kitware/wslink/compare/v1.3.2...v1.3.3) (2022-01-24)
+
+
+### Bug Fixes
+
+* **ts:** update the type definitions for subscribe ([e300fda](https://github.com/kitware/wslink/commit/e300fda999dd67569228f372e08949a5da08b390))
+
 ## [1.3.2](https://github.com/kitware/wslink/compare/v1.3.1...v1.3.2) (2022-01-24)
 
 
