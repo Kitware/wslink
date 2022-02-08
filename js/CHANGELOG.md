@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/kitware/wslink/compare/v1.3.3...v1.4.0) (2022-02-08)
+
+
+### Features
+
+* **heartbeat:** Control heartbeat with WSLINK_HEART_BEAT env ([2348bcb](https://github.com/kitware/wslink/commit/2348bcbcb66d0a59932c4aabcaa5227893871dcf))
+
 ## [1.3.3](https://github.com/kitware/wslink/compare/v1.3.2...v1.3.3) (2022-01-24)
 
 
