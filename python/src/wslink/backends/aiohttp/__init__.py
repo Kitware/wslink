@@ -218,7 +218,6 @@ class WslinkHandler(object):
         aiohttp_app = request.app
 
         client_id = str(uuid.uuid4()).replace("-", "")
-        print("Use HEART_BEAT", HEART_BEAT)
         current_ws = aiohttp_web.WebSocketResponse(max_msg_size=MAX_MSG_SIZE, heartbeat=HEART_BEAT)
         self.connections[client_id] = current_ws
 
