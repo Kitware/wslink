@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/kitware/wslink/compare/v1.4.0...v1.4.1) (2022-02-09)
+
+
+### Bug Fixes
+
+* **rpc:** better handling awaitable rpc ([e7eef8a](https://github.com/kitware/wslink/commit/e7eef8a11010682a44a1c0b845a2fe8ea4048623))
+
 # [1.4.0](https://github.com/kitware/wslink/compare/v1.3.3...v1.4.0) (2022-02-08)
 
 
