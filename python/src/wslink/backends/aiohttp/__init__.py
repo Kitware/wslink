@@ -381,7 +381,9 @@ class WslinkHandler(object):
             args.insert(0, obj)
 
             try:
-                results = await asyncio.coroutine(func)(*args, **kwargs)
+                results = func(*args, **kwargs)
+                if inspect.isawaitable(results):
+                    results = await results
                 await self.sendWrappedMessage(
                     rpcid, results, method=methodName, client_id=client_id
                 )
