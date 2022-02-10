@@ -7,10 +7,16 @@ import re
 import sys
 import traceback
 import uuid
-
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union, cast
 
 from wslink import schedule_coroutine
 from wslink import publish as pub
+from wslink import wslinktypes
+
+from wslink.websocket import (
+    LinkProtocol,
+    ServerProtocol
+)
 
 # Backend specific imports
 import aiohttp
@@ -65,26 +71,28 @@ def _fix_path(path):
 
 
 class AiohttpWslinkServer(object):
-    def __init__(self):
-        self.app = None
-        self.config = None
+    def __init__(self) -> None:
+        self.app: Optional[aiohttp_web.Application] = None
+        self.config: Optional[wslinktypes.ServerConfig] = None
 
     def get_app(self):
         return self.app
 
-    def set_app(self, app):
+    def set_app(self, app: aiohttp_web.Application) -> None:
         self.app = app
 
     def get_config(self):
         return self.config
 
-    def set_config(self, config):
+    def set_config(self, config) -> None:
         self.config = config
 
     def get_port(self):
         return self.app["state"]["runner"].addresses[0][1]
 
-    async def start(self, port_callback=None):
+    async def start(self, port_callback=None) -> None:
+        assert self.config
+        assert self.app
         app = self.app
         server_config = self.config
         host = self.config["host"]
@@ -113,38 +121,37 @@ class AiohttpWslinkServer(object):
         logging.info("awaiting running future")
         await running
 
-    async def stop(self):
+    async def stop(self) -> None:
         await _stop_server(self.app)
 
 
-def create_webserver(server_config):
+def create_webserver(server_config: wslinktypes.ServerConfig) -> AiohttpWslinkServer:
     web_app = aiohttp_web.Application()
 
     if "ws" in server_config:
         ws_routes = server_config["ws"]
-        routes = []
+        ws_handlers = []
 
         for route, server_protocol in ws_routes.items():
             protocol_handler = WslinkHandler(server_protocol, web_app)
-            ws_routes[route] = protocol_handler
-            routes.append(
+            ws_handlers.append(
                 aiohttp_web.get(_fix_path(route), protocol_handler.handleWsRequest)
             )
 
-        web_app.add_routes(routes)
+        web_app.add_routes(ws_handlers)
 
     if "static" in server_config:
         static_routes = server_config["static"]
-        routes = []
+        static_handlers = []
 
         # Ensure longer path are registered first
         for route in sorted(static_routes.keys(), reverse=True):
             server_path = static_routes[route]
-            routes.append(aiohttp_web.static(_fix_path(route), server_path))
+            static_handlers.append(aiohttp_web.static(_fix_path(route), server_path))
 
         # Resolve / => /index.html
         web_app.router.add_route("GET", "/", _root_handler)
-        web_app.add_routes(routes)
+        web_app.add_routes(static_handlers)
 
     if "logging_level" in server_config and server_config["logging_level"]:
         logging.basicConfig(level=server_config["logging_level"])
@@ -167,19 +174,24 @@ def create_webserver(server_config):
 
 
 class WslinkHandler(object):
-    def __init__(self, protocol=None, web_app=None):
+    def __init__(
+        self, protocol: Optional[ServerProtocol] = None, web_app=None
+    ) -> None:
         self.serverProtocol = protocol
         self.web_app = web_app
-        self.functionMap = {}
-        self.attachmentsReceived = {}
-        self.attachmentsRecvQueue = []
-        self.connections = {}
+        self.functionMap: Dict[
+            str, Tuple[LinkProtocol, Callable[..., Any]]
+        ] = {}
+        self.attachmentsReceived: Dict[str, bytes] = {}
+        self.attachmentsRecvQueue: List[str] = []
+        self.connections: Dict[str, Any] = {}
         self.attachment_atomic = asyncio.Lock()
+        self.secret: Optional[str] = None
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
-        if self.getServerProtocol():
-            protocolList = self.getServerProtocol().getLinkProtocols()
-            protocolList.append(self.getServerProtocol())
+        if self.serverProtocol:
+            protocolList = self.serverProtocol.getLinkProtocols()
+            protocolList.append(cast(LinkProtocol, self.getServerProtocol()))
             for protocolObject in protocolList:
                 protocolObject.init(
                     self.publish,
@@ -196,10 +208,10 @@ class WslinkHandler(object):
                             self.functionMap[uri] = (protocolObject, proc)
             pub.publishManager.registerProtocol(self)
 
-    def setServerProtocol(self, protocol):
+    def setServerProtocol(self, protocol) -> None:
         self.serverProtocol = protocol
 
-    def getServerProtocol(self):
+    def getServerProtocol(self) -> Optional[ServerProtocol]:
         return self.serverProtocol
 
     async def disconnectClients(self):
@@ -214,7 +226,7 @@ class WslinkHandler(object):
 
         pub.publishManager.unregisterProtocol(self)
 
-    async def handleWsRequest(self, request):
+    async def handleWsRequest(self, request: aiohttp.web.Request) -> Any:
         aiohttp_app = request.app
 
         client_id = str(uuid.uuid4()).replace("-", "")
@@ -247,7 +259,7 @@ class WslinkHandler(object):
 
         return current_ws
 
-    async def onConnect(self, request, client_id):
+    async def onConnect(self, request: aiohttp.web.Request, client_id: str):
         if not self.serverProtocol:
             return
         if hasattr(self.serverProtocol, "onConnect"):
@@ -256,7 +268,7 @@ class WslinkHandler(object):
             if hasattr(linkProtocol, "onConnect"):
                 linkProtocol.onConnect(request, client_id)
 
-    async def onClose(self, client_id):
+    async def onClose(self, client_id: str):
         if not self.serverProtocol:
             return
         if hasattr(self.serverProtocol, "onClose"):
@@ -298,7 +310,7 @@ class WslinkHandler(object):
             return True
         return False
 
-    async def onMessage(self, msg, client_id):
+    async def onMessage(self, msg, client_id) -> None:
         isBinary = msg.type == aiohttp.WSMsgType.BINARY
         payload = msg.data
 
@@ -418,7 +430,13 @@ class WslinkHandler(object):
             )
             return
 
-    async def sendWrappedMessage(self, rpcid, content, method="", client_id=None):
+    async def sendWrappedMessage(
+        self,
+        rpcid: str,
+        content: Any,
+        method: str = "",
+        client_id: Optional[str] = None,
+    ) -> None:
         wrapper = {
             "wslink": "1.0",
             "id": rpcid,
@@ -470,10 +488,11 @@ class WslinkHandler(object):
                 # https://github.com/aio-libs/aiohttp/issues/2934
                 async with self.attachment_atomic:
                     for ws in websockets:
-                        # Send binary header
-                        await ws.send_str(json_header)
-                        # Send binary message
-                        await ws.send_bytes(attachments[key])
+                        if ws is not None:
+                            # Send binary header
+                            await ws.send_str(json_header)
+                            # Send binary message
+                            await ws.send_bytes(attachments[key])
 
                 # decrement for key
                 pub.publishManager.unregisterAttachment(key)
@@ -485,8 +504,15 @@ class WslinkHandler(object):
         loop = asyncio.get_running_loop()
         loop.call_soon(pub.publishManager.freeAttachments, found_keys)
 
-    async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
-        wrapper = {
+    async def sendWrappedError(
+        self,
+        rpcid: str,
+        code: int,
+        message: str,
+        data: Any = None,
+        client_id: Optional[str] = None,
+    ) -> None:
+        wrapper: Dict[str, Any] = {
             "wslink": "1.0",
             "id": rpcid,
             "error": {
@@ -505,7 +531,7 @@ class WslinkHandler(object):
         for ws in websockets:
             await ws.send_str(encMsg)
 
-    def publish(self, topic, data, client_id=None):
+    def publish(self, topic: str, data: bytes, client_id: Optional[str] = None):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
         for client in client_list:
             pub.publishManager.publish(topic, data, client_id=client)
@@ -513,5 +539,5 @@ class WslinkHandler(object):
     def addAttachment(self, payload):
         return pub.publishManager.addAttachment(payload)
 
-    def setSecret(self, newSecret):
+    def setSecret(self, newSecret: str):
         self.secret = newSecret
