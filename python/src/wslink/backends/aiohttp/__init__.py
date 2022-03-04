@@ -38,6 +38,8 @@ def _schedule_shutdown(app):
 
 
 async def _root_handler(request):
+    if request.query_string:
+        return aiohttp.web.HTTPFound(f"index.html?{request.query_string}")
     return aiohttp.web.HTTPFound("index.html")
 
 
