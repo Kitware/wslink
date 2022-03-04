@@ -12,10 +12,25 @@ function DEFAULT_CONFIG_DECORATOR(config) {
   return config;
 }
 
+function extractPathName(addOn, pathName=window.location.pathname) {
+  if (pathName.endsWith(".html") || pathName.endsWith(".htm")) {
+    const tokens = pathName.split('/');
+    tokens.pop();
+    pathName = tokens.join('/');
+  }
+  while (pathName.length > 0 && pathName[pathName.length - 1] === '/') {
+    pathName = pathName.substring(0, pathName.length - 1);
+  }
+  if (pathName.length === 0) {
+    return addOn
+  }
+  return `${pathName}${addOn}`;
+}
+
 export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/paraview/`,
   DEFAULT_SESSION_URL = `${
     window.location.protocol === 'https' ? 'wss' : 'ws'
-  }://${window.location.hostname}:${window.location.port}/ws`;
+  }://${window.location.hostname}:${window.location.port}${extractPathName('/ws')}`;
 
 function wsConnect(publicAPI, model) {
   const wsConnection = WebsocketConnection.newInstance({

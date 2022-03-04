@@ -38,7 +38,7 @@ def _schedule_shutdown(app):
 
 
 async def _root_handler(request):
-    return aiohttp.web.HTTPFound("/index.html")
+    return aiohttp.web.HTTPFound("index.html")
 
 
 async def _stop_server(app):
@@ -142,7 +142,7 @@ def create_webserver(server_config):
             server_path = static_routes[route]
             routes.append(aiohttp_web.static(_fix_path(route), server_path))
 
-        # Resolve / => /index.html
+        # Resolve / => index.html
         web_app.router.add_route("GET", "/", _root_handler)
         web_app.add_routes(routes)
 
