@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/kitware/wslink/compare/v1.4.1...v1.4.2) (2022-03-04)
+
+
+### Bug Fixes
+
+* **relativePath:** add support for relative sessionURL and index.html ([4a53100](https://github.com/kitware/wslink/commit/4a5310095f1ffa23f45bbbccfe2f10a13a5e3e69))
+
 ## [1.4.1](https://github.com/kitware/wslink/compare/v1.4.0...v1.4.1) (2022-02-09)
 
 
