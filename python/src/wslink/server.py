@@ -166,7 +166,8 @@ def create_webserver(server_config, backend="aiohttp"):
 # and start it.
 # =============================================================================
 def start_webserver(
-    options, protocol=wsl.ServerProtocol, disableLogging=False, backend="aiohttp"
+    options, protocol=wsl.ServerProtocol, disableLogging=False, backend="aiohttp",
+    exec_mode="main", **kwargs
 ):
     """
     Starts the web-server with the given protocol. Options must be an object
@@ -231,10 +232,29 @@ def start_webserver(
     if hasattr(wslinkServer, "port_callback"):
         port_callback = wslinkServer.port_callback
 
-    try:
-        loop.run_until_complete(ws_server.start(port_callback))
-    finally:
-        loop.close()
+    def create_coroutine():
+        return ws_server.start(port_callback)
+
+    def main_exec():
+        # Block until the loop finishes and then close the loop
+        try:
+            loop.run_until_complete(create_coroutine())
+        finally:
+            loop.close()
+
+    def task_exec():
+        return loop.create_task(create_coroutine())
+
+    exec_modes = {
+        "main": main_exec,
+        "task": task_exec,
+        "coroutine": create_coroutine,
+    }
+
+    if exec_mode not in exec_modes:
+        raise Exception(f"Unknown exec_mode: {exec_mode}")
+
+    return exec_modes[exec_mode]()
 
 
 if __name__ == "__main__":
