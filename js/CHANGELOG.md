@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/kitware/wslink/compare/v1.4.3...v1.5.0) (2022-04-01)
+
+
+### Features
+
+* **exec_mode:** add exec_mode to start_webserver ([011d387](https://github.com/kitware/wslink/commit/011d387165c4859958f3f99b33227723dcf34944))
+
 ## [1.4.3](https://github.com/kitware/wslink/compare/v1.4.2...v1.4.3) (2022-03-04)
 
 
