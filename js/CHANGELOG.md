@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/kitware/wslink/compare/v1.5.0...v1.5.1) (2022-04-04)
+
+
+### Bug Fixes
+
+* **license:** include LICENSE file in wheel ([615b8d6](https://github.com/kitware/wslink/commit/615b8d6cd216388693867f58129230c84eaea782))
+
 # [1.5.0](https://github.com/kitware/wslink/compare/v1.4.3...v1.5.0) (2022-04-01)
 
 
