@@ -95,7 +95,7 @@ class AiohttpWslinkServer(object):
         handle_signals = self.config["handle_signals"]
 
         runner = aiohttp_web.AppRunner(app, handle_signals=handle_signals)
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
         running = loop.create_future()
 
         app["state"]["running"] = running
@@ -484,7 +484,7 @@ class WslinkHandler(object):
             if ws is not None:
                 await ws.send_str(encMsg)
 
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
         loop.call_soon(pub.publishManager.freeAttachments, found_keys)
 
     async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
