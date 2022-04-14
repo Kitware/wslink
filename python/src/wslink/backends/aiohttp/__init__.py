@@ -170,6 +170,7 @@ def create_webserver(server_config):
 
 class WslinkHandler(object):
     def __init__(self, protocol=None, web_app=None):
+        self._valid_token = False
         self.serverProtocol = protocol
         self.web_app = web_app
         self.functionMap = {}
@@ -276,8 +277,9 @@ class WslinkHandler(object):
                     and args[0]
                     and (type(args[0]) is dict)
                     and ("secret" in args[0])
-                    and (args[0]["secret"] == self.getServerProtocol().secret)
+                    and await self.validateToken(args[0]["secret"], client_id)
                 ):
+                    self._valid_token = True
                     await self.sendWrappedMessage(
                         rpcid,
                         {"clientID": "c{0}".format(client_id)},
@@ -305,13 +307,14 @@ class WslinkHandler(object):
         payload = msg.data
 
         if isBinary:
-            # assume all binary messages are attachments
-            try:
-                key = self.attachmentsRecvQueue.pop(0)
-                self.attachmentsReceived[key] = payload
-            except:
-                pass
-            return
+            if self._valid_token:
+                # assume all binary messages are attachments
+                try:
+                    key = self.attachmentsRecvQueue.pop(0)
+                    self.attachmentsReceived[key] = payload
+                except:
+                    pass
+                return
 
         # handles issue https://bugs.python.org/issue10976
         # `payload` is type bytes in Python 3. Unfortunately, json.loads
@@ -347,6 +350,17 @@ class WslinkHandler(object):
         if await self.handleSystemMessage(rpcid, methodName, args, client_id):
             return
 
+        # Prevent any further processing if token is not valid
+        if not self._valid_token:
+            await self.sendWrappedError(
+                rpcid,
+                pub.AUTHENTICATION_ERROR,
+                "Unauthorized: Skip message processing",
+                client_id=client_id,
+            )
+            return
+
+        # No matching method found
         if not methodName in self.functionMap:
             await self.sendWrappedError(
                 rpcid,
@@ -419,6 +433,23 @@ class WslinkHandler(object):
                 client_id=client_id,
             )
             return
+
+    async def validateToken(self, token, client_id):
+        if not self.serverProtocol:
+            return True
+        token_tested = False
+        if hasattr(self.serverProtocol, "validateToken"):
+            token_tested = True
+            if not await self.serverProtocol.validateToken(token, client_id):
+                return False
+        for linkProtocol in self.serverProtocol.getLinkProtocols():
+            if hasattr(linkProtocol, "validateToken"):
+                token_tested = True
+                if not await linkProtocol.validateToken(token, client_id):
+                    return False
+        if token_tested:
+            return True
+        return token == self.serverProtocol.secret
 
     async def sendWrappedMessage(self, rpcid, content, method="", client_id=None):
         wrapper = {
