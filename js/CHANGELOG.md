@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/kitware/wslink/compare/v1.5.2...v1.5.3) (2022-04-14)
+
+
+### Bug Fixes
+
+* **security:** Allow to defer token validation to external method ([06bec0d](https://github.com/kitware/wslink/commit/06bec0d5d4b98da90310dc5eca6fc1add09e33e4))
+
 ## [1.5.2](https://github.com/kitware/wslink/compare/v1.5.1...v1.5.2) (2022-04-08)
 
 
