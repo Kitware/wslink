@@ -17,6 +17,12 @@ export interface WebsocketSession {
   // Cancels the subscription.
   unsubscribe(info: SubscriberInfo): Promise<void>;
   close(): Promise<void>;
+
+  /**
+   * @param payload The binary data to send
+   * @returns The id assigned to the binary attachment
+   */
+  addAttachment(payload: Blob): string
 }
 
 export interface IWebsocketConnectionInitialValues {
