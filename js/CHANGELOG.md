@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/kitware/wslink/compare/v1.5.3...v1.6.0) (2022-04-26)
+
+
+### Features
+
+* **timeout:** allow server without shutdown timeout ([3200728](https://github.com/kitware/wslink/commit/3200728c535c25bd30c031c0936a2c984fe3a7f8))
+
 ## [1.5.3](https://github.com/kitware/wslink/compare/v1.5.2...v1.5.3) (2022-04-14)
 
 
