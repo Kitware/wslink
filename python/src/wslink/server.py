@@ -63,7 +63,7 @@ def add_arguments(parser):
         "--timeout",
         type=int,
         default=300,
-        help="timeout for reaping process on idle in seconds (default: 300s)",
+        help="timeout for reaping process on idle in seconds (default: 300s, 0 to disable)",
     )
     parser.add_argument(
         "-c",
