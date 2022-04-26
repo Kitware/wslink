@@ -34,7 +34,11 @@ async def _on_startup(app):
 
 def _schedule_shutdown(app):
     timeout = app["state"]["server_config"]["timeout"]
-    app["state"]["shutdown_task"] = schedule_coroutine(timeout, _stop_server, app)
+    app["state"]["shutdown_task"] = (
+        schedule_coroutine(timeout, _stop_server, app)
+        if timeout > 0
+        else None
+    )
 
 
 async def _root_handler(request):
