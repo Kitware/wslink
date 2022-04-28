@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import os
 import inspect
 import json
@@ -327,7 +328,7 @@ class WslinkHandler(object):
             payload = payload.decode("utf-8")
 
         rpc = json.loads(payload)
-        logging.debug("wslink incoming msg %s" % payload)
+        logging.debug("wslink incoming msg %s" % self.payloadWithSecretStripped(rpc))
         if "id" not in rpc:
             # should be a binary attachment header
             if rpc.get("method") == "wslink.binary.attachment":
@@ -437,6 +438,14 @@ class WslinkHandler(object):
                 client_id=client_id,
             )
             return
+
+    def payloadWithSecretStripped(self, payload):
+        payload = copy.deepcopy(payload)
+        if "args" in payload:
+            for arg in payload["args"]:
+                if type(arg) is dict and "secret" in arg:
+                    arg["secret"] = "*****"
+        return payload
 
     async def validateToken(self, token, client_id):
         if not self.serverProtocol:
