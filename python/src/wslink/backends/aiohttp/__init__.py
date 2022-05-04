@@ -516,10 +516,11 @@ class WslinkHandler(object):
                 # https://github.com/aio-libs/aiohttp/issues/2934
                 async with self.attachment_atomic:
                     for ws in websockets:
-                        # Send binary header
-                        await ws.send_str(json_header)
-                        # Send binary message
-                        await ws.send_bytes(attachments[key])
+                        if ws is not None:
+                            # Send binary header
+                            await ws.send_str(json_header)
+                            # Send binary message
+                            await ws.send_bytes(attachments[key])
 
                 # decrement for key
                 pub.publishManager.unregisterAttachment(key)
@@ -549,7 +550,8 @@ class WslinkHandler(object):
             else [self.connections[c] for c in self.connections]
         )
         for ws in websockets:
-            await ws.send_str(encMsg)
+            if ws is not None:
+                await ws.send_str(encMsg)
 
     def publish(self, topic, data, client_id=None):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
