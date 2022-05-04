@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/kitware/wslink/compare/v1.6.1...v1.6.2) (2022-05-04)
+
+
+### Bug Fixes
+
+* **ws:** ensure valid ws before write ([3ba4e60](https://github.com/kitware/wslink/commit/3ba4e601e6fdcc04a5929df3e46e9ec3b26ded89))
+
 ## [1.6.1](https://github.com/kitware/wslink/compare/v1.6.0...v1.6.1) (2022-04-28)
 
 
