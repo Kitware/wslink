@@ -1,3 +1,10 @@
+## [1.6.3](https://github.com/kitware/wslink/compare/v1.6.2...v1.6.3) (2022-05-04)
+
+
+### Bug Fixes
+
+* **startup-msg:** Allow user to override startup message ([eda7a11](https://github.com/kitware/wslink/commit/eda7a11856ca719cbe54ec12c7aa10f3fa0fc25a))
+
 ## [1.6.2](https://github.com/kitware/wslink/compare/v1.6.1...v1.6.2) (2022-05-04)
 
 
