@@ -24,10 +24,12 @@ HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30)) # 30 seconds
 
 
 async def _on_startup(app):
-    # Emit an expected log message so launcher.py knows we've started up.
-    print("wslink: Starting factory")
-    # We've seen some issues with stdout buffering - be conservative.
-    sys.stdout.flush()
+    STARTUP_MSG = os.environ.get("WSLINK_READY_MSG", "wslink: Starting factory")
+    if STARTUP_MSG:
+        # Emit an expected log message so launcher.py knows we've started up.
+        print(STARTUP_MSG)
+        # We've seen some issues with stdout buffering - be conservative.
+        sys.stdout.flush()
 
     # Also schedule server shutdown in case no clients connect within timeout
     _schedule_shutdown(app)
