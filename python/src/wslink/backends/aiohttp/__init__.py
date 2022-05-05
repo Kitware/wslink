@@ -125,6 +125,10 @@ class AiohttpWslinkServer(object):
     async def stop(self):
         await _stop_server(self.app)
 
+    @property
+    def completion(self):
+        return self.app["state"]["running"]
+
 
 def create_webserver(server_config):
     web_app = aiohttp_web.Application()

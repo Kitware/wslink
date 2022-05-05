@@ -232,6 +232,9 @@ def start_webserver(
     if hasattr(wslinkServer, "port_callback"):
         port_callback = wslinkServer.port_callback
 
+    if hasattr(wslinkServer, "set_server"):
+        wslinkServer.set_server(ws_server)
+
     def create_coroutine():
         return ws_server.start(port_callback)
 
