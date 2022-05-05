@@ -1,3 +1,10 @@
+## [1.6.4](https://github.com/kitware/wslink/compare/v1.6.3...v1.6.4) (2022-05-05)
+
+
+### Bug Fixes
+
+* **ws_server:** Pass server at initialization ([758afe3](https://github.com/kitware/wslink/commit/758afe3a0b216fb706c9eed8af61e9b1a3135517))
+
 ## [1.6.3](https://github.com/kitware/wslink/compare/v1.6.2...v1.6.3) (2022-05-04)
 
 
