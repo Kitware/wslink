@@ -29,7 +29,7 @@ function extractPathName(addOn, pathName=window.location.pathname) {
 
 export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/paraview/`,
   DEFAULT_SESSION_URL = `${
-    window.location.protocol === 'https' ? 'wss' : 'ws'
+    window.location.protocol === 'https:' ? 'wss' : 'ws'
   }://${window.location.hostname}:${window.location.port}${extractPathName('/ws')}`;
 
 function wsConnect(publicAPI, model) {
