@@ -1,3 +1,10 @@
+## [1.6.5](https://github.com/kitware/wslink/compare/v1.6.4...v1.6.5) (2022-06-03)
+
+
+### Bug Fixes
+
+* **js:** Properly handle protocol mapping ([d02d41d](https://github.com/kitware/wslink/commit/d02d41de6755492115a8cb41fadd54662a696b60))
+
 ## [1.6.4](https://github.com/kitware/wslink/compare/v1.6.3...v1.6.4) (2022-05-05)
 
 
