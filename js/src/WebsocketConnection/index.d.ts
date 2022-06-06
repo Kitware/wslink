@@ -6,7 +6,7 @@ export interface SubscriberInfo {
 // Provides a generic RPC stub built on top of websocket.
 export interface WebsocketSession {
   // Issue a single-shot RPC.
-  call(methodName: string, args: any[]): Promise<any>;
+  call(methodName: string, args?: any[], kwargs?: Record<string, any>): Promise<any>;
   // Subscribe to one-way messages from the server.
   subscribe(topic: string, callback: (args: any[]) => Promise<any>): {
     // A promise to be resolved once subscription succeeds.
