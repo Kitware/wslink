@@ -1,3 +1,10 @@
+## [1.6.6](https://github.com/kitware/wslink/compare/v1.6.5...v1.6.6) (2022-07-05)
+
+
+### Bug Fixes
+
+* **aiohttp:** Avoid newer, breaking versions ([de16350](https://github.com/kitware/wslink/commit/de1635053ca966c3732be4a86c860efe7608f28f))
+
 ## [1.6.5](https://github.com/kitware/wslink/compare/v1.6.4...v1.6.5) (2022-06-03)
 
 
