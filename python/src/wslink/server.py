@@ -97,6 +97,11 @@ def add_arguments(parser):
         dest="fsEndpoints",
         help="add another fs location to a specific endpoint (i.e: data=/Users/seb/Download|images=/Users/seb/Pictures)",
     )
+    parser.add_argument(
+        "--reverse-url",
+        dest="reverse_url",
+        help="Make the server act as a client to connect to a ws relay",
+    )
 
     return parser
 
@@ -160,7 +165,6 @@ def get_port():
 def create_webserver(server_config, backend="aiohttp"):
     return backends.create_webserver(server_config, backend=backend)
 
-
 # =============================================================================
 # Generate a webserver config from command line options, create a webserver,
 # and start it.
@@ -182,42 +186,48 @@ def start_webserver(
     # Create default or custom ServerProtocol
     wslinkServer = protocol()
 
-    server_config = {
-        "host": options.host,
-        "port": options.port,
-        "timeout": options.timeout,
-    }
-
-    # Configure websocket endpoint
-    if not options.nows:
-        server_config["ws"] = {}
-        server_config["ws"][options.ws] = wslinkServer
-
-    # Configure default static route if --content requested
-    if len(options.content) > 0:
-        server_config["static"] = {}
-        # Static HTTP + WebSocket
-        server_config["static"]["/"] = options.content
-
-    # Configure any other static routes
-    if len(options.fsEndpoints) > 3:
-        if "static" not in server_config:
-            server_config["static"] = {}
-
-        for fsResourceInfo in options.fsEndpoints.split("|"):
-            infoSplit = fsResourceInfo.split("=")
-            server_config["static"][infoSplit[0]] = infoSplit[1]
-
     if disableLogging:
-        server_config["logging_level"] = None
+        logging_level = None
+    elif options.debug:
+        logging_level = logging.DEBUG
     else:
-        # Set logging level.
-        if options.debug:
-            server_config["logging_level"] = logging.DEBUG
-        else:
-            server_config["logging_level"] = logging.ERROR
+        logging_level = logging.ERROR
 
-    server_config["handle_signals"] = not options.nosignalhandlers
+    if options.reverse_url:
+        server_config = {
+            "reverse_url": options.reverse_url,
+            "ws_protocol": wslinkServer,
+            "logging_level": logging_level,
+        }
+    else:
+        server_config = {
+            "host": options.host,
+            "port": options.port,
+            "timeout": options.timeout,
+            "logging_level": logging_level,
+        }
+
+        # Configure websocket endpoint
+        if not options.nows:
+            server_config["ws"] = {}
+            server_config["ws"][options.ws] = wslinkServer
+
+        # Configure default static route if --content requested
+        if len(options.content) > 0:
+            server_config["static"] = {}
+            # Static HTTP + WebSocket
+            server_config["static"]["/"] = options.content
+
+        # Configure any other static routes
+        if len(options.fsEndpoints) > 3:
+            if "static" not in server_config:
+                server_config["static"] = {}
+
+            for fsResourceInfo in options.fsEndpoints.split("|"):
+                infoSplit = fsResourceInfo.split("=")
+                server_config["static"][infoSplit[0]] = infoSplit[1]
+
+        server_config["handle_signals"] = not options.nosignalhandlers
 
     # Create the webserver and start it
     ws_server = create_webserver(server_config, backend=backend)
