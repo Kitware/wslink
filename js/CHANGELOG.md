@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/kitware/wslink/compare/v1.6.6...v1.7.0) (2022-08-11)
+
+
+### Features
+
+* **reverse-connection:** Add support for ClientWS and Relay service ([f62fef3](https://github.com/kitware/wslink/commit/f62fef31f310bbe28ee231184f4a3f78bb482b74))
+
 ## [1.6.6](https://github.com/kitware/wslink/compare/v1.6.5...v1.6.6) (2022-07-05)
 
 
