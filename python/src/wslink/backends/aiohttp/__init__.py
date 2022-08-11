@@ -51,6 +51,10 @@ async def _root_handler(request):
 
 
 async def _stop_server(app):
+    if hasattr(app, "stop"):
+        await app.stop()
+        return
+
     # Disconnecting any connected clients of handler(s)
     for route, handler in app["state"]["server_config"]["ws"].items():
         await handler.disconnectClients()
@@ -130,7 +134,44 @@ class AiohttpWslinkServer(object):
         return self.app["state"]["running"]
 
 
+class AiohttpWslinkClient(object):
+    def __init__(self, config):
+        self._config = config
+        self._url = config.get("reverse_url")
+        self._server_protocol = config.get("ws_protocol")
+        self._ws_handler = WslinkHandler(self._server_protocol, self)
+
+    def get_app(self):
+        return self
+
+    def get_config(self):
+        return self._config
+
+    def get_port(self):
+        return 0
+
+    async def start(self, port_callback=None):
+        if port_callback is not None:
+            port_callback(self.get_port())
+
+        await self._ws_handler.reverse_connect_to(self._url)
+
+    async def stop(self):
+        client_id = self._ws_handler.reverse_connection_client_id
+        ws = self._ws_handler.connections[client_id]
+        await ws.close()
+
+
 def create_webserver(server_config):
+    if "logging_level" in server_config and server_config["logging_level"]:
+        logging.basicConfig(level=server_config["logging_level"])
+
+    # Shortcut for reverse connection
+    if "reverse_url" in server_config:
+        server = AiohttpWslinkClient(server_config)
+        return server
+
+    # Normal web server
     web_app = aiohttp_web.Application()
 
     if "ws" in server_config:
@@ -159,9 +200,6 @@ def create_webserver(server_config):
         web_app.router.add_route("GET", "/", _root_handler)
         web_app.add_routes(routes)
 
-    if "logging_level" in server_config and server_config["logging_level"]:
-        logging.basicConfig(level=server_config["logging_level"])
-
     web_app.on_startup.append(_on_startup)
 
     web_app["state"] = {}
@@ -172,7 +210,6 @@ def create_webserver(server_config):
     server.set_config(server_config)
 
     return server
-
 
 # -----------------------------------------------------------------------------
 # WS protocol definition
@@ -260,6 +297,31 @@ class WslinkHandler(object):
             _schedule_shutdown(aiohttp_app)
 
         return current_ws
+
+    @property
+    def reverse_connection_client_id(self):
+        return "reverse_connection_client_id"
+
+    async def reverse_connect_to(self, url):
+        logging.debug("reverse_connect_to: running with url %s", url)
+        client_id = self.reverse_connection_client_id
+        async with aiohttp.ClientSession() as session:
+            logging.debug("reverse_connect_to: client session started")
+            async with session.ws_connect(url) as current_ws:
+                logging.debug("reverse_connect_to: ws started")
+                self.connections[client_id] = current_ws
+                logging.debug("reverse_connect_to: onConnect")
+                await self.onConnect(url, client_id)
+
+                async for msg in current_ws:
+                    if not current_ws.closed:
+                        await self.onMessage(msg, client_id)
+
+                logging.debug("reverse_connect_to: onClose")
+                await self.onClose(client_id)
+                del self.connections[client_id]
+
+        logging.debug("reverse_connect_to: exited")
 
     async def onConnect(self, request, client_id):
         if not self.serverProtocol:
@@ -411,6 +473,11 @@ class WslinkHandler(object):
                 results = func(*args, **kwargs)
                 if inspect.isawaitable(results):
                     results = await results
+
+                if self.connections[client_id].closed:
+                    # Connection was closed during RPC call.
+                    return
+
                 await self.sendWrappedMessage(
                     rpcid, results, method=methodName, client_id=client_id
                 )
