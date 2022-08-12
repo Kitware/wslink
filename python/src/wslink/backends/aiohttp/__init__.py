@@ -20,7 +20,7 @@ import aiohttp.web as aiohttp_web
 
 # 4MB is the default inside aiohttp
 MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
-HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30)) # 30 seconds
+HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
 
 
 async def _on_startup(app):
@@ -38,9 +38,7 @@ async def _on_startup(app):
 def _schedule_shutdown(app):
     timeout = app["state"]["server_config"]["timeout"]
     app["state"]["shutdown_task"] = (
-        schedule_coroutine(timeout, _stop_server, app)
-        if timeout > 0
-        else None
+        schedule_coroutine(timeout, _stop_server, app) if timeout > 0 else None
     )
 
 
@@ -211,6 +209,7 @@ def create_webserver(server_config):
 
     return server
 
+
 # -----------------------------------------------------------------------------
 # WS protocol definition
 # -----------------------------------------------------------------------------
@@ -269,7 +268,9 @@ class WslinkHandler(object):
         aiohttp_app = request.app
 
         client_id = str(uuid.uuid4()).replace("-", "")
-        current_ws = aiohttp_web.WebSocketResponse(max_msg_size=MAX_MSG_SIZE, heartbeat=HEART_BEAT)
+        current_ws = aiohttp_web.WebSocketResponse(
+            max_msg_size=MAX_MSG_SIZE, heartbeat=HEART_BEAT
+        )
         self.connections[client_id] = current_ws
 
         logging.info("client {0} connected".format(client_id))

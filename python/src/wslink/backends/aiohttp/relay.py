@@ -106,6 +106,7 @@ class WsClientConnection:
         if self._ws is not None:
             await self._ws.close()
 
+
 # -----------------------------------------------------------------------------
 
 
@@ -181,6 +182,7 @@ class WsServerConnection:
     async def close(self):
         if self._ws is not None:
             await self._ws.close()
+
 
 # -----------------------------------------------------------------------------
 

@@ -51,10 +51,10 @@ class LinkProtocol(object):
         pass
 
     def onClose(self, client_id):
-        """Called when a websocket connection is closed.
-        """
+        """Called when a websocket connection is closed."""
 
         pass
+
 
 # =============================================================================
 #
@@ -134,8 +134,7 @@ class ServerProtocol(object):
         pass
 
     def onClose(self, client_id):
-        """Called when a websocket connection is closed.
-        """
+        """Called when a websocket connection is closed."""
 
         pass
 
