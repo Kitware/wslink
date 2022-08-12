@@ -1,19 +1,19 @@
-r'''
+r"""
 # -----------------------------------------------------------------------------
 # This WebServer aims to provide a good starting point when creating
 # wslink based service.
 #
 # $ python ./server/server.py --content ./www
 # -----------------------------------------------------------------------------
-'''
+"""
 import os
 import sys
 
 # Try handle virtual env if provided
-if '--virtual-env' in sys.argv:
-  virtualEnvPath = sys.argv[sys.argv.index('--virtual-env') + 1]
-  virtualEnv = virtualEnvPath + '/bin/activate_this.py'
-  execfile(virtualEnv, dict(__file__=virtualEnv))
+if "--virtual-env" in sys.argv:
+    virtualEnvPath = sys.argv[sys.argv.index("--virtual-env") + 1]
+    virtualEnv = virtualEnvPath + "/bin/activate_this.py"
+    execfile(virtualEnv, dict(__file__=virtualEnv))
 
 import argparse
 
@@ -24,12 +24,15 @@ from api import PubSubAPI
 
 # -----------------------------------------------------------------------------
 
+
 class WebServer(ServerProtocol):
     authKey = "wslink-secret"
 
     @staticmethod
     def add_arguments(parser):
-        parser.add_argument("--virtual-env", default=None, help="Path to virtual environment to use")
+        parser.add_argument(
+            "--virtual-env", default=None, help="Path to virtual environment to use"
+        )
 
     @staticmethod
     def configure(options):
@@ -40,6 +43,7 @@ class WebServer(ServerProtocol):
 
         # Update authentication key to use
         self.updateSecret(WebServer.authKey)
+
 
 # -----------------------------------------------------------------------------
 # Main

@@ -5,6 +5,7 @@ from wslink import server
 
 from myProtocol import MyProtocol
 
+
 class ExampleServer(ServerProtocol):
     authKey = "wslink-secret"
 
@@ -18,8 +19,10 @@ class ExampleServer(ServerProtocol):
         # Update authentication key to use
         self.updateSecret(ExampleServer.authKey)
 
+
 def simple_start(argv=None):
     server.start(argv, ExampleServer)
+
 
 if __name__ == "__main__":
     simple_start()

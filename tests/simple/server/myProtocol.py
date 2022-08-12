@@ -10,6 +10,7 @@ from wslink.websocket import LinkProtocol
 # WS protocol definition
 # -----------------------------------------------------------------------------
 
+
 class MyProtocol(LinkProtocol):
     def __init__(self):
         super(MyProtocol, self).__init__()
@@ -20,7 +21,7 @@ class MyProtocol(LinkProtocol):
 
     @exportRPC("myprotocol.add")
     def add(self, listOfNumbers):
-        if (type(listOfNumbers) is list):
+        if type(listOfNumbers) is list:
             result = 0
             for value in listOfNumbers:
                 result += value
@@ -32,7 +33,7 @@ class MyProtocol(LinkProtocol):
 
     @exportRPC("myprotocol.mult")
     def mult(self, listOfNumbers):
-        if (type(listOfNumbers) is list):
+        if type(listOfNumbers) is list:
             result = 1
             for value in listOfNumbers:
                 result *= value
@@ -42,18 +43,18 @@ class MyProtocol(LinkProtocol):
         return 0
 
     @exportRPC("myprotocol.image")
-    def image(self, alt = False):
+    def image(self, alt=False):
         filename = "kitware.png" if not alt else "kitware2.png"
         filename = os.path.join(os.path.dirname(__file__), filename)
-        with open(filename, mode='rb') as file:
+        with open(filename, mode="rb") as file:
             contents = file.read()
-            return { "blob": self.addAttachment(contents) }
+            return {"blob": self.addAttachment(contents)}
 
     @exportRPC("myprotocol.unwrapped.image")
-    def bareImage(self, alt = False):
+    def bareImage(self, alt=False):
         filename = "kitware.png" if not alt else "kitware2.png"
         filename = os.path.join(os.path.dirname(__file__), filename)
-        with open(filename, mode='rb') as file:
+        with open(filename, mode="rb") as file:
             contents = file.read()
             return self.addAttachment(contents)
 
@@ -79,7 +80,7 @@ class MyProtocol(LinkProtocol):
 
         self.topic = topic
         self.subscribers += 1
-        return { "subscribed": topic }
+        return {"subscribed": topic}
 
     @exportRPC("myprotocol.stop")
     def stopStream(self, topic):
@@ -87,10 +88,10 @@ class MyProtocol(LinkProtocol):
         if self.topic == topic and self.subscribers > 0:
             self.subscribers -= 1
             if self.subscribers == 0 and self.loopTask:
-                print('canceling loop task')
+                print("canceling loop task")
                 self.loopTask.cancel()
                 self.loopTask = None
-            return { "unsubscribed": topic }
+            return {"unsubscribed": topic}
         return 0
 
     # test nesting attachments
@@ -105,12 +106,12 @@ class MyProtocol(LinkProtocol):
             "bytesList": [
                 self.addAttachment(bytes_list1),
                 self.addAttachment(bytes_list2),
-            ]
+            ],
         }
         return msg
 
     # test NaN and infinity
     @exportRPC("myprotocol.special")
     def testSpecials(self, listOfNumbers):
-        vals = [float('inf'), float('nan'), float('-inf')]
+        vals = [float("inf"), float("nan"), float("-inf")]
         return vals

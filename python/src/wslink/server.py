@@ -137,6 +137,7 @@ def stop_webserver():
         loop = asyncio.get_event_loop()
         return loop.create_task(ws_server.stop())
 
+
 # =============================================================================
 # Get webserver port (useful when 0 is provided and a dynamic one was picked)
 # =============================================================================
@@ -165,13 +166,18 @@ def get_port():
 def create_webserver(server_config, backend="aiohttp"):
     return backends.create_webserver(server_config, backend=backend)
 
+
 # =============================================================================
 # Generate a webserver config from command line options, create a webserver,
 # and start it.
 # =============================================================================
 def start_webserver(
-    options, protocol=wsl.ServerProtocol, disableLogging=False, backend="aiohttp",
-    exec_mode="main", **kwargs
+    options,
+    protocol=wsl.ServerProtocol,
+    disableLogging=False,
+    backend="aiohttp",
+    exec_mode="main",
+    **kwargs,
 ):
     """
     Starts the web-server with the given protocol. Options must be an object

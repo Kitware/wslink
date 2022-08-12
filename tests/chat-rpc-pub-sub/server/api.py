@@ -5,20 +5,20 @@ from wslink.websocket import LinkProtocol
 from wslink import schedule_callback
 
 MESSAGE_LIST = [
-    'Nice to meet you',
+    "Nice to meet you",
     "What's your name?",
-    'Mine is wslink.py',
+    "Mine is wslink.py",
 ]
+
 
 class PubSubAPI(LinkProtocol):
     def __init__(self, **kwargs):
-      super(PubSubAPI, self).__init__()
-      self.topic = 'wslink.communication.channel'
-      self.msgIdx = 0
-      self.keepTalking = True
-      self.frequency = 5 # 5 seconds
-      self.startTalking()
-
+        super(PubSubAPI, self).__init__()
+        self.topic = "wslink.communication.channel"
+        self.msgIdx = 0
+        self.keepTalking = True
+        self.frequency = 5  # 5 seconds
+        self.startTalking()
 
     def saySomething(self):
         if not self.keepTalking:
@@ -34,20 +34,17 @@ class PubSubAPI(LinkProtocol):
         if self.keepTalking:
             schedule_callback(self.frequency, lambda: self.saySomething())
 
-
     @exportRpc("wslink.say.hello")
     def sayHello(self, message):
-        print('sayHello', message)
-        msgToPost = 'py server: %s' % message
+        print("sayHello", message)
+        msgToPost = "py server: %s" % message
         self.publish(self.topic, msgToPost)
         return msgToPost
-
 
     @exportRpc("wslink.start.talking")
     def startTalking(self):
         self.keepTalking = True
         self.saySomething()
-
 
     @exportRpc("wslink.stop.talking")
     def stopTalking(self):
