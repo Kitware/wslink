@@ -9,7 +9,6 @@ Use "--help" to list the supported arguments.
 import argparse
 import asyncio
 import logging
-from .ssl_context import *
 
 from wslink import websocket as wsl
 from wslink import backends
@@ -242,6 +241,8 @@ def start_webserver(
 
         # Confifugre SSL
         if len(options.ssl) > 0:
+            from .ssl_context import generate_ssl_pair
+
             if options.ssl == "adhoc":
                 options.ssl = generate_ssl_pair(server_config["host"])
             else:
