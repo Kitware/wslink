@@ -102,6 +102,7 @@ class AiohttpWslinkServer(object):
         port = int(self.config["port"])
         timeout = int(self.config["timeout"])
         handle_signals = self.config["handle_signals"]
+        ssl_context = self.config.get("ssl", None)
 
         runner = aiohttp_web.AppRunner(app, handle_signals=handle_signals)
         loop = asyncio.get_event_loop()
@@ -113,7 +114,7 @@ class AiohttpWslinkServer(object):
         logging.info("awaiting runner setup")
         await runner.setup()
 
-        my_site = aiohttp_web.TCPSite(runner, host, port)
+        my_site = aiohttp_web.TCPSite(runner, host, port, ssl_context=ssl_context)
 
         logging.info("awaiting site startup")
         await my_site.start()

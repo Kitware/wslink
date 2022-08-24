@@ -46,5 +46,8 @@ setup(
     packages=find_packages("src", exclude=("tests.*", "tests")),
     package_dir={"": "src"},
     install_requires=["aiohttp<4"],
+    extras_require={
+        "ssl": ["cryptography"],
+    },
     include_package_data=True,
 )
