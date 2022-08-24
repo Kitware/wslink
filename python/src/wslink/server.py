@@ -241,7 +241,7 @@ def start_webserver(
 
         # Confifugre SSL
         if len(options.ssl) > 0:
-            from .ssl_context import generate_ssl_pair
+            from .ssl_context import generate_ssl_pair, ssl
 
             if options.ssl == "adhoc":
                 options.ssl = generate_ssl_pair(server_config["host"])
