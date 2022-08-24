@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/kitware/wslink/compare/v1.8.0...v1.8.1) (2022-08-24)
+
+
+### Bug Fixes
+
+* **ssl:** make import optional for ParaView ([be11056](https://github.com/kitware/wslink/commit/be1105641524f44127b97179924e57a29530cce6))
+
 # [1.8.0](https://github.com/kitware/wslink/compare/v1.7.0...v1.8.0) (2022-08-24)
 
 
