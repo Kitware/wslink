@@ -9,6 +9,7 @@ Use "--help" to list the supported arguments.
 import argparse
 import asyncio
 import logging
+from .ssl_context import *
 
 from wslink import websocket as wsl
 from wslink import backends
@@ -33,7 +34,6 @@ def add_arguments(parser):
     Add arguments known to this module. parser must be
     argparse.ArgumentParser instance.
     """
-    import os
 
     parser.add_argument(
         "-d", "--debug", help="log debugging messages to stdout", action="store_true"
@@ -101,6 +101,13 @@ def add_arguments(parser):
         "--reverse-url",
         dest="reverse_url",
         help="Make the server act as a client to connect to a ws relay",
+    )
+    parser.add_argument(
+        "--ssl",
+        type=str,
+        default="",
+        dest="ssl",
+        help="add a tuple file [certificate, key] (i.e: --ssl 'certificate,key') or adhoc string to generate temporary certificate (i.e: --ssl 'adhoc')",
     )
 
     return parser
@@ -232,6 +239,21 @@ def start_webserver(
             for fsResourceInfo in options.fsEndpoints.split("|"):
                 infoSplit = fsResourceInfo.split("=")
                 server_config["static"][infoSplit[0]] = infoSplit[1]
+
+        # Confifugre SSL
+        if len(options.ssl) > 0:
+            if options.ssl == "adhoc":
+                options.ssl = generate_ssl_pair(server_config["host"])
+            else:
+                tokens = options.ssl.split(",")
+                if len(tokens) != 2:
+                    raise Exception(
+                        f"ssl configure must be \"adhoc\" or a tuple of files \"cert,key\"")
+                options.ssl = tokens
+            cert, key = options.ssl
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.load_cert_chain(cert, key)
+            server_config["ssl"] = context
 
         server_config["handle_signals"] = not options.nosignalhandlers
 
