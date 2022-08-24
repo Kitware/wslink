@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/kitware/wslink/compare/v1.7.0...v1.8.0) (2022-08-24)
+
+
+### Features
+
+* **SSL:** support ssl context ([00eed08](https://github.com/kitware/wslink/commit/00eed083ae6ac9679d48ba3193c727cd692a74e3))
+
 # [1.7.0](https://github.com/kitware/wslink/compare/v1.6.6...v1.7.0) (2022-08-11)
 
 
