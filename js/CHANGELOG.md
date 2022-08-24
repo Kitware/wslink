@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/kitware/wslink/compare/v1.8.1...v1.8.2) (2022-08-24)
+
+
+### Bug Fixes
+
+* **ssl:** forgot to import ssl from .ssl_context ([d1f5f71](https://github.com/kitware/wslink/commit/d1f5f71d3aa2c2bb060e72ec5d96dbf4f8fc9c19))
+
 ## [1.8.1](https://github.com/kitware/wslink/compare/v1.8.0...v1.8.1) (2022-08-24)
 
 
