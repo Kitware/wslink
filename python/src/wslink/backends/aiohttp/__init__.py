@@ -281,23 +281,24 @@ class WslinkHandler(object):
             aiohttp_app["state"]["shutdown_task"].cancel()
             aiohttp_app["state"]["shutdown_task"] = None
 
-        await current_ws.prepare(request)
+        try:
+            await current_ws.prepare(request)
 
-        await self.onConnect(request, client_id)
+            await self.onConnect(request, client_id)
 
-        async for msg in current_ws:
-            await self.onMessage(msg, client_id)
+            async for msg in current_ws:
+                await self.onMessage(msg, client_id)
+        finally:
+            await self.onClose(client_id)
 
-        await self.onClose(client_id)
+            del self.connections[client_id]
+            self.authentified_client_ids.discard(client_id)
 
-        del self.connections[client_id]
-        self.authentified_client_ids.discard(client_id)
+            logging.info("client {0} disconnected".format(client_id))
 
-        logging.info("client {0} disconnected".format(client_id))
-
-        if not self.connections:
-            logging.info("No more connections, scheduling shutdown")
-            _schedule_shutdown(aiohttp_app)
+            if not self.connections:
+                logging.info("No more connections, scheduling shutdown")
+                _schedule_shutdown(aiohttp_app)
 
         return current_ws
 
