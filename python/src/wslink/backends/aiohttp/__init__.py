@@ -218,13 +218,13 @@ def create_webserver(server_config):
 
 class WslinkHandler(object):
     def __init__(self, protocol=None, web_app=None):
-        self._valid_token = False
         self.serverProtocol = protocol
         self.web_app = web_app
         self.functionMap = {}
         self.attachmentsReceived = {}
         self.attachmentsRecvQueue = []
         self.connections = {}
+        self.authentified_client_ids = set()
         self.attachment_atomic = asyncio.Lock()
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
@@ -291,6 +291,7 @@ class WslinkHandler(object):
         await self.onClose(client_id)
 
         del self.connections[client_id]
+        self.authentified_client_ids.discard(client_id)
 
         logging.info("client {0} disconnected".format(client_id))
 
@@ -354,7 +355,7 @@ class WslinkHandler(object):
                     and ("secret" in args[0])
                     and await self.validateToken(args[0]["secret"], client_id)
                 ):
-                    self._valid_token = True
+                    self.authentified_client_ids.add(client_id)
                     await self.sendWrappedMessage(
                         rpcid,
                         {"clientID": "c{0}".format(client_id)},
@@ -382,7 +383,7 @@ class WslinkHandler(object):
         payload = msg.data
 
         if isBinary:
-            if self._valid_token:
+            if self.isClientAuthenticated(client_id):
                 # assume all binary messages are attachments
                 try:
                     key = self.attachmentsRecvQueue.pop(0)
@@ -426,7 +427,7 @@ class WslinkHandler(object):
             return
 
         # Prevent any further processing if token is not valid
-        if not self._valid_token:
+        if not self.isClientAuthenticated(client_id):
             await self.sendWrappedError(
                 rpcid,
                 pub.AUTHENTICATION_ERROR,
@@ -539,6 +540,19 @@ class WslinkHandler(object):
             return True
         return token == self.serverProtocol.secret
 
+    def isClientAuthenticated(self, client_id):
+        return client_id in self.authentified_client_ids
+
+    def getAuthenticatedWebsockets(self, client_id=None):
+        if client_id:
+            if self.isClientAuthenticated(client_id):
+                return [self.connections.get(client_id)]
+            else:
+                return []
+        else:
+            return [self.connections[c] for c in self.connections if self.isClientAuthenticated(c)]
+
+
     async def sendWrappedMessage(self, rpcid, content, method="", client_id=None):
         wrapper = {
             "wslink": "1.0",
@@ -559,11 +573,7 @@ class WslinkHandler(object):
             )
             return
 
-        websockets = (
-            [self.connections.get(client_id)]
-            if client_id
-            else [self.connections[c] for c in self.connections]
-        )
+        websockets = self.getAuthenticatedWebsockets(client_id)
 
         # Check if any attachments in the map go with this message
         attachments = pub.publishManager.getAttachmentMap()
@@ -631,7 +641,8 @@ class WslinkHandler(object):
     def publish(self, topic, data, client_id=None):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
         for client in client_list:
-            pub.publishManager.publish(topic, data, client_id=client)
+            if self.isClientAuthenticated(client):
+                pub.publishManager.publish(topic, data, client_id=client)
 
     def addAttachment(self, payload):
         return pub.publishManager.addAttachment(payload)
