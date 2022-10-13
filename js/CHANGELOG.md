@@ -1,3 +1,10 @@
+## [1.8.4](https://github.com/kitware/wslink/compare/v1.8.3...v1.8.4) (2022-10-13)
+
+
+### Bug Fixes
+
+* **ws_server:** handle client disconnection even in case of error ([0fa664e](https://github.com/kitware/wslink/commit/0fa664e9b04599c92337e1b9547fb8534fb90eca)), closes [#118](https://github.com/kitware/wslink/issues/118)
+
 ## [1.8.3](https://github.com/kitware/wslink/compare/v1.8.2...v1.8.3) (2022-10-13)
 
 
