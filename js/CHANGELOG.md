@@ -1,3 +1,10 @@
+## [1.8.3](https://github.com/kitware/wslink/compare/v1.8.2...v1.8.3) (2022-10-13)
+
+
+### Bug Fixes
+
+* **security:** publish messages only to authenticated clients ([c630baa](https://github.com/kitware/wslink/commit/c630baae5a4b5daea74cbb63d3ab6edfb41b8c55))
+
 ## [1.8.2](https://github.com/kitware/wslink/compare/v1.8.1...v1.8.2) (2022-08-24)
 
 
