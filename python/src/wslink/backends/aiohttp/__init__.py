@@ -95,6 +95,9 @@ class AiohttpWslinkServer(object):
     def get_port(self):
         return self.app["state"]["runner"].addresses[0][1]
 
+    def get_last_active_client_id(self):
+        return self.app["state"].get("last_active_client_id", None)
+
     async def start(self, port_callback=None):
         app = self.app
         server_config = self.config
@@ -193,7 +196,9 @@ def create_webserver(server_config):
         # Ensure longer path are registered first
         for route in sorted(static_routes.keys(), reverse=True):
             server_path = static_routes[route]
-            routes.append(aiohttp_web.static(_fix_path(route), server_path))
+            routes.append(
+                aiohttp_web.static(_fix_path(route), server_path, append_version=True)
+            )
 
         # Resolve / => index.html
         web_app.router.add_route("GET", "/", _root_handler)
@@ -474,6 +479,7 @@ class WslinkHandler(object):
             args.insert(0, obj)
 
             try:
+                self.web_app["state"]["last_active_client_id"] = client_id
                 results = func(*args, **kwargs)
                 if inspect.isawaitable(results):
                     results = await results
@@ -544,17 +550,30 @@ class WslinkHandler(object):
     def isClientAuthenticated(self, client_id):
         return client_id in self.authentified_client_ids
 
-    def getAuthenticatedWebsockets(self, client_id=None):
+    def getAuthenticatedWebsockets(self, client_id=None, skip_last_active_client=False):
+        if skip_last_active_client:
+            last_c = self.web_app["state"].get("last_active_client_id")
+            return [
+                self.connections[c]
+                for c in self.connections
+                if self.isClientAuthenticated(c) and c != last_c
+            ]
+
         if client_id:
             if self.isClientAuthenticated(client_id):
                 return [self.connections.get(client_id)]
             else:
                 return []
-        else:
-            return [self.connections[c] for c in self.connections if self.isClientAuthenticated(c)]
 
+        return [
+            self.connections[c]
+            for c in self.connections
+            if self.isClientAuthenticated(c)
+        ]
 
-    async def sendWrappedMessage(self, rpcid, content, method="", client_id=None):
+    async def sendWrappedMessage(
+        self, rpcid, content, method="", client_id=None, skip_last_active_client=False
+    ):
         wrapper = {
             "wslink": "1.0",
             "id": rpcid,
@@ -574,7 +593,7 @@ class WslinkHandler(object):
             )
             return
 
-        websockets = self.getAuthenticatedWebsockets(client_id)
+        websockets = self.getAuthenticatedWebsockets(client_id, skip_last_active_client)
 
         # Check if any attachments in the map go with this message
         attachments = pub.publishManager.getAttachmentMap()
@@ -639,11 +658,16 @@ class WslinkHandler(object):
             if ws is not None:
                 await ws.send_str(encMsg)
 
-    def publish(self, topic, data, client_id=None):
+    def publish(self, topic, data, client_id=None, skip_last_active_client=False):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
         for client in client_list:
             if self.isClientAuthenticated(client):
-                pub.publishManager.publish(topic, data, client_id=client)
+                pub.publishManager.publish(
+                    topic,
+                    data,
+                    client_id=client,
+                    skip_last_active_client=skip_last_active_client,
+                )
 
     def addAttachment(self, payload):
         return pub.publishManager.addAttachment(payload)

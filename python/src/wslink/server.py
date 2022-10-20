@@ -249,7 +249,8 @@ def start_webserver(
                 tokens = options.ssl.split(",")
                 if len(tokens) != 2:
                     raise Exception(
-                        f"ssl configure must be \"adhoc\" or a tuple of files \"cert,key\"")
+                        f'ssl configure must be "adhoc" or a tuple of files "cert,key"'
+                    )
                 options.ssl = tokens
             cert, key = options.ssl
             context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)

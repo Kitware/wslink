@@ -52,12 +52,17 @@ class PublishManager(object):
         self.attachmentId += 1
         return binaryId
 
-    def publish(self, topic, data, client_id=None):
+    def publish(self, topic, data, client_id=None, skip_last_active_client=False):
         for protocol in self.protocols:
             # The client is unknown - we send to any client who is subscribed to the topic
             rpcid = "publish:{0}:{1}".format(topic, self.publishCount)
             schedule_coroutine(
-                0, protocol.sendWrappedMessage, rpcid, data, client_id=client_id
+                0,
+                protocol.sendWrappedMessage,
+                rpcid,
+                data,
+                client_id=client_id,
+                skip_last_active_client=skip_last_active_client,
             )
 
 
