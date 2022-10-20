@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/kitware/wslink/compare/v1.8.4...v1.9.0) (2022-10-20)
+
+
+### Features
+
+* **skip_last_active_client:** Better network handling for collaboration ([e4844e6](https://github.com/kitware/wslink/commit/e4844e6c395eb4de8b4223397108127ce24bfa25))
+
 ## [1.8.4](https://github.com/kitware/wslink/compare/v1.8.3...v1.8.4) (2022-10-13)
 
 
