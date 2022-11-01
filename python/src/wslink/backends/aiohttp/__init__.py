@@ -142,6 +142,13 @@ class AiohttpWslinkClient(object):
         self._url = config.get("reverse_url")
         self._server_protocol = config.get("ws_protocol")
         self._ws_handler = WslinkHandler(self._server_protocol, self)
+        self.state = {}
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        return getattr(self, key)
 
     def get_app(self):
         return self
@@ -151,6 +158,9 @@ class AiohttpWslinkClient(object):
 
     def get_port(self):
         return 0
+
+    def get_last_active_client_id(self):
+        return self.state.get("last_active_client_id", None)
 
     async def start(self, port_callback=None):
         if port_callback is not None:
