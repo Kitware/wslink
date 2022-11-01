@@ -148,7 +148,7 @@ class AiohttpWslinkClient(object):
         return getattr(self, key)
 
     def __setitem__(self, key, value):
-        return getattr(self, key)
+        return setattr(self, key, value)
 
     def get_app(self):
         return self
