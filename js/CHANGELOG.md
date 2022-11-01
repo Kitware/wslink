@@ -1,3 +1,11 @@
+## [1.9.1](https://github.com/kitware/wslink/compare/v1.9.0...v1.9.1) (2022-11-01)
+
+
+### Bug Fixes
+
+* **clientSession:** Make reverse connection subscriptable ([bb672ca](https://github.com/kitware/wslink/commit/bb672ca1ac5be92b015cb4479d4ac1409558de5c))
+* **subscriptable:** fix typo ([13b60c5](https://github.com/kitware/wslink/commit/13b60c55f5e182232c8b1ced92db35ed52c92933))
+
 # [1.9.0](https://github.com/kitware/wslink/compare/v1.8.4...v1.9.0) (2022-10-20)
 
 
