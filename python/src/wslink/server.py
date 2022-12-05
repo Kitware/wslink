@@ -35,7 +35,10 @@ def add_arguments(parser):
     """
 
     parser.add_argument(
-        "-d", "--debug", help="log debugging messages to stdout", action="store_true"
+        "-d",
+        "--debug",
+        help="log debugging messages to stdout",
+        action="store_true"
     )
     parser.add_argument(
         "-s",
@@ -83,6 +86,10 @@ def add_arguments(parser):
         default="ws",
         dest="ws",
         help="Specify WebSocket endpoint. (e.g. foo/bar/ws, Default: ws)",
+    )
+    parser.add_argument(
+        "--authKeyFile",
+        help="Path to a File that contains the Authentication key for clients to connect to the WebSocket."
     )
     parser.add_argument(
         "--no-ws-endpoint",
