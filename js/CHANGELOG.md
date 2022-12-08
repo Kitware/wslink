@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/kitware/wslink/compare/v1.9.1...v1.9.2) (2022-12-08)
+
+
+### Bug Fixes
+
+* **sessionManagerURL:** Make it path relative aware like default sessionURL ([7c351a3](https://github.com/kitware/wslink/commit/7c351a3d7a1b0b3ecd658ea99150ccee68a688ad))
+
 ## [1.9.1](https://github.com/kitware/wslink/compare/v1.9.0...v1.9.1) (2022-11-01)
 
 
