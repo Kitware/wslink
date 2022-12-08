@@ -6,14 +6,20 @@ import WebsocketConnection from '../WebsocketConnection';
 
 function DEFAULT_CONFIG_DECORATOR(config) {
   if (config.sessionURL) {
-    config.sessionURL = config.sessionURL.replaceAll('USE_HOSTNAME', window.location.hostname);
-    config.sessionURL = config.sessionURL.replaceAll('USE_HOST', window.location.host);
+    config.sessionURL = config.sessionURL.replaceAll(
+      'USE_HOSTNAME',
+      window.location.hostname
+    );
+    config.sessionURL = config.sessionURL.replaceAll(
+      'USE_HOST',
+      window.location.host
+    );
   }
   return config;
 }
 
-function extractPathName(addOn, pathName=window.location.pathname) {
-  if (pathName.endsWith(".html") || pathName.endsWith(".htm")) {
+function extractPathName(addOn, pathName = window.location.pathname) {
+  if (pathName.endsWith('.html') || pathName.endsWith('.htm')) {
     const tokens = pathName.split('/');
     tokens.pop();
     pathName = tokens.join('/');
@@ -22,15 +28,20 @@ function extractPathName(addOn, pathName=window.location.pathname) {
     pathName = pathName.substring(0, pathName.length - 1);
   }
   if (pathName.length === 0) {
-    return addOn
+    return addOn;
   }
   return `${pathName}${addOn}`;
 }
 
-export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/paraview/`,
-  DEFAULT_SESSION_URL = `${
-    window.location.protocol === 'https:' ? 'wss' : 'ws'
-  }://${window.location.hostname}:${window.location.port}${extractPathName('/ws')}`;
+export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${
+  window.location.hostname
+}:${window.location.port}${extractPathName('/paraview/')}`;
+
+export const DEFAULT_SESSION_URL = `${
+  window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+}//${window.location.hostname}:${window.location.port}${extractPathName(
+  '/ws'
+)}`;
 
 function wsConnect(publicAPI, model) {
   const wsConnection = WebsocketConnection.newInstance({
