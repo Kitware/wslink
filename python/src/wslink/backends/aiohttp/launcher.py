@@ -233,8 +233,8 @@ def startWebServer(options, config):
     web_app.add_routes(
         [
             aiohttp_web.post(endpoint, launcher_resource.handle_post),
-            aiohttp_web.get(endpoint, launcher_resource.handle_get),
-            aiohttp_web.delete(endpoint, launcher_resource.handle_delete),
+            aiohttp_web.get(endpoint + "{id}", launcher_resource.handle_get),
+            aiohttp_web.delete(endpoint + "{id}", launcher_resource.handle_delete),
         ]
     )
 
