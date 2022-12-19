@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/kitware/wslink/compare/v1.9.2...v1.9.3) (2022-12-19)
+
+
+### Bug Fixes
+
+* **launcher:** get/delete now works ([c95a23d](https://github.com/kitware/wslink/commit/c95a23d87d0360d68e1a58c3dbe63757e9268818))
+
 ## [1.9.2](https://github.com/kitware/wslink/compare/v1.9.1...v1.9.2) (2022-12-08)
 
 
