@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/kitware/wslink/compare/v1.9.3...v1.10.0) (2022-12-20)
+
+
+### Features
+
+* **launcher:** Make GET/DELETE endpoint optionals ([2dc2916](https://github.com/kitware/wslink/commit/2dc291639fc8fc709c9969df6f1872a19a9b51a0))
+
 ## [1.9.3](https://github.com/kitware/wslink/compare/v1.9.2...v1.9.3) (2022-12-19)
 
 
