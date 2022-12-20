@@ -1,16 +1,8 @@
-import argparse
 import asyncio
 import datetime
-import io
-import json
 import logging
 import os
-import re
-import string
-import subprocess
 import sys
-import time
-import uuid
 
 from random import choice
 
@@ -30,6 +22,14 @@ from wslink.launcher import (
     extractSessionId,
     STATUS_NOT_FOUND,
 )
+
+# ===========================================================================
+# Launcher ENV configuration
+# ===========================================================================
+
+ENABLE_GET = int(os.environ.get("WSLINK_LAUNCHER_GET", 0))
+ENABLE_DELETE = int(os.environ.get("WSLINK_LAUNCHER_DELETE", 0))
+
 
 # ===========================================================================
 # Class to implement requests to POST, GET and DELETE methods
@@ -230,13 +230,19 @@ def startWebServer(options, config):
     if not endpoint.startswith("/"):
         endpoint = "/{0}/".format(endpoint)
 
-    web_app.add_routes(
-        [
-            aiohttp_web.post(endpoint, launcher_resource.handle_post),
-            aiohttp_web.get(endpoint + "{id}", launcher_resource.handle_get),
-            aiohttp_web.delete(endpoint + "{id}", launcher_resource.handle_delete),
-        ]
-    )
+    routes = [
+        aiohttp_web.post(endpoint, launcher_resource.handle_post),
+    ]
+
+    if ENABLE_GET:
+        routes.append(aiohttp_web.get(endpoint + "{id}", launcher_resource.handle_get))
+
+    if ENABLE_DELETE:
+        routes.append(
+            aiohttp_web.delete(endpoint + "{id}", launcher_resource.handle_delete)
+        )
+
+    web_app.add_routes(routes)
 
     if len(content) > 0:
         web_app.router.add_route("GET", "/", _root_handler)

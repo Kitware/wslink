@@ -28,6 +28,16 @@ Get the whole story
 This package is just the server side of wslink. See the `github repo`_ for
 the full story - and to contribute or report issues!
 
+Configure from environment variables
+------------------------------------
+
+Those only apply for the Python server and launcher.
+
+* __WSLINK_LAUNCHER_GET__ - If set to 1 this will enable the GET endpoint for session information
+* __WSLINK_LAUNCHER_DELETE__ - If set to 1 this will enable the DELETE endpoint for killing a running session
+* __WSLINK_MAX_MSG_SIZE__ - Number of bytes for a message size (default: 4194304)
+* __WSLINK_HEART_BEAT__ - Number of seconds between heartbeats (default: 30)
+
 License
 -------
 Free to use in open-source and commercial projects, under the BSD-3-Clause license.
