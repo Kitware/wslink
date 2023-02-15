@@ -1,3 +1,11 @@
+## [1.10.1](https://github.com/kitware/wslink/compare/v1.10.0...v1.10.1) (2023-02-15)
+
+
+### Bug Fixes
+
+* **gracefulexit:** handle server exit for exec_mode=main ([9e06313](https://github.com/kitware/wslink/commit/9e063134b8e171116b374e80fa1ddcd790ca5109))
+* **json5:** Bump version ([4d2e972](https://github.com/kitware/wslink/commit/4d2e9725199d3504897b2419880b07bdc606048c))
+
 # [1.10.0](https://github.com/kitware/wslink/compare/v1.9.3...v1.10.0) (2022-12-20)
 
 
