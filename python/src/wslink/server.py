@@ -279,11 +279,12 @@ def start_webserver(
         return ws_server.start(port_callback)
 
     def main_exec():
-        # Block until the loop finishes and then close the loop
+        # Block until webapp exits
         try:
             loop.run_until_complete(create_coroutine())
-        finally:
-            loop.close()
+        except SystemExit:
+            # backend gracefully exit (due to timeout or SIGINT/SIGTERM)
+            pass
 
     def task_exec():
         return loop.create_task(create_coroutine())
