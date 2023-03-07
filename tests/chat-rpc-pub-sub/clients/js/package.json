@@ -3,23 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "build": "vite build",
+    "debug": "vite build --sourcemap -m dev",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore --ignore-pattern public"
   },
   "dependencies": {
-    "core-js": "^3.6.4",
-    "vue": "^2.6.14",
-    "wslink": "1.0.4"
+    "@vitejs/plugin-vue2": "^2.2.0",
+    "vue": "^2.7.14",
+    "wslink": "^1.10.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.13",
-    "@vue/cli-plugin-eslint": "~4.5.13",
-    "@vue/cli-service": "~4.5.13",
-    "@babel/eslint-parser": "^7.15.0",
-    "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^7.15.1",
-    "vue-template-compiler": "^2.6.14"
+    "@rushstack/eslint-patch": "^1.1.4",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "eslint": "^8.33.0",
+    "eslint-plugin-vue": "^9.3.0",
+    "prettier": "^2.7.1",
+    "vite": "^4.1.0"
   },
   "browserslist": [
     "> 1%",
