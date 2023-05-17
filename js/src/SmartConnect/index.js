@@ -134,8 +134,9 @@ function smartConnect(publicAPI, model) {
     return session;
   };
 
-  function cleanUp() {
+  function cleanUp(timeout) {
     if (session) {
+      timeout > 0 && session.call('application.exit.later', [timeout]);
       session.close();
     }
     session = null;
