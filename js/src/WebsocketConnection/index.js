@@ -105,8 +105,13 @@ function WebsocketConnection(publicAPI, model) {
     model.connection ? model.connection.url : undefined;
 
   function cleanUp(timeout = 10) {
-    if (model.session && timeout > 0) {
-      model.session.call('application.exit.later', [timeout]);
+    if (
+      model.connection &&
+      model.connection.readyState === 1 &&
+      model.session &&
+      timeout > 0
+    ) {
+      model.session.call("application.exit.later", [timeout]);
     }
     if (model.connection) {
       model.connection.close();
