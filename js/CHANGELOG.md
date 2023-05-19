@@ -1,3 +1,10 @@
+## [1.10.2](https://github.com/kitware/wslink/compare/v1.10.1...v1.10.2) (2023-05-19)
+
+
+### Bug Fixes
+
+* **SmartConnect:** Allow delete to call exit later ([eeb7637](https://github.com/kitware/wslink/commit/eeb76372e55e6f0b1a9717c679400407997f303a))
+
 ## [1.10.1](https://github.com/kitware/wslink/compare/v1.10.0...v1.10.1) (2023-02-15)
 
 
