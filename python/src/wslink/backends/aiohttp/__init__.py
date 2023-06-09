@@ -1,17 +1,10 @@
 import asyncio
-import copy
 import os
-import inspect
-import json
 import logging
-import re
 import sys
-import traceback
 import uuid
 
-
-from wslink import schedule_coroutine
-from wslink import publish as pub
+from wslink.protocol import WslinkHandler, AbstractWebApp
 
 # Backend specific imports
 import aiohttp
@@ -22,24 +15,9 @@ import aiohttp.web as aiohttp_web
 MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
 
-
-async def _on_startup(app):
-    STARTUP_MSG = os.environ.get("WSLINK_READY_MSG", "wslink: Starting factory")
-    if STARTUP_MSG:
-        # Emit an expected log message so launcher.py knows we've started up.
-        print(STARTUP_MSG)
-        # We've seen some issues with stdout buffering - be conservative.
-        sys.stdout.flush()
-
-    # Also schedule server shutdown in case no clients connect within timeout
-    _schedule_shutdown(app)
-
-
-def _schedule_shutdown(app):
-    timeout = app["state"]["server_config"]["timeout"]
-    app["state"]["shutdown_task"] = (
-        schedule_coroutine(timeout, _stop_server, app) if timeout > 0 else None
-    )
+# -----------------------------------------------------------------------------
+# HTTP helpers
+# -----------------------------------------------------------------------------
 
 
 async def _root_handler(request):
@@ -48,123 +26,130 @@ async def _root_handler(request):
     return aiohttp.web.HTTPFound("index.html")
 
 
-async def _stop_server(app):
-    if hasattr(app, "stop"):
-        await app.stop()
-        return
-
-    # Disconnecting any connected clients of handler(s)
-    for route, handler in app["state"]["server_config"]["ws"].items():
-        await handler.disconnectClients()
-
-    # Neither site.stop() nor runner.cleanup() actually stop the server
-    # as documented, but at least runner.cleanup() results in the
-    # "on_shutdown" signal getting sent.
-    logging.info("Performing runner.cleanup()")
-    await app["state"]["runner"].cleanup()
-
-    # So to actually stop the server, the workaround is just to resolve
-    # the future we awaited in the start method.
-    logging.info("Stopping server")
-    app["state"]["running"].set_result(True)
-
-
 def _fix_path(path):
     if not path.startswith("/"):
         return "/{0}".format(path)
     return path
 
 
-class AiohttpWslinkServer(object):
-    def __init__(self):
-        self.app = None
-        self.config = None
+# -----------------------------------------------------------------------------
 
-    def get_app(self):
-        return self.app
 
-    def set_app(self, app):
-        self.app = app
+class WebAppServer(AbstractWebApp, aiohttp_web.Application):
+    def __init__(self, server_config):
+        AbstractWebApp.__init__(self, server_config)
+        aiohttp_web.Application.__init__(self)
+        self._ws_handlers = []
+        self._site = None
+        self._runner = None
 
-    def get_config(self):
-        return self.config
+        if "ws" in server_config:
+            routes = []
+            for route, server_protocol in server_config["ws"].items():
+                protocol_handler = AioHttpWsHandler(server_protocol, self)
+                self._ws_handlers.append(protocol_handler)
+                routes.append(
+                    aiohttp_web.get(_fix_path(route), protocol_handler.handleWsRequest)
+                )
 
-    def set_config(self, config):
-        self.config = config
+            self.add_routes(routes)
 
-    def get_port(self):
-        return self.app["state"]["runner"].addresses[0][1]
+        if "static" in server_config:
+            static_routes = server_config["static"]
+            routes = []
 
-    def get_last_active_client_id(self):
-        return self.app["state"].get("last_active_client_id", None)
+            # Ensure longer path are registered first
+            for route in sorted(static_routes.keys(), reverse=True):
+                server_path = static_routes[route]
+                routes.append(
+                    aiohttp_web.static(
+                        _fix_path(route), server_path, append_version=True
+                    )
+                )
 
-    async def start(self, port_callback=None):
-        app = self.app
-        server_config = self.config
-        host = self.config["host"]
-        port = int(self.config["port"])
-        timeout = int(self.config["timeout"])
-        handle_signals = self.config["handle_signals"]
-        ssl_context = self.config.get("ssl", None)
+            # Resolve / => index.html
+            self.router.add_route("GET", "/", _root_handler)
+            self.add_routes(routes)
 
-        runner = aiohttp_web.AppRunner(app, handle_signals=handle_signals)
-        loop = asyncio.get_event_loop()
-        running = loop.create_future()
+        self["state"] = {}
 
-        app["state"]["running"] = running
-        app["state"]["runner"] = runner
-
-        logging.info("awaiting runner setup")
-        await runner.setup()
-
-        my_site = aiohttp_web.TCPSite(runner, host, port, ssl_context=ssl_context)
-
-        logging.info("awaiting site startup")
-        await my_site.start()
-
-        if port_callback is not None:
-            port_callback(self.get_port())
-
-        logging.info("awaiting running future")
-        await running
-
-    async def stop(self):
-        await _stop_server(self.app)
+    # -------------------------------------------------------------------------
+    # Server status
+    # -------------------------------------------------------------------------
 
     @property
-    def completion(self):
-        return self.app["state"]["running"]
+    def runner(self):
+        return self._runner
 
-
-class AiohttpWslinkClient(object):
-    def __init__(self, config):
-        self._config = config
-        self._url = config.get("reverse_url")
-        self._server_protocol = config.get("ws_protocol")
-        self._ws_handler = WslinkHandler(self._server_protocol, self)
-        self.state = {}
-
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def __setitem__(self, key, value):
-        return setattr(self, key, value)
-
-    def get_app(self):
-        return self
-
-    def get_config(self):
-        return self._config
+    @property
+    def site(self):
+        return self._site
 
     def get_port(self):
-        return 0
+        """Return the actual port used by the server"""
+        return self.runner.addresses[0][1]
 
-    def get_last_active_client_id(self):
-        return self.state.get("last_active_client_id", None)
+    # -------------------------------------------------------------------------
+    # Life cycles
+    # -------------------------------------------------------------------------
+
+    async def start(self, port_callback=None):
+        self._runner = aiohttp_web.AppRunner(self, handle_signals=self.handle_signals)
+
+        logging.info("awaiting runner setup")
+        await self._runner.setup()
+
+        self._site = aiohttp_web.TCPSite(
+            self._runner, self.host, self.port, ssl_context=self.ssl_context
+        )
+
+        logging.info("awaiting site startup")
+        await self._site.start()
+
+        if port_callback is not None:
+            port_callback(self.get_port())
+
+        logging.info(f"Print WSLINK_READY_MSG")
+        STARTUP_MSG = os.environ.get("WSLINK_READY_MSG", "wslink: Starting factory")
+        if STARTUP_MSG:
+            # Emit an expected log message so launcher.py knows we've started up.
+            print(STARTUP_MSG)
+            # We've seen some issues with stdout buffering - be conservative.
+            sys.stdout.flush()
+
+        logging.info(f"Schedule auto shutdown with timout {self.timeout}")
+        self.shutdown_schedule()
+
+        logging.info("awaiting running future")
+        await self.completion
+
+    async def stop(self):
+        # Disconnecting any connected clients of handler(s)
+        for handler in self._ws_handlers:
+            await handler.disconnectClients()
+
+        # Neither site.stop() nor runner.cleanup() actually stop the server
+        # as documented, but at least runner.cleanup() results in the
+        # "on_shutdown" signal getting sent.
+        logging.info("Performing runner.cleanup()")
+        await self.runner.cleanup()
+
+        # So to actually stop the server, the workaround is just to resolve
+        # the future we awaited in the start method.
+        logging.info("Stopping server")
+        self.completion.set_result(True)
+
+
+class ReverseWebAppServer(AbstractWebApp):
+    def __init__(self, server_config):
+        super().__init__(server_config)
+        self._url = server_config.get("reverse_url")
+        self._server_protocol = server_config.get("ws_protocol")
+        self._ws_handler = AioHttpWsHandler(self._server_protocol, self)
 
     async def start(self, port_callback=None):
         if port_callback is not None:
-            port_callback(self.get_port())
+            port_callback(0)
 
         await self._ws_handler.reverse_connect_to(self._url)
 
@@ -180,50 +165,10 @@ def create_webserver(server_config):
 
     # Shortcut for reverse connection
     if "reverse_url" in server_config:
-        server = AiohttpWslinkClient(server_config)
-        return server
+        return ReverseWebAppServer(server_config)
 
     # Normal web server
-    web_app = aiohttp_web.Application()
-
-    if "ws" in server_config:
-        ws_routes = server_config["ws"]
-        routes = []
-
-        for route, server_protocol in ws_routes.items():
-            protocol_handler = WslinkHandler(server_protocol, web_app)
-            ws_routes[route] = protocol_handler
-            routes.append(
-                aiohttp_web.get(_fix_path(route), protocol_handler.handleWsRequest)
-            )
-
-        web_app.add_routes(routes)
-
-    if "static" in server_config:
-        static_routes = server_config["static"]
-        routes = []
-
-        # Ensure longer path are registered first
-        for route in sorted(static_routes.keys(), reverse=True):
-            server_path = static_routes[route]
-            routes.append(
-                aiohttp_web.static(_fix_path(route), server_path, append_version=True)
-            )
-
-        # Resolve / => index.html
-        web_app.router.add_route("GET", "/", _root_handler)
-        web_app.add_routes(routes)
-
-    web_app.on_startup.append(_on_startup)
-
-    web_app["state"] = {}
-    web_app["state"]["server_config"] = server_config
-
-    server = AiohttpWslinkServer()
-    server.set_app(web_app)
-    server.set_config(server_config)
-
-    return server
+    return WebAppServer(server_config)
 
 
 # -----------------------------------------------------------------------------
@@ -231,43 +176,11 @@ def create_webserver(server_config):
 # -----------------------------------------------------------------------------
 
 
-class WslinkHandler(object):
-    def __init__(self, protocol=None, web_app=None):
-        self.serverProtocol = protocol
-        self.web_app = web_app
-        self.functionMap = {}
-        self.attachmentsReceived = {}
-        self.attachmentsRecvQueue = []
-        self.connections = {}
-        self.authentified_client_ids = set()
-        self.attachment_atomic = asyncio.Lock()
+def is_binary(msg):
+    return msg.type == aiohttp.WSMsgType.BINARY
 
-        # Build the rpc method dictionary, assuming we were given a serverprotocol
-        if self.getServerProtocol():
-            protocolList = self.getServerProtocol().getLinkProtocols()
-            protocolList.append(self.getServerProtocol())
-            for protocolObject in protocolList:
-                protocolObject.init(
-                    self.publish,
-                    self.addAttachment,
-                    lambda: schedule_coroutine(0, _stop_server, self.web_app),
-                )
-                test = lambda x: inspect.ismethod(x) or inspect.isfunction(x)
-                for k in inspect.getmembers(protocolObject.__class__, test):
-                    proc = k[1]
-                    if "_wslinkuris" in proc.__dict__:
-                        uri_info = proc.__dict__["_wslinkuris"][0]
-                        if "uri" in uri_info:
-                            uri = uri_info["uri"]
-                            self.functionMap[uri] = (protocolObject, proc)
-            pub.publishManager.registerProtocol(self)
 
-    def setServerProtocol(self, protocol):
-        self.serverProtocol = protocol
-
-    def getServerProtocol(self):
-        return self.serverProtocol
-
+class AioHttpWsHandler(WslinkHandler):
     async def disconnectClients(self):
         logging.info("Closing client connections:")
         keys = list(self.connections.keys())
@@ -278,11 +191,9 @@ class WslinkHandler(object):
                 code=aiohttp.WSCloseCode.GOING_AWAY, message="Server shutdown"
             )
 
-        pub.publishManager.unregisterProtocol(self)
+        self.publishManager.unregisterProtocol(self)
 
     async def handleWsRequest(self, request):
-        aiohttp_app = request.app
-
         client_id = str(uuid.uuid4()).replace("-", "")
         current_ws = aiohttp_web.WebSocketResponse(
             max_msg_size=MAX_MSG_SIZE, heartbeat=HEART_BEAT
@@ -291,18 +202,13 @@ class WslinkHandler(object):
 
         logging.info("client {0} connected".format(client_id))
 
-        if aiohttp_app["state"]["shutdown_task"]:
-            logging.info("Canceling shutdown task")
-            aiohttp_app["state"]["shutdown_task"].cancel()
-            aiohttp_app["state"]["shutdown_task"] = None
+        self.web_app.shutdown_cancel()
 
         try:
             await current_ws.prepare(request)
-
             await self.onConnect(request, client_id)
-
             async for msg in current_ws:
-                await self.onMessage(msg, client_id)
+                await self.onMessage(is_binary(msg), msg, client_id)
         finally:
             await self.onClose(client_id)
 
@@ -313,13 +219,9 @@ class WslinkHandler(object):
 
             if not self.connections:
                 logging.info("No more connections, scheduling shutdown")
-                _schedule_shutdown(aiohttp_app)
+                self.web_app.shutdown_schedule()
 
         return current_ws
-
-    @property
-    def reverse_connection_client_id(self):
-        return "reverse_connection_client_id"
 
     async def reverse_connect_to(self, url):
         logging.debug("reverse_connect_to: running with url %s", url)
@@ -334,353 +236,10 @@ class WslinkHandler(object):
 
                 async for msg in current_ws:
                     if not current_ws.closed:
-                        await self.onMessage(msg, client_id)
+                        await self.onMessage(is_binary(msg), msg, client_id)
 
                 logging.debug("reverse_connect_to: onClose")
                 await self.onClose(client_id)
                 del self.connections[client_id]
 
         logging.debug("reverse_connect_to: exited")
-
-    async def onConnect(self, request, client_id):
-        if not self.serverProtocol:
-            return
-        if hasattr(self.serverProtocol, "onConnect"):
-            self.serverProtocol.onConnect(request, client_id)
-        for linkProtocol in self.serverProtocol.getLinkProtocols():
-            if hasattr(linkProtocol, "onConnect"):
-                linkProtocol.onConnect(request, client_id)
-
-    async def onClose(self, client_id):
-        if not self.serverProtocol:
-            return
-        if hasattr(self.serverProtocol, "onClose"):
-            self.serverProtocol.onClose(client_id)
-        for linkProtocol in self.serverProtocol.getLinkProtocols():
-            if hasattr(linkProtocol, "onClose"):
-                linkProtocol.onClose(client_id)
-
-    async def handleSystemMessage(self, rpcid, methodName, args, client_id):
-        rpcList = rpcid.split(":")
-        if rpcList[0] == "system":
-            if methodName == "wslink.hello":
-                if (
-                    args
-                    and args[0]
-                    and (type(args[0]) is dict)
-                    and ("secret" in args[0])
-                    and await self.validateToken(args[0]["secret"], client_id)
-                ):
-                    self.authentified_client_ids.add(client_id)
-                    await self.sendWrappedMessage(
-                        rpcid,
-                        {"clientID": "c{0}".format(client_id)},
-                        client_id=client_id,
-                    )
-                else:
-                    await self.sendWrappedError(
-                        rpcid,
-                        pub.AUTHENTICATION_ERROR,
-                        "Authentication failed",
-                        client_id=client_id,
-                    )
-            else:
-                await self.sendWrappedError(
-                    rpcid,
-                    pub.METHOD_NOT_FOUND,
-                    "Unknown system method called",
-                    client_id=client_id,
-                )
-            return True
-        return False
-
-    async def onMessage(self, msg, client_id):
-        isBinary = msg.type == aiohttp.WSMsgType.BINARY
-        payload = msg.data
-
-        if isBinary:
-            if self.isClientAuthenticated(client_id):
-                # assume all binary messages are attachments
-                try:
-                    key = self.attachmentsRecvQueue.pop(0)
-                    self.attachmentsReceived[key] = payload
-                except:
-                    pass
-                return
-
-        # handles issue https://bugs.python.org/issue10976
-        # `payload` is type bytes in Python 3. Unfortunately, json.loads
-        # doesn't support taking bytes until Python 3.6.
-        if type(payload) is bytes:
-            payload = payload.decode("utf-8")
-
-        rpc = json.loads(payload)
-        logging.debug("wslink incoming msg %s" % self.payloadWithSecretStripped(rpc))
-        if "id" not in rpc:
-            # should be a binary attachment header
-            if rpc.get("method") == "wslink.binary.attachment":
-                keys = rpc.get("args", [])
-                if isinstance(keys, list):
-                    for k in keys:
-                        # wait for an attachment by it's order
-                        self.attachmentsRecvQueue.append(k)
-            return
-
-        # TODO validate
-        version = rpc["wslink"]
-        rpcid = rpc["id"]
-        methodName = rpc["method"]
-
-        args = []
-        kwargs = {}
-        if ("args" in rpc) and isinstance(rpc["args"], list):
-            args = rpc["args"]
-        if ("kwargs" in rpc) and isinstance(rpc["kwargs"], dict):
-            kwargs = rpc["kwargs"]
-
-        # Check for system messages, like hello
-        if await self.handleSystemMessage(rpcid, methodName, args, client_id):
-            return
-
-        # Prevent any further processing if token is not valid
-        if not self.isClientAuthenticated(client_id):
-            await self.sendWrappedError(
-                rpcid,
-                pub.AUTHENTICATION_ERROR,
-                "Unauthorized: Skip message processing",
-                client_id=client_id,
-            )
-            return
-
-        # No matching method found
-        if not methodName in self.functionMap:
-            await self.sendWrappedError(
-                rpcid,
-                pub.METHOD_NOT_FOUND,
-                "Unregistered method called",
-                methodName,
-                client_id=client_id,
-            )
-            return
-
-        obj, func = self.functionMap[methodName]
-        try:
-            # get any attachments
-            def findAttachments(o):
-                if (
-                    isinstance(o, str)
-                    and re.match(r"^wslink_bin\d+$", o)
-                    and o in self.attachmentsReceived
-                ):
-                    attachment = self.attachmentsReceived[o]
-                    del self.attachmentsReceived[o]
-                    return attachment
-                elif isinstance(o, list):
-                    for i, v in enumerate(o):
-                        o[i] = findAttachments(v)
-                elif isinstance(o, dict):
-                    for k in o:
-                        o[k] = findAttachments(o[k])
-                return o
-
-            args = findAttachments(args)
-            kwargs = findAttachments(kwargs)
-
-            args.insert(0, obj)
-
-            try:
-                self.web_app["state"]["last_active_client_id"] = client_id
-                results = func(*args, **kwargs)
-                if inspect.isawaitable(results):
-                    results = await results
-
-                if self.connections[client_id].closed:
-                    # Connection was closed during RPC call.
-                    return
-
-                await self.sendWrappedMessage(
-                    rpcid, results, method=methodName, client_id=client_id
-                )
-            except Exception as e_inst:
-                captured_trace = traceback.format_exc()
-                logging.error("Exception raised")
-                logging.error(repr(e_inst))
-                logging.error(captured_trace)
-                await self.sendWrappedError(
-                    rpcid,
-                    pub.EXCEPTION_ERROR,
-                    "Exception raised",
-                    {
-                        "method": methodName,
-                        "exception": repr(e_inst),
-                        "trace": captured_trace,
-                    },
-                    client_id=client_id,
-                )
-
-        except Exception as e:
-            await self.sendWrappedError(
-                rpcid,
-                pub.EXCEPTION_ERROR,
-                "Exception raised",
-                {
-                    "method": methodName,
-                    "exception": repr(e),
-                    "trace": traceback.format_exc(),
-                },
-                client_id=client_id,
-            )
-            return
-
-    def payloadWithSecretStripped(self, payload):
-        payload = copy.deepcopy(payload)
-        if "args" in payload:
-            for arg in payload["args"]:
-                if type(arg) is dict and "secret" in arg:
-                    arg["secret"] = "*****"
-        return payload
-
-    async def validateToken(self, token, client_id):
-        if not self.serverProtocol:
-            return True
-        token_tested = False
-        if hasattr(self.serverProtocol, "validateToken"):
-            token_tested = True
-            if not await self.serverProtocol.validateToken(token, client_id):
-                return False
-        for linkProtocol in self.serverProtocol.getLinkProtocols():
-            if hasattr(linkProtocol, "validateToken"):
-                token_tested = True
-                if not await linkProtocol.validateToken(token, client_id):
-                    return False
-        if token_tested:
-            return True
-        return token == self.serverProtocol.secret
-
-    def isClientAuthenticated(self, client_id):
-        return client_id in self.authentified_client_ids
-
-    def getAuthenticatedWebsockets(self, client_id=None, skip_last_active_client=False):
-        if skip_last_active_client:
-            last_c = self.web_app["state"].get("last_active_client_id")
-            return [
-                self.connections[c]
-                for c in self.connections
-                if self.isClientAuthenticated(c) and c != last_c
-            ]
-
-        if client_id:
-            if self.isClientAuthenticated(client_id):
-                return [self.connections.get(client_id)]
-            else:
-                return []
-
-        return [
-            self.connections[c]
-            for c in self.connections
-            if self.isClientAuthenticated(c)
-        ]
-
-    async def sendWrappedMessage(
-        self, rpcid, content, method="", client_id=None, skip_last_active_client=False
-    ):
-        wrapper = {
-            "wslink": "1.0",
-            "id": rpcid,
-            "result": content,
-        }
-        try:
-            encMsg = json.dumps(wrapper, ensure_ascii=False)
-        except TypeError as e:
-            # the content which is not serializable might be arbitrarily large, don't include.
-            # repr(content) would do that...
-            await self.sendWrappedError(
-                rpcid,
-                pub.RESULT_SERIALIZE_ERROR,
-                "Method result cannot be serialized",
-                method,
-                client_id=client_id,
-            )
-            return
-
-        websockets = self.getAuthenticatedWebsockets(client_id, skip_last_active_client)
-
-        # Check if any attachments in the map go with this message
-        attachments = pub.publishManager.getAttachmentMap()
-        found_keys = []
-        if attachments:
-            for key in attachments:
-                # string match the encoded attachment key
-                if key in encMsg:
-                    if key not in found_keys:
-                        found_keys.append(key)
-                    # increment  for key
-                    pub.publishManager.registerAttachment(key)
-
-            for key in found_keys:
-                # send header
-                header = {
-                    "wslink": "1.0",
-                    "method": "wslink.binary.attachment",
-                    "args": [key],
-                }
-                json_header = json.dumps(header, ensure_ascii=False)
-
-                # aiohttp can not handle pending ws.send_bytes()
-                # tried with semaphore but got exception with >1
-                # https://github.com/aio-libs/aiohttp/issues/2934
-                async with self.attachment_atomic:
-                    for ws in websockets:
-                        if ws is not None:
-                            # Send binary header
-                            await ws.send_str(json_header)
-                            # Send binary message
-                            await ws.send_bytes(attachments[key])
-
-                # decrement for key
-                pub.publishManager.unregisterAttachment(key)
-
-        for ws in websockets:
-            if ws is not None:
-                await ws.send_str(encMsg)
-
-        loop = asyncio.get_event_loop()
-        loop.call_soon(pub.publishManager.freeAttachments, found_keys)
-
-    async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
-        wrapper = {
-            "wslink": "1.0",
-            "id": rpcid,
-            "error": {
-                "code": code,
-                "message": message,
-            },
-        }
-        if data:
-            wrapper["error"]["data"] = data
-        encMsg = json.dumps(wrapper, ensure_ascii=False)
-        websockets = (
-            [self.connections[client_id]]
-            if client_id
-            else [self.connections[c] for c in self.connections]
-        )
-        for ws in websockets:
-            if ws is not None:
-                await ws.send_str(encMsg)
-
-    def publish(self, topic, data, client_id=None, skip_last_active_client=False):
-        client_list = [client_id] if client_id else [c_id for c_id in self.connections]
-        for client in client_list:
-            if self.isClientAuthenticated(client):
-                pub.publishManager.publish(
-                    topic,
-                    data,
-                    client_id=client,
-                    skip_last_active_client=skip_last_active_client,
-                )
-
-    def addAttachment(self, payload):
-        return pub.publishManager.addAttachment(payload)
-
-    def setSecret(self, newSecret):
-        self.secret = newSecret
