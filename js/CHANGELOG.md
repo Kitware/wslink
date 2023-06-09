@@ -1,3 +1,12 @@
+# [1.11.0](https://github.com/kitware/wslink/compare/v1.10.2...v1.11.0) (2023-06-09)
+
+
+### Features
+
+* **backend:** Add generic backend ([d1b2b1b](https://github.com/kitware/wslink/commit/d1b2b1baa62f46215aed426fa1d90d3799cc3398))
+* **backend:** Add tornado using the generic backend ([ee15e86](https://github.com/kitware/wslink/commit/ee15e86303b1e83d1c2bcb7a7b7e140012b9a22a))
+* Rework code to simplify backends ([114c422](https://github.com/kitware/wslink/commit/114c4224b99cb67bacb44d43206fdc588fe22ce6))
+
 ## [1.10.2](https://github.com/kitware/wslink/compare/v1.10.1...v1.10.2) (2023-05-19)
 
 
