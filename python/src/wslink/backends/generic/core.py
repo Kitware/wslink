@@ -1,12 +1,5 @@
 import asyncio
-import copy
-import os
-import inspect
-import json
 import logging
-import re
-import sys
-import traceback
 import uuid
 from pathlib import Path
 import shutil
@@ -14,7 +7,7 @@ import shutil
 from wslink.protocol import WslinkHandler, AbstractWebApp
 
 
-class Client:
+class WsConnection:
     def __init__(self):
         self._id = str(uuid.uuid4()).replace("-", "")
         self._ws = None
@@ -58,15 +51,15 @@ class Client:
         await self._on_message_fn(True, value)
 
 
-class FakeWs(WslinkHandler):
+class WsEndpoint(WslinkHandler):
     def __init__(self, protocol=None, web_app=None):
         super().__init__(protocol, web_app)
 
     def connect(self):
-        client = Client()
-        self.connections[client.client_id] = client
-        client.on_connect(self)
-        return client
+        conn = WsConnection()
+        self.connections[conn.client_id] = conn
+        conn.on_connect(self)
+        return conn
 
     def disconnect(self, client_or_id):
         client_or_id = (
@@ -84,7 +77,7 @@ class GenericServer(AbstractWebApp):
 
         if "ws" in server_config:
             for route, server_protocol in server_config["ws"].items():
-                protocol_handler = FakeWs(server_protocol, self)
+                protocol_handler = WsEndpoint(server_protocol, self)
                 self._websockets[route] = protocol_handler
 
     def write_static_content(self, dest_directory):
