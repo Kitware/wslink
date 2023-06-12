@@ -53,7 +53,11 @@ function WebsocketConnection(publicAPI, model) {
       }
     }
     try {
-      model.connection = new WebSocket(transports[0].url);
+      if (model.wsProxy) {
+        model.connection = new WSLINK.WebSocket(transports[0].url);
+      } else {
+        model.connection = new WebSocket(transports[0].url);
+      }
     } catch (err) {
       // If the server isn't running, we still don't enter here on Chrome -
       // console shows a net::ERR_CONNECTION_REFUSED error inside WebSocket
@@ -111,7 +115,7 @@ function WebsocketConnection(publicAPI, model) {
       model.session &&
       timeout > 0
     ) {
-      model.session.call("application.exit.later", [timeout]);
+      model.session.call('application.exit.later', [timeout]);
     }
     if (model.connection) {
       model.connection.close();
@@ -127,6 +131,7 @@ const DEFAULT_VALUES = {
   connection: null,
   session: null,
   retry: false,
+  wsProxy: false, // Use WSLINK.WebSocket if true else native WebSocket
 };
 
 export function extend(publicAPI, model, initialValues = {}) {

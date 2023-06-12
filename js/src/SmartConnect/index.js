@@ -48,6 +48,7 @@ function wsConnect(publicAPI, model) {
     urls: model.config.sessionURL,
     secret: model.config.secret,
     retry: model.config.retry,
+    wsProxy: model.config.iframe || model.config.wsProxy,
   });
   model.subscriptions.push(
     wsConnection.onConnectionReady(publicAPI.readyForwarder)
@@ -137,7 +138,7 @@ function smartConnect(publicAPI, model) {
   function cleanUp(timeout) {
     if (session) {
       if (timeout > 0) {
-        session.call("application.exit.later", [timeout]);
+        session.call('application.exit.later', [timeout]);
       }
       session.close();
     }
