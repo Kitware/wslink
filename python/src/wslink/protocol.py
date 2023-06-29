@@ -16,6 +16,7 @@ class AbstractWebApp:
         self._config = server_config
         self._shutdown_task = None
         self._completion = asyncio.get_event_loop().create_future()
+        self._app = None
 
     # -------------------------------------------------------------------------
     # Config helper
@@ -58,11 +59,22 @@ class AbstractWebApp:
         self._last_active_client_id = value
 
     # -------------------------------------------------------------------------
-    # Legacy / deprecated
+    # Implementation server class
     # -------------------------------------------------------------------------
 
-    def set_app(self, *args):
-        print("DEPRECATED: set_app()")
+    def set_app(self, app):
+        self._app = app
+
+    def get_app(self):
+        return self._app
+
+    @property
+    def app(self):
+        return self._app
+
+    # -------------------------------------------------------------------------
+    # Legacy / deprecated
+    # -------------------------------------------------------------------------
 
     def get_config(self):
         print("DEPRECATED: get_config() use property instead")
@@ -70,14 +82,6 @@ class AbstractWebApp:
 
     def set_config(self, config):
         print("DEPRECATED: set_config() use constructor instead")
-
-    def get_app(self):
-        print("DEPRECATED: get_app()")
-        return self
-
-    @property
-    def app(self):
-        print("DEPRECATED: .app.")
 
     def get_last_active_client_id(self):
         print(

@@ -35,10 +35,10 @@ def _fix_path(path):
 # -----------------------------------------------------------------------------
 
 
-class WebAppServer(AbstractWebApp, aiohttp_web.Application):
+class WebAppServer(AbstractWebApp):
     def __init__(self, server_config):
         AbstractWebApp.__init__(self, server_config)
-        aiohttp_web.Application.__init__(self)
+        self.set_app(aiohttp_web.Application())
         self._ws_handlers = []
         self._site = None
         self._runner = None
@@ -52,7 +52,7 @@ class WebAppServer(AbstractWebApp, aiohttp_web.Application):
                     aiohttp_web.get(_fix_path(route), protocol_handler.handleWsRequest)
                 )
 
-            self.add_routes(routes)
+            self.app.add_routes(routes)
 
         if "static" in server_config:
             static_routes = server_config["static"]
@@ -68,10 +68,10 @@ class WebAppServer(AbstractWebApp, aiohttp_web.Application):
                 )
 
             # Resolve / => index.html
-            self.router.add_route("GET", "/", _root_handler)
-            self.add_routes(routes)
+            self.app.router.add_route("GET", "/", _root_handler)
+            self.app.add_routes(routes)
 
-        self["state"] = {}
+        self.app["state"] = {}
 
     # -------------------------------------------------------------------------
     # Server status
@@ -94,7 +94,9 @@ class WebAppServer(AbstractWebApp, aiohttp_web.Application):
     # -------------------------------------------------------------------------
 
     async def start(self, port_callback=None):
-        self._runner = aiohttp_web.AppRunner(self, handle_signals=self.handle_signals)
+        self._runner = aiohttp_web.AppRunner(
+            self.app, handle_signals=self.handle_signals
+        )
 
         logging.info("awaiting runner setup")
         await self._runner.setup()
