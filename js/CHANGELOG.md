@@ -1,3 +1,11 @@
+## [1.11.1](https://github.com/kitware/wslink/compare/v1.11.0...v1.11.1) (2023-06-30)
+
+
+### Bug Fixes
+
+* **aiohttp:** use app var instead of inheritance ([a0c7e64](https://github.com/kitware/wslink/commit/a0c7e64c6d18dd7e781ee59fae530fd29e130b00))
+* **js:** Allow JS to use custom WebSocket implementation ([f7fad26](https://github.com/kitware/wslink/commit/f7fad26c58f3808c28cca0f20a3e90d8253c391c))
+
 # [1.11.0](https://github.com/kitware/wslink/compare/v1.10.2...v1.11.0) (2023-06-09)
 
 
