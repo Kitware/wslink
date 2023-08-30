@@ -7,7 +7,7 @@ import re
 import traceback
 
 from wslink import schedule_coroutine
-from wslink import publish as pub
+from wslink.publish import PublishManager
 
 
 class AbstractWebApp:
@@ -136,6 +136,7 @@ class WslinkHandler(object):
         self.connections = {}
         self.authentified_client_ids = set()
         self.attachment_atomic = asyncio.Lock()
+        self.pub_manager = PublishManager()
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
         if self.getServerProtocol():
@@ -165,7 +166,7 @@ class WslinkHandler(object):
 
     @property
     def publishManager(self):
-        return pub.publishManager
+        return self.pub_manager
 
     @property
     def reverse_connection_client_id(self):
