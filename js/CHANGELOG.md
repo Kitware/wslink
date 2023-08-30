@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/kitware/wslink/compare/v1.11.1...v1.11.2) (2023-08-30)
+
+
+### Bug Fixes
+
+* **publish_manager:** separation at server level for broadcast ([ffd269d](https://github.com/kitware/wslink/commit/ffd269d152abec57b8590f3c7e52172eb9841c91))
+
 ## [1.11.1](https://github.com/kitware/wslink/compare/v1.11.0...v1.11.1) (2023-06-30)
 
 
