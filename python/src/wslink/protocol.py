@@ -156,7 +156,7 @@ class WslinkHandler(object):
                         if "uri" in uri_info:
                             uri = uri_info["uri"]
                             self.functionMap[uri] = (protocolObject, proc)
-            self.publishManager.registerProtocol(self)
+            self.pub_manager.registerProtocol(self)
 
     def setServerProtocol(self, protocol):
         self.serverProtocol = protocol
@@ -210,14 +210,14 @@ class WslinkHandler(object):
                 else:
                     await self.sendWrappedError(
                         rpcid,
-                        pub.AUTHENTICATION_ERROR,
+                        self.pub_manager.AUTHENTICATION_ERROR,
                         "Authentication failed",
                         client_id=client_id,
                     )
             else:
                 await self.sendWrappedError(
                     rpcid,
-                    pub.METHOD_NOT_FOUND,
+                    self.pub_manager.METHOD_NOT_FOUND,
                     "Unknown system method called",
                     client_id=client_id,
                 )
@@ -275,7 +275,7 @@ class WslinkHandler(object):
         if not self.isClientAuthenticated(client_id):
             await self.sendWrappedError(
                 rpcid,
-                pub.AUTHENTICATION_ERROR,
+                self.pub_manager.AUTHENTICATION_ERROR,
                 "Unauthorized: Skip message processing",
                 client_id=client_id,
             )
@@ -285,7 +285,7 @@ class WslinkHandler(object):
         if not methodName in self.functionMap:
             await self.sendWrappedError(
                 rpcid,
-                pub.METHOD_NOT_FOUND,
+                self.pub_manager.METHOD_NOT_FOUND,
                 "Unregistered method called",
                 methodName,
                 client_id=client_id,
@@ -337,7 +337,7 @@ class WslinkHandler(object):
                 logging.error(captured_trace)
                 await self.sendWrappedError(
                     rpcid,
-                    pub.EXCEPTION_ERROR,
+                    self.pub_manager.EXCEPTION_ERROR,
                     "Exception raised",
                     {
                         "method": methodName,
@@ -350,7 +350,7 @@ class WslinkHandler(object):
         except Exception as e:
             await self.sendWrappedError(
                 rpcid,
-                pub.EXCEPTION_ERROR,
+                self.pub_manager.EXCEPTION_ERROR,
                 "Exception raised",
                 {
                     "method": methodName,
@@ -425,7 +425,7 @@ class WslinkHandler(object):
             # repr(content) would do that...
             await self.sendWrappedError(
                 rpcid,
-                pub.RESULT_SERIALIZE_ERROR,
+                self.pub_manager.RESULT_SERIALIZE_ERROR,
                 "Method result cannot be serialized",
                 method,
                 client_id=client_id,
@@ -435,7 +435,7 @@ class WslinkHandler(object):
         websockets = self.getAuthenticatedWebsockets(client_id, skip_last_active_client)
 
         # Check if any attachments in the map go with this message
-        attachments = self.publishManager.getAttachmentMap()
+        attachments = self.pub_manager.getAttachmentMap()
         found_keys = []
         if attachments:
             for key in attachments:
@@ -444,7 +444,7 @@ class WslinkHandler(object):
                     if key not in found_keys:
                         found_keys.append(key)
                     # increment  for key
-                    self.publishManager.registerAttachment(key)
+                    self.pub_manager.registerAttachment(key)
 
             for key in found_keys:
                 # send header
@@ -467,14 +467,14 @@ class WslinkHandler(object):
                             await ws.send_bytes(attachments[key])
 
                 # decrement for key
-                self.publishManager.unregisterAttachment(key)
+                self.pub_manager.unregisterAttachment(key)
 
         for ws in websockets:
             if ws is not None:
                 await ws.send_str(encMsg)
 
         loop = asyncio.get_event_loop()
-        loop.call_soon(self.publishManager.freeAttachments, found_keys)
+        loop.call_soon(self.pub_manager.freeAttachments, found_keys)
 
     async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
         wrapper = {
@@ -501,7 +501,7 @@ class WslinkHandler(object):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
         for client in client_list:
             if self.isClientAuthenticated(client):
-                self.publishManager.publish(
+                self.pub_manager.publish(
                     topic,
                     data,
                     client_id=client,
@@ -509,7 +509,7 @@ class WslinkHandler(object):
                 )
 
     def addAttachment(self, payload):
-        return self.publishManager.addAttachment(payload)
+        return self.pub_manager.addAttachment(payload)
 
     def setSecret(self, newSecret):
         self.secret = newSecret
