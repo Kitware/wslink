@@ -1,3 +1,10 @@
+## [1.11.3](https://github.com/kitware/wslink/compare/v1.11.2...v1.11.3) (2023-09-05)
+
+
+### Bug Fixes
+
+* **pub_manager:** handle old global publish manager ([d842b88](https://github.com/kitware/wslink/commit/d842b88d841f9c560bc534a5647f3ffcdcd1c070)), closes [#146](https://github.com/kitware/wslink/issues/146)
+
 ## [1.11.2](https://github.com/kitware/wslink/compare/v1.11.1...v1.11.2) (2023-08-30)
 
 
