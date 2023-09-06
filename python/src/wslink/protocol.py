@@ -9,6 +9,14 @@ import traceback
 from wslink import schedule_coroutine
 from wslink.publish import PublishManager
 
+# from http://www.jsonrpc.org/specification, section 5.1
+METHOD_NOT_FOUND = -32601
+AUTHENTICATION_ERROR = -32000
+EXCEPTION_ERROR = -32001
+RESULT_SERIALIZE_ERROR = -32002
+# used in client JS code:
+CLIENT_ERROR = -32099
+
 
 class AbstractWebApp:
     def __init__(self, server_config):
@@ -210,14 +218,14 @@ class WslinkHandler(object):
                 else:
                     await self.sendWrappedError(
                         rpcid,
-                        self.pub_manager.AUTHENTICATION_ERROR,
+                        AUTHENTICATION_ERROR,
                         "Authentication failed",
                         client_id=client_id,
                     )
             else:
                 await self.sendWrappedError(
                     rpcid,
-                    self.pub_manager.METHOD_NOT_FOUND,
+                    METHOD_NOT_FOUND,
                     "Unknown system method called",
                     client_id=client_id,
                 )
@@ -275,7 +283,7 @@ class WslinkHandler(object):
         if not self.isClientAuthenticated(client_id):
             await self.sendWrappedError(
                 rpcid,
-                self.pub_manager.AUTHENTICATION_ERROR,
+                AUTHENTICATION_ERROR,
                 "Unauthorized: Skip message processing",
                 client_id=client_id,
             )
@@ -285,7 +293,7 @@ class WslinkHandler(object):
         if not methodName in self.functionMap:
             await self.sendWrappedError(
                 rpcid,
-                self.pub_manager.METHOD_NOT_FOUND,
+                METHOD_NOT_FOUND,
                 "Unregistered method called",
                 methodName,
                 client_id=client_id,
@@ -337,7 +345,7 @@ class WslinkHandler(object):
                 logging.error(captured_trace)
                 await self.sendWrappedError(
                     rpcid,
-                    self.pub_manager.EXCEPTION_ERROR,
+                    EXCEPTION_ERROR,
                     "Exception raised",
                     {
                         "method": methodName,
@@ -350,7 +358,7 @@ class WslinkHandler(object):
         except Exception as e:
             await self.sendWrappedError(
                 rpcid,
-                self.pub_manager.EXCEPTION_ERROR,
+                EXCEPTION_ERROR,
                 "Exception raised",
                 {
                     "method": methodName,
@@ -425,7 +433,7 @@ class WslinkHandler(object):
             # repr(content) would do that...
             await self.sendWrappedError(
                 rpcid,
-                self.pub_manager.RESULT_SERIALIZE_ERROR,
+                RESULT_SERIALIZE_ERROR,
                 "Method result cannot be serialized",
                 method,
                 client_id=client_id,
