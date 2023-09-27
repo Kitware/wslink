@@ -40,12 +40,6 @@ jobs:
           git config --global user.email "sebastien.jourdain@kitware.com"
           npm run semantic-release
         working-directory: ${{env.webclient}}
-      - name: Publish distribution 📦 to Test PyPI
-        continue-on-error: true
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
       - name: Publish docs
         if: github.ref == 'refs/heads/master'
         env:
