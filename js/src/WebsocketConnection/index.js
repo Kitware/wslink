@@ -54,7 +54,7 @@ function WebsocketConnection(publicAPI, model) {
     }
     try {
       if (model.wsProxy) {
-        model.connection = new WSLINK.WebSocket(transports[0].url);
+        model.connection = WSLINK.createWebSocket(transports[0].url);
       } else {
         model.connection = new WebSocket(transports[0].url);
       }

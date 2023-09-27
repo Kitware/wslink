@@ -91,6 +91,10 @@ function smartConnect(publicAPI, model) {
     if (model.config.sessionURL) {
       // We have a direct connection URL
       session = wsConnect(publicAPI, model);
+    } else if (model.config.wsProxy) {
+      // Provide fake url if missing since we rely on a proxy
+      model.config.sessionURL = model.config.sessionURL || "wss://proxy/";
+      session = wsConnect(publicAPI, model);
     } else {
       // We need to use the Launcher
       const launcher = ProcessLauncher.newInstance({
