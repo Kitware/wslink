@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/kitware/wslink/compare/v1.11.4...v1.12.0) (2023-09-27)
+
+
+### Features
+
+* **jupyter:** Add jupyter backend ([db1bb39](https://github.com/kitware/wslink/commit/db1bb3943093b1f420bf30f4d887893b556fccc9))
+
 ## [1.11.4](https://github.com/kitware/wslink/compare/v1.11.3...v1.11.4) (2023-09-06)
 
 
