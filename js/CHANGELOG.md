@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/kitware/wslink/compare/v1.12.1...v1.12.2) (2023-09-27)
+
+
+### Bug Fixes
+
+* **ci:** semantic-release automation ([5967efc](https://github.com/kitware/wslink/commit/5967efc2811dcfa662dd51e4388c973c0403f4d5))
+
 # [1.12.0](https://github.com/kitware/wslink/compare/v1.11.4...v1.12.0) (2023-09-27)
 
 
