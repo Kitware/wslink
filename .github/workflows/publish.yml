@@ -16,18 +16,18 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 18
       - name: Web build
         run: |
           npm ci
           npm run build:release
         working-directory: ${{env.webclient}}
       - name: Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.7
+          python-version: 3.9
       - name: Install setuptools
         run: python -m pip install --upgrade setuptools wheel twine
       - name: Release (JS + Python)
