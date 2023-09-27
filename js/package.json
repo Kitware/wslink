@@ -26,16 +26,17 @@
   "author": "Kitware",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "prettier": "2.8.4",
     "@babel/core": "7.20.12",
     "@babel/preset-env": "7.20.2",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "^9.2.1",
     "babel-loader": "8.2.2",
     "commitizen": "^4.2.4",
     "expose-loader": "3.0.0",
     "html-webpack-plugin": "5.3.2",
     "kw-doc": "3.1.2",
+    "prettier": "2.8.4",
     "semantic-release": "22.0.5",
     "semantic-release-pypi": "2.5.2",
     "webpack": "^5.75.0",
@@ -62,6 +63,12 @@
         }
       ],
       [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "CHANGELOG.md"
+        }
+      ],
+      [
         "@semantic-release/git",
         {
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
@@ -70,12 +77,7 @@
           ]
         }
       ],
-      [
-        "@semantic-release/changelog",
-        {
-          "changelogFile": "CHANGELOG.md"
-        }
-      ]
+      "@semantic-release/github"
     ]
   },
   "publishConfig": {
