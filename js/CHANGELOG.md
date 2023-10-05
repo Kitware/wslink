@@ -1,3 +1,10 @@
+## [1.12.3](https://github.com/kitware/wslink/compare/v1.12.2...v1.12.3) (2023-10-05)
+
+
+### Bug Fixes
+
+* **backend:** properly handle async run state for generic ([247b046](https://github.com/kitware/wslink/commit/247b0460f96c7277fb597b8dced80d81c65cba0a))
+
 ## [1.12.2](https://github.com/kitware/wslink/compare/v1.12.1...v1.12.2) (2023-09-27)
 
 
