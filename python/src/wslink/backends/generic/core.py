@@ -74,6 +74,7 @@ class GenericServer(AbstractWebApp):
     def __init__(self, server_config):
         AbstractWebApp.__init__(self, server_config)
         self._websockets = {}
+        self._stop_event = asyncio.Event()
 
         if "ws" in server_config:
             for route, server_protocol in server_config["ws"].items():
@@ -111,7 +112,11 @@ class GenericServer(AbstractWebApp):
         if port_callback is not None:
             port_callback(self.get_port())
 
-        await asyncio.Event().wait()
+        self._stop_event.clear()
+        await self._stop_event.wait()
+
+    async def stop(self):
+        self._stop_event.set()
 
 
 def startWebServer(*args, **kwargs):
