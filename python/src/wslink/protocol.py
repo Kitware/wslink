@@ -254,7 +254,7 @@ class WslinkHandler(object):
             payload = payload.decode("utf-8")
 
         rpc = json.loads(payload)
-        logger.debug("wslink incoming msg %s" % self.payloadWithSecretStripped(rpc))
+        logger.debug("wslink incoming msg %s", self.payloadWithSecretStripped(rpc))
         if "id" not in rpc:
             # should be a binary attachment header
             if rpc.get("method") == "wslink.binary.attachment":
