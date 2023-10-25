@@ -219,13 +219,13 @@ def startWebServer(options, config):
     fh = logging.FileHandler(logFileName, mode="w")
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(logging.Formatter(formatting))
-    logger.addHandler(fh)
+    logging.getLogger("wslink").addHandler(fh)
     if options.debug:
         console = logging.StreamHandler(sys.stdout)
         console.setLevel(logging.INFO)
         formatter = logging.Formatter(formatting)
         console.setFormatter(formatter)
-        logger.addHandler(console)
+        logging.getLogger("wslink").addHandler(console)
 
     web_app = aiohttp_web.Application()
 
