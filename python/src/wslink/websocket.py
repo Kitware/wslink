@@ -9,6 +9,8 @@ import logging
 from . import register as exportRpc
 from . import schedule_callback
 
+logger = logging.getLogger(__name__)
+
 
 # =============================================================================
 #
@@ -114,7 +116,7 @@ class ServerProtocol(object):
         try:
             self.linkProtocols.remove(protocol)
         except ValueError as e:
-            logging.error("Link protocol missing from registered list.")
+            logger.error("Link protocol missing from registered list.")
 
     def getLinkProtocols(self):
         return self.linkProtocols

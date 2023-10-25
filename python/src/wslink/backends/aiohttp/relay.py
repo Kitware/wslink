@@ -377,8 +377,6 @@ def main(host=None, port=None, www_path=None, proxy_route=None, mode=None):
     if proxy_route is None:
         proxy_route = args.proxy_route
 
-    logging.basicConfig()
-
     # Manage routes
     routes = []
 

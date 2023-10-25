@@ -23,6 +23,8 @@ from wslink.launcher import (
     STATUS_NOT_FOUND,
 )
 
+logger = logging.getLogger(__name__)
+
 # ===========================================================================
 # Launcher ENV configuration
 # ===========================================================================
@@ -50,7 +52,7 @@ class LauncherResource(object):
     def __del__(self):
         try:
             # causes an exception when server is killed with Ctrl-C
-            logging.warning("Server factory shutting down. Stopping all processes")
+            logger.warning("Server factory shutting down. Stopping all processes")
         except:
             pass
 
@@ -141,17 +143,17 @@ class LauncherResource(object):
 
         if not id:
             message = "id not provided in GET request"
-            logging.error(message)
+            logger.error(message)
             return aiohttp_web.json_response(
                 {"error": message}, status=STATUS_BAD_REQUEST
             )
 
-        logging.info("GET request received for id: %s" % id)
+        logger.info("GET request received for id: %s" % id)
 
         session = self.session_manager.getSession(id)
         if not session:
             message = "No session with id: %s" % id
-            logging.error(message)
+            logger.error(message)
             return aiohttp_web.json_response(
                 {"error": message}, status=STATUS_BAD_REQUEST
             )
@@ -170,17 +172,17 @@ class LauncherResource(object):
 
         if not id:
             message = "id not provided in DELETE request"
-            logging.error(message)
+            logger.error(message)
             return aiohttp_web.json_response(
                 {"error": message}, status=STATUS_BAD_REQUEST
             )
 
-        logging.info("DELETE request received for id: %s" % id)
+        logger.info("DELETE request received for id: %s" % id)
 
         session = self.session_manager.getSession(id)
         if not session:
             message = "No session with id: %s" % id
-            logging.error(message)
+            logger.error(message)
             return aiohttp_web.json_response(
                 {"error": message}, status=STATUS_NOT_FOUND
             )
@@ -190,7 +192,7 @@ class LauncherResource(object):
         self.process_manager.stopProcess(id)
 
         message = "Deleted session with id: %s" % id
-        logging.info(message)
+        logger.info(message)
 
         return aiohttp_web.json_response(session, status=STATUS_OK)
 
@@ -213,15 +215,17 @@ def startWebServer(options, config):
     # Setup logging
     logFileName = log_dir + os.sep + "launcherLog.log"
     formatting = "%(asctime)s:%(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(
-        level=logging.DEBUG, filename=logFileName, filemode="w", format=formatting
-    )
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(logFileName, mode="w")
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(logging.Formatter(formatting))
+    logging.getLogger("wslink").addHandler(fh)
     if options.debug:
         console = logging.StreamHandler(sys.stdout)
         console.setLevel(logging.INFO)
         formatter = logging.Formatter(formatting)
         console.setFormatter(formatter)
-        logging.getLogger("").addHandler(console)
+        logging.getLogger("wslink").addHandler(console)
 
     web_app = aiohttp_web.Application()
 

@@ -17,6 +17,8 @@ RESULT_SERIALIZE_ERROR = -32002
 # used in client JS code:
 CLIENT_ERROR = -32099
 
+logger = logging.getLogger(__name__)
+
 
 class AbstractWebApp:
     def __init__(self, server_config):
@@ -108,7 +110,7 @@ class AbstractWebApp:
 
     def shutdown_cancel(self):
         if self._shutdown_task is not None:
-            logging.info("Canceling shutdown task")
+            logger.info("Canceling shutdown task")
             self._shutdown_task.cancel()
             self._shutdown_task = None
 
@@ -252,7 +254,7 @@ class WslinkHandler(object):
             payload = payload.decode("utf-8")
 
         rpc = json.loads(payload)
-        logging.debug("wslink incoming msg %s" % self.payloadWithSecretStripped(rpc))
+        logger.debug("wslink incoming msg %s", self.payloadWithSecretStripped(rpc))
         if "id" not in rpc:
             # should be a binary attachment header
             if rpc.get("method") == "wslink.binary.attachment":
@@ -340,9 +342,9 @@ class WslinkHandler(object):
                 )
             except Exception as e_inst:
                 captured_trace = traceback.format_exc()
-                logging.error("Exception raised")
-                logging.error(repr(e_inst))
-                logging.error(captured_trace)
+                logger.error("Exception raised")
+                logger.error(repr(e_inst))
+                logger.error(captured_trace)
                 await self.sendWrappedError(
                     rpcid,
                     EXCEPTION_ERROR,
