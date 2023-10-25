@@ -113,7 +113,7 @@ class WebAppServer(AbstractWebApp):
         if port_callback is not None:
             port_callback(self.get_port())
 
-        logger.info(f"Print WSLINK_READY_MSG")
+        logger.info("Print WSLINK_READY_MSG")
         STARTUP_MSG = os.environ.get("WSLINK_READY_MSG", "wslink: Starting factory")
         if STARTUP_MSG:
             # Emit an expected log message so launcher.py knows we've started up.
