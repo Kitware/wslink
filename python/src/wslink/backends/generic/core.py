@@ -125,7 +125,7 @@ def startWebServer(*args, **kwargs):
 
 def create_webserver(server_config):
     if "logging_level" in server_config and server_config["logging_level"]:
-        logging.basicConfig(level=server_config["logging_level"])
+        logging.getLogger("wslink").setLevel(server_config["logging_level"])
 
     # Reverse connection
     if "reverse_url" in server_config:

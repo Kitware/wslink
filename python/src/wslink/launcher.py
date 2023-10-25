@@ -16,6 +16,8 @@ from random import choice
 
 from wslink import backends
 
+logger = logging.getLogger(__name__)
+
 STATUS_OK = 200
 STATUS_BAD_REQUEST = 400
 STATUS_NOT_FOUND = 404
@@ -205,7 +207,7 @@ def checkSanitize(key_pair, sanitize):
             value = key_pair[key]
             if checkItem["type"] == "inList":
                 if not value in checkItem["list"]:
-                    logging.warning(
+                    logger.warning(
                         "key %s: sanitize %s with default" % (key, key_pair[key])
                     )
                     key_pair[key] = checkItem["default"]
@@ -214,7 +216,7 @@ def checkSanitize(key_pair, sanitize):
                     # User is responsible to add begin- and end- string symbols, to make sure entire string is matched.
                     checkItem["compiled"] = re.compile(checkItem["regexp"])
                 if checkItem["compiled"].match(value) == None:
-                    logging.warning(
+                    logger.warning(
                         "key %s: sanitize %s with default" % (key, key_pair[key])
                     )
                     key_pair[key] = checkItem["default"]
@@ -232,7 +234,7 @@ def replaceVariables(template_str, variable_list, sanitize):
         template_str = item_template.safe_substitute(key_pair)
 
     if "$" in template_str:
-        logging.error("Some properties could not be resolved: " + template_str)
+        logger.error("Some properties could not be resolved: " + template_str)
 
     return template_str
 
@@ -441,8 +443,8 @@ class ProcessManager(object):
                 )
                 self.processes[session["id"]] = proc
             except:
-                logging.error("The command line failed")
-                logging.error(" ".join(map(str, session["cmd"])))
+                logger.error("The command line failed")
+                logger.error(" ".join(map(str, session["cmd"])))
                 return None
 
         return proc

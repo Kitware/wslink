@@ -15,6 +15,8 @@ import aiohttp.web as aiohttp_web
 MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
 
+logger = logging.getLogger(__name__)
+
 # -----------------------------------------------------------------------------
 # HTTP helpers
 # -----------------------------------------------------------------------------
@@ -98,20 +100,20 @@ class WebAppServer(AbstractWebApp):
             self.app, handle_signals=self.handle_signals
         )
 
-        logging.info("awaiting runner setup")
+        logger.info("awaiting runner setup")
         await self._runner.setup()
 
         self._site = aiohttp_web.TCPSite(
             self._runner, self.host, self.port, ssl_context=self.ssl_context
         )
 
-        logging.info("awaiting site startup")
+        logger.info("awaiting site startup")
         await self._site.start()
 
         if port_callback is not None:
             port_callback(self.get_port())
 
-        logging.info(f"Print WSLINK_READY_MSG")
+        logger.info(f"Print WSLINK_READY_MSG")
         STARTUP_MSG = os.environ.get("WSLINK_READY_MSG", "wslink: Starting factory")
         if STARTUP_MSG:
             # Emit an expected log message so launcher.py knows we've started up.
@@ -119,10 +121,10 @@ class WebAppServer(AbstractWebApp):
             # We've seen some issues with stdout buffering - be conservative.
             sys.stdout.flush()
 
-        logging.info(f"Schedule auto shutdown with timout {self.timeout}")
+        logger.info(f"Schedule auto shutdown with timout {self.timeout}")
         self.shutdown_schedule()
 
-        logging.info("awaiting running future")
+        logger.info("awaiting running future")
         await self.completion
 
     async def stop(self):
@@ -133,12 +135,12 @@ class WebAppServer(AbstractWebApp):
         # Neither site.stop() nor runner.cleanup() actually stop the server
         # as documented, but at least runner.cleanup() results in the
         # "on_shutdown" signal getting sent.
-        logging.info("Performing runner.cleanup()")
+        logger.info("Performing runner.cleanup()")
         await self.runner.cleanup()
 
         # So to actually stop the server, the workaround is just to resolve
         # the future we awaited in the start method.
-        logging.info("Stopping server")
+        logger.info("Stopping server")
         self.completion.set_result(True)
 
 
@@ -163,7 +165,7 @@ class ReverseWebAppServer(AbstractWebApp):
 
 def create_webserver(server_config):
     if "logging_level" in server_config and server_config["logging_level"]:
-        logging.basicConfig(level=server_config["logging_level"])
+        logging.getLogger("wslink").setLevel(server_config["logging_level"])
 
     # Shortcut for reverse connection
     if "reverse_url" in server_config:
@@ -184,10 +186,10 @@ def is_binary(msg):
 
 class AioHttpWsHandler(WslinkHandler):
     async def disconnectClients(self):
-        logging.info("Closing client connections:")
+        logger.info("Closing client connections:")
         keys = list(self.connections.keys())
         for client_id in keys:
-            logging.info("  {0}".format(client_id))
+            logger.info("  {0}".format(client_id))
             ws = self.connections[client_id]
             await ws.close(
                 code=aiohttp.WSCloseCode.GOING_AWAY, message="Server shutdown"
@@ -202,7 +204,7 @@ class AioHttpWsHandler(WslinkHandler):
         )
         self.connections[client_id] = current_ws
 
-        logging.info("client {0} connected".format(client_id))
+        logger.info("client {0} connected".format(client_id))
 
         self.web_app.shutdown_cancel()
 
@@ -217,31 +219,31 @@ class AioHttpWsHandler(WslinkHandler):
             del self.connections[client_id]
             self.authentified_client_ids.discard(client_id)
 
-            logging.info("client {0} disconnected".format(client_id))
+            logger.info("client {0} disconnected".format(client_id))
 
             if not self.connections:
-                logging.info("No more connections, scheduling shutdown")
+                logger.info("No more connections, scheduling shutdown")
                 self.web_app.shutdown_schedule()
 
         return current_ws
 
     async def reverse_connect_to(self, url):
-        logging.debug("reverse_connect_to: running with url %s", url)
+        logger.debug("reverse_connect_to: running with url %s", url)
         client_id = self.reverse_connection_client_id
         async with aiohttp.ClientSession() as session:
-            logging.debug("reverse_connect_to: client session started")
+            logger.debug("reverse_connect_to: client session started")
             async with session.ws_connect(url) as current_ws:
-                logging.debug("reverse_connect_to: ws started")
+                logger.debug("reverse_connect_to: ws started")
                 self.connections[client_id] = current_ws
-                logging.debug("reverse_connect_to: onConnect")
+                logger.debug("reverse_connect_to: onConnect")
                 await self.onConnect(url, client_id)
 
                 async for msg in current_ws:
                     if not current_ws.closed:
                         await self.onMessage(is_binary(msg), msg, client_id)
 
-                logging.debug("reverse_connect_to: onClose")
+                logger.debug("reverse_connect_to: onClose")
                 await self.onClose(client_id)
                 del self.connections[client_id]
 
-        logging.debug("reverse_connect_to: exited")
+        logger.debug("reverse_connect_to: exited")
