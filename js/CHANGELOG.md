@@ -1,3 +1,10 @@
+## [1.12.4](https://github.com/kitware/wslink/compare/v1.12.3...v1.12.4) (2023-10-25)
+
+
+### Bug Fixes
+
+* **logging:** implement scoped logging ([#152](https://github.com/kitware/wslink/issues/152)) ([07094c3](https://github.com/kitware/wslink/commit/07094c3d6ee502a5e35a1f9aa0c0e88fac377f9c)), closes [#151](https://github.com/kitware/wslink/issues/151)
+
 ## [1.12.3](https://github.com/kitware/wslink/compare/v1.12.2...v1.12.3) (2023-10-05)
 
 
