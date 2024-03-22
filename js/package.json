@@ -48,7 +48,7 @@
     }
   },
   "dependencies": {
-    "json5": "2.2.3"
+    "@msgpack/msgpack": "^2.8.0"
   },
   "release": {
     "plugins": [

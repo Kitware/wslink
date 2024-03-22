@@ -7,9 +7,6 @@ from . import schedule_coroutine
 class PublishManager(object):
     def __init__(self):
         self.protocols = []
-        self.attachmentMap = {}
-        self.attachmentRefCounts = {}  # keyed same as attachment map
-        self.attachmentId = 0
         self.publishCount = 0
 
     def registerProtocol(self, protocol):
@@ -19,38 +16,12 @@ class PublishManager(object):
         if protocol in self.protocols:
             self.protocols.remove(protocol)
 
-    def getAttachmentMap(self):
-        return self.attachmentMap
-
-    def clearAttachmentMap(self):
-        self.attachmentMap.clear()
-
-    def registerAttachment(self, attachKey):
-        self.attachmentRefCounts[attachKey] += 1
-
-    def unregisterAttachment(self, attachKey):
-        self.attachmentRefCounts[attachKey] -= 1
-
-    def freeAttachments(self, keys=None):
-        keys_to_delete = []
-        keys_to_check = keys if keys is not None else [k for k in self.attachmentMap]
-
-        for key in keys_to_check:
-            if self.attachmentRefCounts.get(key) == 0:
-                keys_to_delete.append(key)
-
-        for key in keys_to_delete:
-            self.attachmentMap.pop(key)
-            self.attachmentRefCounts.pop(key)
-
     def addAttachment(self, payload):
-        # print("attachment", self, self.attachmentId)
-        # use a string flag in place of the binary attachment.
-        binaryId = "wslink_bin{0}".format(self.attachmentId)
-        self.attachmentMap[binaryId] = payload
-        self.attachmentRefCounts[binaryId] = 0
-        self.attachmentId += 1
-        return binaryId
+        """Deprecated method, keeping it to avoid breaking compatibility
+        Now that we use msgpack to pack/unpack messages,
+        We can have binary data directly in the object itself,
+        without needing to transfer it separately from the rest."""
+        return payload
 
     def publish(self, topic, data, client_id=None, skip_last_active_client=False):
         for protocol in self.protocols:
