@@ -1,14 +1,14 @@
 import asyncio
 import copy
 import inspect
-import json
 import logging
 import msgpack
-import re
+import os
 import traceback
 
 from wslink import schedule_coroutine
 from wslink.publish import PublishManager
+from wslink.chunking import generate_chunks, UnChunker
 
 # from http://www.jsonrpc.org/specification, section 5.1
 METHOD_NOT_FOUND = -32601
@@ -17,6 +17,9 @@ EXCEPTION_ERROR = -32001
 RESULT_SERIALIZE_ERROR = -32002
 # used in client JS code:
 CLIENT_ERROR = -32099
+
+# 4MB is the default inside aiohttp
+MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +151,7 @@ class WslinkHandler(object):
         self.authentified_client_ids = set()
         self.attachment_atomic = asyncio.Lock()
         self.pub_manager = PublishManager()
+        self.unchunkers = {}
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
         if self.getServerProtocol():
@@ -184,6 +188,8 @@ class WslinkHandler(object):
         return "reverse_connection_client_id"
 
     async def onConnect(self, request, client_id):
+        self.unchunkers[client_id] = UnChunker()
+
         if not self.serverProtocol:
             return
         if hasattr(self.serverProtocol, "onConnect"):
@@ -193,6 +199,8 @@ class WslinkHandler(object):
                 linkProtocol.onConnect(request, client_id)
 
     async def onClose(self, client_id):
+        del self.unchunkers[client_id]
+
         if not self.serverProtocol:
             return
         if hasattr(self.serverProtocol, "onClose"):
@@ -213,9 +221,16 @@ class WslinkHandler(object):
                     and await self.validateToken(args[0]["secret"], client_id)
                 ):
                     self.authentified_client_ids.add(client_id)
+                    # Once a client is authenticated let the unchunker allocate memory unrestricted
+                    self.unchunkers[client_id].set_max_message_size(
+                        4 * 1024 * 1024 * 1024
+                    )  # 4GB
                     await self.sendWrappedMessage(
                         rpcid,
-                        {"clientID": "c{0}".format(client_id)},
+                        {
+                            "clientID": "c{0}".format(client_id),
+                            "maxMsgSize": MAX_MSG_SIZE,
+                        },
                         client_id=client_id,
                     )
                 else:
@@ -236,7 +251,14 @@ class WslinkHandler(object):
         return False
 
     async def onMessage(self, is_binary, msg, client_id):
-        rpc = msgpack.unpackb(msg.data)
+        if not is_binary:
+            return
+
+        full_message = self.unchunkers[client_id].process_chunk(msg.data)
+        if full_message is not None:
+            await self.onCompleteMessage(full_message, client_id)
+
+    async def onCompleteMessage(self, rpc, client_id):
         logger.debug("wslink incoming msg %s", self.payloadWithSecretStripped(rpc))
         if "id" not in rpc:
             return
@@ -389,9 +411,10 @@ class WslinkHandler(object):
         # tried with semaphore but got exception with >1
         # https://github.com/aio-libs/aiohttp/issues/2934
         async with self.attachment_atomic:
-            for ws in websockets:
-                if ws is not None:
-                    await ws.send_bytes(packed_wrapper)
+            for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
+                for ws in websockets:
+                    if ws is not None:
+                        await ws.send_bytes(chunk)
 
     async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
         wrapper = {
@@ -420,9 +443,10 @@ class WslinkHandler(object):
         # tried with semaphore but got exception with >1
         # https://github.com/aio-libs/aiohttp/issues/2934
         async with self.attachment_atomic:
-            for ws in websockets:
-                if ws is not None:
-                    await ws.send_bytes(packed_wrapper)
+            for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
+                for ws in websockets:
+                    if ws is not None:
+                        await ws.send_bytes(chunk)
 
     def publish(self, topic, data, client_id=None, skip_last_active_client=False):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
