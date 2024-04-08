@@ -1,6 +1,7 @@
 // Helper borrowed from paraviewweb/src/Common/Core
 import CompositeClosureHelper from '../CompositeClosureHelper';
-import { Encoder, Decoder } from "@msgpack/msgpack";
+import { UnChunker, generateChunks } from './chunking';
+import { Encoder, Decoder } from '@msgpack/msgpack';
 
 function defer() {
   const deferred = {};
@@ -24,21 +25,72 @@ function Session(publicAPI, model) {
   const regexRPC = /^(rpc|publish|system):(\w+(?:\.\w+)*):(?:\d+)$/;
   const subscriptions = {};
   let clientID = null;
-  const encoder = CustomEncoder();
-  const decoder = Decoder();
+  let MAX_MSG_SIZE = 512 * 1024;
+  const unchunker = new UnChunker();
 
   // --------------------------------------------------------------------------
   // Private helpers
   // --------------------------------------------------------------------------
 
-  async function decodeFromBlob(blob) {
-    if (blob.stream) {
-      // Blob#stream(): ReadableStream<Uint8Array> (recommended)
-      return await decoder.decodeAsync(blob.stream());
+  function onCompleteMessage(payload) {
+    if (!payload) return;
+    if (!payload.id) return;
+    if (payload.error) {
+      const deferred = inFlightRpc[payload.id];
+      if (deferred) {
+        deferred.reject(payload.error);
+      } else {
+        console.error('Server error:', payload.error);
+      }
     } else {
-      // Blob#arrayBuffer(): Promise<ArrayBuffer> (if stream() is not available)
-      return decoder.decode(await blob.arrayBuffer());
+      const match = regexRPC.exec(payload.id);
+      if (match) {
+        const type = match[1];
+        if (type === 'rpc') {
+          const deferred = inFlightRpc[payload.id];
+          if (!deferred) {
+            console.log(
+              'session message id without matching call, dropped',
+              payload
+            );
+            return;
+          }
+          deferred.resolve(payload.result);
+        } else if (type == 'publish') {
+          console.assert(
+            inFlightRpc[payload.id] === undefined,
+            'publish message received matching in-flight rpc call'
+          );
+          // regex extracts the topic for us.
+          const topic = match[2];
+          if (!subscriptions[topic]) {
+            return;
+          }
+          // for each callback, provide the message data. Wrap in an array, for back-compatibility with WAMP
+          subscriptions[topic].forEach((callback) =>
+            callback([payload.result])
+          );
+        } else if (type == 'system') {
+          // console.log('DBG system:', payload.id, payload.result);
+          const deferred = inFlightRpc[payload.id];
+          if (payload.id === 'system:c0:0') {
+            clientID = payload.result.clientID;
+            MAX_MSG_SIZE = payload.result.maxMsgSize || MAX_MSG_SIZE;
+            if (deferred) deferred.resolve(clientID);
+          } else {
+            console.error('Unknown system message', payload.id);
+            if (deferred)
+              deferred.reject({
+                code: CLIENT_ERROR,
+                message: `Unknown system message ${payload.id}`,
+              });
+          }
+        } else {
+          console.error('Unknown rpc id format', payload.id);
+        }
+      }
     }
+    delete inFlightRpc[payload.id];
   }
 
   // --------------------------------------------------------------------------
@@ -57,11 +109,15 @@ function Session(publicAPI, model) {
       method: 'wslink.hello',
       args: [{ secret: model.secret }],
       kwargs: {},
-    }
+    };
 
+    const encoder = new CustomEncoder();
     const packedWrapper = encoder.encode(wrapper);
 
-    model.ws.send(packedWrapper, { binary: true });
+    for (let chunk of generateChunks(packedWrapper, MAX_MSG_SIZE)) {
+      model.ws.send(chunk, { binary: true });
+    }
+
     return deferred.promise;
   };
 
@@ -76,9 +132,13 @@ function Session(publicAPI, model) {
       inFlightRpc[id] = deferred;
 
       const wrapper = { wslink: '1.0', id, method, args, kwargs };
+
+      const encoder = new CustomEncoder();
       const packedWrapper = encoder.encode(wrapper);
 
-      model.ws.send(packedWrapper, { binary: true });
+      for (let chunk of generateChunks(packedWrapper, MAX_MSG_SIZE)) {
+        model.ws.send(chunk, { binary: true });
+      }
     } else {
       deferred.reject({
         code: CLIENT_ERROR,
@@ -144,78 +204,22 @@ function Session(publicAPI, model) {
     const deferred = defer();
     // some transports might be able to close the session without closing the connection. Not true for websocket...
     model.ws.close();
+    unchunker.releasePendingMessages();
     deferred.resolve();
     return deferred.promise;
   };
 
   // --------------------------------------------------------------------------
 
+  function createDecoder() {
+    return new Decoder();
+  }
+
   publicAPI.onmessage = async (event) => {
-    {
-      let payload;
-      try {
-        payload = await decodeFromBlob(event.data);
-      } catch (e) {
-        console.error('Malformed message: ', event.data);
-        // debugger;
-      }
-      if (!payload) return;
-      if (!payload.id) return;
-      if (payload.error) {
-        const deferred = inFlightRpc[payload.id];
-        if (deferred) {
-          deferred.reject(payload.error);
-        } else {
-          console.error('Server error:', payload.error);
-        }
-      } else {
-        const match = regexRPC.exec(payload.id);
-        if (match) {
-          const type = match[1];
-          if (type === 'rpc') {
-            const deferred = inFlightRpc[payload.id];
-            if (!deferred) {
-              console.log(
-                'session message id without matching call, dropped',
-                payload
-              );
-              return;
-            }
-            deferred.resolve(payload.result);
-          } else if (type == 'publish') {
-            console.assert(
-              inFlightRpc[payload.id] === undefined,
-              'publish message received matching in-flight rpc call'
-            );
-            // regex extracts the topic for us.
-            const topic = match[2];
-            if (!subscriptions[topic]) {
-              return;
-            }
-            // for each callback, provide the message data. Wrap in an array, for back-compatibility with WAMP
-            subscriptions[topic].forEach((callback) =>
-              callback([payload.result])
-            );
-          } else if (type == 'system') {
-            // console.log('DBG system:', payload.id, payload.result);
-            const deferred = inFlightRpc[payload.id];
-            if (payload.id === 'system:c0:0') {
-              clientID = payload.result.clientID;
-              if (deferred) deferred.resolve(clientID);
-            } else {
-              console.error('Unknown system message', payload.id);
-              if (deferred)
-                deferred.reject({
-                  code: CLIENT_ERROR,
-                  message: `Unknown system message ${payload.id}`,
-                });
-            }
-          } else {
-            console.error('Unknown rpc id format', payload.id);
-          }
-        }
-      }
-      delete inFlightRpc[payload.id];
+    const message = await unchunker.processChunk(event.data, createDecoder);
+
+    if (message) {
+      onCompleteMessage(message);
     }
   };
 
@@ -275,6 +279,6 @@ class CustomEncoder extends Encoder {
       object = new DataView(object);
     }
 
-    return super.encodeObject(object, depth);
+    return super.encodeObject.call(this, object, depth);
   }
 }
