@@ -1,5 +1,5 @@
 aiohttp>=3.7.4,<4
-msgpack>=1.0.8,<2
+msgpack>=1,<2
 
 # platform specific
 pypiwin32==223; sys_platform == 'win32'

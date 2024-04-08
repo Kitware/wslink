@@ -45,7 +45,7 @@ setup(
     keywords="websocket javascript rpc pubsub",
     packages=find_packages("src", exclude=("tests.*", "tests")),
     package_dir={"": "src"},
-    install_requires=["aiohttp<4"],
+    install_requires=["aiohttp<4", "msgpack>=1,<2"],
     extras_require={
         "ssl": ["cryptography"],
     },

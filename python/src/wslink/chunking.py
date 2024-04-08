@@ -1,6 +1,11 @@
-import random
-from typing import TypedDict, Dict, Tuple, Union
+import sys
+import secrets
 import msgpack
+from typing import Dict, Tuple, Union
+if sys.version_info >= (3, 8):
+    from typing import TypedDict  # pylint: disable=no-name-in-module
+else:
+    from typing_extensions import TypedDict
 
 UINT32_LENGTH = 4
 ID_LOCATION = 0
@@ -46,7 +51,7 @@ def generate_chunks(message: bytes, max_size: int):
     else:
         max_content_size = max(max_size - HEADER_LENGTH, 1)
 
-    id = random.randbytes(ID_LENGTH)
+    id = secrets.token_bytes(ID_LENGTH)
 
     offset = 0
 
