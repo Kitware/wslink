@@ -1,3 +1,22 @@
+# [2.0.0](https://github.com/kitware/wslink/compare/v1.12.4...v2.0.0) (2024-04-10)
+
+
+### Bug Fixes
+
+* **python:** make msgpack/chunking compatible down to python 3.7 ([897ece7](https://github.com/kitware/wslink/commit/897ece73de93ddf4d0333d84ad778bf5e445ead7))
+
+
+### Features
+
+* **chunking:** implement chunking of client/server messages ([a77a680](https://github.com/kitware/wslink/commit/a77a680326ae491eee023d01d990cdf3e5808f10))
+* **msgpack:** use msgpack to serialize/deserialize messages ([4968ac1](https://github.com/kitware/wslink/commit/4968ac1cfab9aeaf1fcd0525319214f81ddd8973))
+
+
+### BREAKING CHANGES
+
+* **chunking:** each message has a header and is possibly chunked
+* **msgpack:** replace json serialization with msgpack
+
 ## [1.12.4](https://github.com/kitware/wslink/compare/v1.12.3...v1.12.4) (2023-10-25)
 
 
