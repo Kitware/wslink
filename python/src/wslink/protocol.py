@@ -1,13 +1,14 @@
 import asyncio
 import copy
 import inspect
-import json
 import logging
-import re
+import msgpack
+import os
 import traceback
 
 from wslink import schedule_coroutine
 from wslink.publish import PublishManager
+from wslink.chunking import generate_chunks, UnChunker
 
 # from http://www.jsonrpc.org/specification, section 5.1
 METHOD_NOT_FOUND = -32601
@@ -16,6 +17,9 @@ EXCEPTION_ERROR = -32001
 RESULT_SERIALIZE_ERROR = -32002
 # used in client JS code:
 CLIENT_ERROR = -32099
+
+# 4MB is the default inside aiohttp
+MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +151,7 @@ class WslinkHandler(object):
         self.authentified_client_ids = set()
         self.attachment_atomic = asyncio.Lock()
         self.pub_manager = PublishManager()
+        self.unchunkers = {}
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
         if self.getServerProtocol():
@@ -183,6 +188,8 @@ class WslinkHandler(object):
         return "reverse_connection_client_id"
 
     async def onConnect(self, request, client_id):
+        self.unchunkers[client_id] = UnChunker()
+
         if not self.serverProtocol:
             return
         if hasattr(self.serverProtocol, "onConnect"):
@@ -192,6 +199,8 @@ class WslinkHandler(object):
                 linkProtocol.onConnect(request, client_id)
 
     async def onClose(self, client_id):
+        del self.unchunkers[client_id]
+
         if not self.serverProtocol:
             return
         if hasattr(self.serverProtocol, "onClose"):
@@ -212,9 +221,16 @@ class WslinkHandler(object):
                     and await self.validateToken(args[0]["secret"], client_id)
                 ):
                     self.authentified_client_ids.add(client_id)
+                    # Once a client is authenticated let the unchunker allocate memory unrestricted
+                    self.unchunkers[client_id].set_max_message_size(
+                        4 * 1024 * 1024 * 1024
+                    )  # 4GB
                     await self.sendWrappedMessage(
                         rpcid,
-                        {"clientID": "c{0}".format(client_id)},
+                        {
+                            "clientID": "c{0}".format(client_id),
+                            "maxMsgSize": MAX_MSG_SIZE,
+                        },
                         client_id=client_id,
                     )
                 else:
@@ -235,34 +251,16 @@ class WslinkHandler(object):
         return False
 
     async def onMessage(self, is_binary, msg, client_id):
-        payload = msg.data
+        if not is_binary:
+            return
 
-        if is_binary:
-            if self.isClientAuthenticated(client_id):
-                # assume all binary messages are attachments
-                try:
-                    key = self.attachmentsRecvQueue.pop(0)
-                    self.attachmentsReceived[key] = payload
-                except:
-                    pass
-                return
+        full_message = self.unchunkers[client_id].process_chunk(msg.data)
+        if full_message is not None:
+            await self.onCompleteMessage(full_message, client_id)
 
-        # handles issue https://bugs.python.org/issue10976
-        # `payload` is type bytes in Python 3. Unfortunately, json.loads
-        # doesn't support taking bytes until Python 3.6.
-        if type(payload) is bytes:
-            payload = payload.decode("utf-8")
-
-        rpc = json.loads(payload)
+    async def onCompleteMessage(self, rpc, client_id):
         logger.debug("wslink incoming msg %s", self.payloadWithSecretStripped(rpc))
         if "id" not in rpc:
-            # should be a binary attachment header
-            if rpc.get("method") == "wslink.binary.attachment":
-                keys = rpc.get("args", [])
-                if isinstance(keys, list):
-                    for k in keys:
-                        # wait for an attachment by it's order
-                        self.attachmentsRecvQueue.append(k)
             return
 
         # TODO validate
@@ -303,73 +301,37 @@ class WslinkHandler(object):
             return
 
         obj, func = self.functionMap[methodName]
+        args.insert(0, obj)
+
         try:
-            # get any attachments
-            def findAttachments(o):
-                if (
-                    isinstance(o, str)
-                    and re.match(r"^wslink_bin\d+$", o)
-                    and o in self.attachmentsReceived
-                ):
-                    attachment = self.attachmentsReceived[o]
-                    del self.attachmentsReceived[o]
-                    return attachment
-                elif isinstance(o, list):
-                    for i, v in enumerate(o):
-                        o[i] = findAttachments(v)
-                elif isinstance(o, dict):
-                    for k in o:
-                        o[k] = findAttachments(o[k])
-                return o
+            self.web_app.last_active_client_id = client_id
+            results = func(*args, **kwargs)
+            if inspect.isawaitable(results):
+                results = await results
 
-            args = findAttachments(args)
-            kwargs = findAttachments(kwargs)
+            if self.connections[client_id].closed:
+                # Connection was closed during RPC call.
+                return
 
-            args.insert(0, obj)
-
-            try:
-                self.web_app.last_active_client_id = client_id
-                results = func(*args, **kwargs)
-                if inspect.isawaitable(results):
-                    results = await results
-
-                if self.connections[client_id].closed:
-                    # Connection was closed during RPC call.
-                    return
-
-                await self.sendWrappedMessage(
-                    rpcid, results, method=methodName, client_id=client_id
-                )
-            except Exception as e_inst:
-                captured_trace = traceback.format_exc()
-                logger.error("Exception raised")
-                logger.error(repr(e_inst))
-                logger.error(captured_trace)
-                await self.sendWrappedError(
-                    rpcid,
-                    EXCEPTION_ERROR,
-                    "Exception raised",
-                    {
-                        "method": methodName,
-                        "exception": repr(e_inst),
-                        "trace": captured_trace,
-                    },
-                    client_id=client_id,
-                )
-
-        except Exception as e:
+            await self.sendWrappedMessage(
+                rpcid, results, method=methodName, client_id=client_id
+            )
+        except Exception as e_inst:
+            captured_trace = traceback.format_exc()
+            logger.error("Exception raised")
+            logger.error(repr(e_inst))
+            logger.error(captured_trace)
             await self.sendWrappedError(
                 rpcid,
                 EXCEPTION_ERROR,
                 "Exception raised",
                 {
                     "method": methodName,
-                    "exception": repr(e),
-                    "trace": traceback.format_exc(),
+                    "exception": repr(e_inst),
+                    "trace": captured_trace,
                 },
                 client_id=client_id,
             )
-            return
 
     def payloadWithSecretStripped(self, payload):
         payload = copy.deepcopy(payload)
@@ -428,9 +390,10 @@ class WslinkHandler(object):
             "id": rpcid,
             "result": content,
         }
+
         try:
-            encMsg = json.dumps(wrapper, ensure_ascii=False)
-        except TypeError as e:
+            packed_wrapper = msgpack.packb(wrapper)
+        except Exception:
             # the content which is not serializable might be arbitrarily large, don't include.
             # repr(content) would do that...
             await self.sendWrappedError(
@@ -444,47 +407,14 @@ class WslinkHandler(object):
 
         websockets = self.getAuthenticatedWebsockets(client_id, skip_last_active_client)
 
-        # Check if any attachments in the map go with this message
-        attachments = self.pub_manager.getAttachmentMap()
-        found_keys = []
-        if attachments:
-            for key in attachments:
-                # string match the encoded attachment key
-                if key in encMsg:
-                    if key not in found_keys:
-                        found_keys.append(key)
-                    # increment  for key
-                    self.pub_manager.registerAttachment(key)
-
-            for key in found_keys:
-                # send header
-                header = {
-                    "wslink": "1.0",
-                    "method": "wslink.binary.attachment",
-                    "args": [key],
-                }
-                json_header = json.dumps(header, ensure_ascii=False)
-
-                # aiohttp can not handle pending ws.send_bytes()
-                # tried with semaphore but got exception with >1
-                # https://github.com/aio-libs/aiohttp/issues/2934
-                async with self.attachment_atomic:
-                    for ws in websockets:
-                        if ws is not None:
-                            # Send binary header
-                            await ws.send_str(json_header)
-                            # Send binary message
-                            await ws.send_bytes(attachments[key])
-
-                # decrement for key
-                self.pub_manager.unregisterAttachment(key)
-
-        for ws in websockets:
-            if ws is not None:
-                await ws.send_str(encMsg)
-
-        loop = asyncio.get_event_loop()
-        loop.call_soon(self.pub_manager.freeAttachments, found_keys)
+        # aiohttp can not handle pending ws.send_bytes()
+        # tried with semaphore but got exception with >1
+        # https://github.com/aio-libs/aiohttp/issues/2934
+        async with self.attachment_atomic:
+            for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
+                for ws in websockets:
+                    if ws is not None:
+                        await ws.send_bytes(chunk)
 
     async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
         wrapper = {
@@ -497,15 +427,26 @@ class WslinkHandler(object):
         }
         if data:
             wrapper["error"]["data"] = data
-        encMsg = json.dumps(wrapper, ensure_ascii=False)
+
+        try:
+            packed_wrapper = msgpack.packb(wrapper)
+        except Exception:
+            del wrapper["error"]["data"]
+            packed_wrapper = msgpack.packb(wrapper)
+
         websockets = (
             [self.connections[client_id]]
             if client_id
             else [self.connections[c] for c in self.connections]
         )
-        for ws in websockets:
-            if ws is not None:
-                await ws.send_str(encMsg)
+        # aiohttp can not handle pending ws.send_bytes()
+        # tried with semaphore but got exception with >1
+        # https://github.com/aio-libs/aiohttp/issues/2934
+        async with self.attachment_atomic:
+            for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
+                for ws in websockets:
+                    if ws is not None:
+                        await ws.send_bytes(chunk)
 
     def publish(self, topic, data, client_id=None, skip_last_active_client=False):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
