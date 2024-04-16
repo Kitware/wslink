@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/kitware/wslink/compare/v2.0.0...v2.0.1) (2024-04-16)
+
+
+### Bug Fixes
+
+* **cli:** remove shorthand args ([880951a](https://github.com/kitware/wslink/commit/880951a8bd3e5d4d8c2a916f602f71c10c61e84e))
+
 # [2.0.0](https://github.com/kitware/wslink/compare/v1.12.4...v2.0.0) (2024-04-10)
 
 
