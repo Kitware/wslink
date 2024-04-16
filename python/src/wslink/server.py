@@ -18,13 +18,13 @@ ws_server = None
 
 # =============================================================================
 # Setup default arguments to be parsed
-#   -s, --nosignalhandlers
-#   -d, --debug
-#   -i, --host     localhost
+#   --nosignalhandlers
+#   --debug
+#   --host     localhost
 #   -p, --port     8080
-#   -t, --timeout  300 (seconds)
-#   -c, --content  '/www'  (No content means WebSocket only)
-#   -a, --authKey  vtkweb-secret
+#   --timeout  300 (seconds)
+#   --content  '/www'  (No content means WebSocket only)
+#   --authKey  vtkweb-secret
 # =============================================================================
 
 
@@ -35,16 +35,14 @@ def add_arguments(parser):
     """
 
     parser.add_argument(
-        "-d", "--debug", help="log debugging messages to stdout", action="store_true"
+        "--debug", help="log debugging messages to stdout", action="store_true"
     )
     parser.add_argument(
-        "-s",
         "--nosignalhandlers",
         help="Prevent installation of signal handlers so server can be started inside a thread.",
         action="store_true",
     )
     parser.add_argument(
-        "-i",
         "--host",
         type=str,
         default="localhost",
@@ -58,26 +56,22 @@ def add_arguments(parser):
         help="port number for the web-server to listen on (default: 8080)",
     )
     parser.add_argument(
-        "-t",
         "--timeout",
         type=int,
         default=300,
         help="timeout for reaping process on idle in seconds (default: 300s, 0 to disable)",
     )
     parser.add_argument(
-        "-c",
         "--content",
         default="",
         help="root for web-pages to serve (default: none)",
     )
     parser.add_argument(
-        "-a",
         "--authKey",
         default="wslink-secret",
         help="Authentication key for clients to connect to the WebSocket.",
     )
     parser.add_argument(
-        "-ws",
         "--ws-endpoint",
         type=str,
         default="ws",
