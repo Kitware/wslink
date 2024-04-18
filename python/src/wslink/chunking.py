@@ -2,6 +2,7 @@ import sys
 import secrets
 import msgpack
 from typing import Dict, Tuple, Union
+
 if sys.version_info >= (3, 8):
     from typing import TypedDict  # pylint: disable=no-name-in-module
 else:
@@ -18,16 +19,20 @@ MESSAGE_SIZE_LENGTH = UINT32_LENGTH
 HEADER_LENGTH = ID_LENGTH + MESSAGE_OFFSET_LENGTH + MESSAGE_SIZE_LENGTH
 
 
-def _encode_header(id: bytes, offset: int, size: int) -> bytes:
+def _encode_header(id: int, offset: int, size: int) -> bytes:
     return (
-        id
+        id.to_bytes(ID_LENGTH, "little", signed=False)
         + offset.to_bytes(MESSAGE_OFFSET_LENGTH, "little", signed=False)
         + size.to_bytes(MESSAGE_SIZE_LENGTH, "little", signed=False)
     )
 
 
-def _decode_header(header: bytes) -> Tuple[bytes, int, int]:
-    id = header[ID_LOCATION:ID_LENGTH]
+def _decode_header(header: bytes) -> Tuple[int, int, int]:
+    id = int.from_bytes(
+        header[ID_LOCATION:ID_LENGTH],
+        "little",
+        signed=False,
+    )
     offset = int.from_bytes(
         header[
             MESSAGE_OFFSET_LOCATION : MESSAGE_OFFSET_LOCATION + MESSAGE_OFFSET_LENGTH
@@ -51,7 +56,7 @@ def generate_chunks(message: bytes, max_size: int):
     else:
         max_content_size = max(max_size - HEADER_LENGTH, 1)
 
-    id = secrets.token_bytes(ID_LENGTH)
+    id = int.from_bytes(secrets.token_bytes(ID_LENGTH), "little", signed=False)
 
     offset = 0
 

@@ -24,8 +24,8 @@ class WsConnection:
     async def send(self, is_binary, msg):
         await self._ws.onMessage(is_binary, msg, self.client_id)
 
-    def close(self):
-        self._ws.disconnect(self)
+    async def close(self):
+        await self.on_close(self._ws)
 
     # -------------------------------------------------------------------------
     # Method used by FakeWS
@@ -35,13 +35,17 @@ class WsConnection:
     def client_id(self):
         return self._id
 
-    def on_connect(self, ws):
+    async def on_connect(self, ws):
         self.closed = False
         self._ws = ws
+        await self._ws.onConnect(
+            {"type": "generic", "connection": self}, self.client_id
+        )
 
-    def on_close(self, ws):
+    async def on_close(self, ws):
         self.closed = True
         if self._ws == ws:
+            ws.disconnect(self.client_id)
             self._ws = None
 
     async def send_str(self, value):
@@ -55,19 +59,19 @@ class WsEndpoint(WslinkHandler):
     def __init__(self, protocol=None, web_app=None):
         super().__init__(protocol, web_app)
 
-    def connect(self):
+    async def connect(self):
         conn = WsConnection()
         self.connections[conn.client_id] = conn
-        conn.on_connect(self)
+        await conn.on_connect(self)
         return conn
 
-    def disconnect(self, client_or_id):
+    async def disconnect(self, client_or_id):
         client_or_id = (
             client_or_id if isinstance(client_or_id, str) else client_or_id.client_id
         )
         if client_or_id in self.connections:
             client = self.connections.pop(client_or_id)
-            client.on_close(self)
+            await client.onClose(client_or_id)
 
 
 class GenericServer(AbstractWebApp):

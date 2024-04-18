@@ -114,7 +114,7 @@ class JupyterGenericServer(GenericServer):
         connection = self._connections.get(client_id, None)
 
         if connection is None:
-            connection = self._endpoint.connect()
+            connection = await self._endpoint.connect()
             connection.on_message(partial(self.on_msg_from_server, client_id))
             self._connections[client_id] = connection
 
