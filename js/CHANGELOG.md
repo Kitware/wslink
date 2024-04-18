@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/kitware/wslink/compare/v2.0.1...v2.0.2) (2024-04-18)
+
+
+### Bug Fixes
+
+* **jupyter:** properly handle generic ws for jupyter ([3bb84de](https://github.com/kitware/wslink/commit/3bb84dea56818f074628412fcc6c8063eaf87c01))
+
 ## [2.0.1](https://github.com/kitware/wslink/compare/v2.0.0...v2.0.1) (2024-04-16)
 
 
