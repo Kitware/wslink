@@ -87,7 +87,7 @@ class UnChunker:
 
     def __init__(self):
         self.pending_messages = {}
-        self.max_message_size = 512
+        self.max_message_size = 3000
 
     def set_max_message_size(self, size):
         self.max_message_size = size
