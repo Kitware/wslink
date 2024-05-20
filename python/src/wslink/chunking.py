@@ -1,3 +1,4 @@
+import os
 import sys
 import secrets
 import msgpack
@@ -87,7 +88,7 @@ class UnChunker:
 
     def __init__(self):
         self.pending_messages = {}
-        self.max_message_size = 512
+        self.max_message_size = int(os.environ.get("WSLINK_AUTH_MSG_SIZE", 512))
 
     def set_max_message_size(self, size):
         self.max_message_size = size
