@@ -1,3 +1,10 @@
+## [2.0.3](https://github.com/kitware/wslink/compare/v2.0.2...v2.0.3) (2024-05-20)
+
+
+### Bug Fixes
+
+* **unchunker:** initial allowed message size to env var ([#158](https://github.com/kitware/wslink/issues/158)) ([488d637](https://github.com/kitware/wslink/commit/488d637eb9df2649444c5223c61669e142096a2b))
+
 ## [2.0.2](https://github.com/kitware/wslink/compare/v2.0.1...v2.0.2) (2024-04-18)
 
 
