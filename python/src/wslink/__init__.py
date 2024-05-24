@@ -5,6 +5,7 @@ javascript client over a websocket.
 wslink.server creates the python server
 wslink.websocket handles the communication
 """
+
 import asyncio
 import functools
 

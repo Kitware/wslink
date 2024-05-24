@@ -35,12 +35,24 @@ def _fix_path(path):
 
 
 # -----------------------------------------------------------------------------
+# Needed for WASM/sharedArrayBuffer
+# => we should find a way to dynamically provided needed header
+# -----------------------------------------------------------------------------
+@aiohttp_web.middleware
+async def shared_array_buffer_headers(request: aiohttp_web.Request, handler):
+    response: aiohttp_web.Response = await handler(request)
+    response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+    response.headers.setdefault("Cross-Origin-Embedder-Policy", "require-corp")
+    response.headers.setdefault("Access-Control-Allow-Origin", "*")
+    response.headers.setdefault("Cache-Control", "no-store")
+    return response
 
 
+# -----------------------------------------------------------------------------
 class WebAppServer(AbstractWebApp):
     def __init__(self, server_config):
         AbstractWebApp.__init__(self, server_config)
-        self.set_app(aiohttp_web.Application())
+        self.set_app(aiohttp_web.Application(middlewares=[shared_array_buffer_headers]))
         self._ws_handlers = []
         self._site = None
         self._runner = None
