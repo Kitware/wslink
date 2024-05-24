@@ -1,3 +1,10 @@
+## [2.0.4](https://github.com/kitware/wslink/compare/v2.0.3...v2.0.4) (2024-05-24)
+
+
+### Bug Fixes
+
+* **header:** add default headers for shared_array_buffer ([0f9f22c](https://github.com/kitware/wslink/commit/0f9f22c2e9fb9db199d483bc6ad5fe7e26db8084))
+
 ## [2.0.3](https://github.com/kitware/wslink/compare/v2.0.2...v2.0.3) (2024-05-20)
 
 
