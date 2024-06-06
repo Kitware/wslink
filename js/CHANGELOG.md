@@ -1,3 +1,10 @@
+## [2.0.5](https://github.com/kitware/wslink/compare/v2.0.4...v2.0.5) (2024-06-06)
+
+
+### Bug Fixes
+
+* **py:** add msg overhead in size limit ([5481a72](https://github.com/kitware/wslink/commit/5481a72148ff03bb11ed658952ab4c64f69950fe))
+
 ## [2.0.4](https://github.com/kitware/wslink/compare/v2.0.3...v2.0.4) (2024-05-24)
 
 
