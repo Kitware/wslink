@@ -12,6 +12,7 @@ import aiohttp.web as aiohttp_web
 
 
 # 4MB is the default inside aiohttp
+MSG_OVERHEAD = int(os.environ.get("WSLINK_MSG_OVERHEAD", 4096))
 MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
 
@@ -212,7 +213,7 @@ class AioHttpWsHandler(WslinkHandler):
     async def handleWsRequest(self, request):
         client_id = str(uuid.uuid4()).replace("-", "")
         current_ws = aiohttp_web.WebSocketResponse(
-            max_msg_size=MAX_MSG_SIZE, heartbeat=HEART_BEAT
+            max_msg_size=MSG_OVERHEAD + MAX_MSG_SIZE, heartbeat=HEART_BEAT
         )
         self.connections[client_id] = current_ws
 

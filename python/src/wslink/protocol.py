@@ -252,6 +252,7 @@ class WslinkHandler(object):
 
     async def onMessage(self, is_binary, msg, client_id):
         if not is_binary:
+            logger.critical("wslink is not expecting text message:\n> %s", msg.data)
             return
 
         full_message = self.unchunkers[client_id].process_chunk(msg.data)
