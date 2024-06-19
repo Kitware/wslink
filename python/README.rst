@@ -37,6 +37,7 @@ Those only apply for the Python server and launcher.
 * WSLINK_LAUNCHER_DELETE - If set to 1 this will enable the DELETE endpoint for killing a running session
 * WSLINK_MAX_MSG_SIZE - Number of bytes for a message size (default: 4194304)
 * WSLINK_HEART_BEAT - Number of seconds between heartbeats (default: 30)
+* WSLINK_HTTP_HEADERS - Path to json file containing HTTP headers to be added
 
 License
 -------

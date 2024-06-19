@@ -1,8 +1,9 @@
-import asyncio
 import os
 import logging
 import sys
 import uuid
+import json
+from pathlib import Path
 
 from wslink.protocol import WslinkHandler, AbstractWebApp
 
@@ -15,6 +16,10 @@ import aiohttp.web as aiohttp_web
 MSG_OVERHEAD = int(os.environ.get("WSLINK_MSG_OVERHEAD", 4096))
 MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
 HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
+HTTP_HEADERS: str | None = os.environ.get("WSLINK_HTTP_HEADERS")  # path to json file
+
+if HTTP_HEADERS and Path(HTTP_HEADERS).exists():
+    HTTP_HEADERS: dict = json.loads(Path(HTTP_HEADERS).read_text())
 
 logger = logging.getLogger(__name__)
 
@@ -36,16 +41,12 @@ def _fix_path(path):
 
 
 # -----------------------------------------------------------------------------
-# Needed for WASM/sharedArrayBuffer
-# => we should find a way to dynamically provided needed header
-# -----------------------------------------------------------------------------
 @aiohttp_web.middleware
-async def shared_array_buffer_headers(request: aiohttp_web.Request, handler):
+async def http_headers(request: aiohttp_web.Request, handler):
     response: aiohttp_web.Response = await handler(request)
-    response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
-    response.headers.setdefault("Cross-Origin-Embedder-Policy", "require-corp")
-    response.headers.setdefault("Access-Control-Allow-Origin", "*")
-    response.headers.setdefault("Cache-Control", "no-store")
+    for k, v in HTTP_HEADERS.items():
+        response.headers.setdefault(k, v)
+
     return response
 
 
@@ -53,7 +54,10 @@ async def shared_array_buffer_headers(request: aiohttp_web.Request, handler):
 class WebAppServer(AbstractWebApp):
     def __init__(self, server_config):
         AbstractWebApp.__init__(self, server_config)
-        self.set_app(aiohttp_web.Application(middlewares=[shared_array_buffer_headers]))
+        if HTTP_HEADERS:
+            self.set_app(aiohttp_web.Application(middlewares=[http_headers]))
+        else:
+            self.set_app(aiohttp_web.Application())
         self._ws_handlers = []
         self._site = None
         self._runner = None
