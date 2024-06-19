@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/kitware/wslink/compare/v2.0.5...v2.1.0) (2024-06-19)
+
+
+### Features
+
+* **http:** add WSLINK_HTTP_HEADERS for HTTP header addon ([7d16203](https://github.com/kitware/wslink/commit/7d16203788c29ff234b693689e85491dc94c86e1))
+
 ## [2.0.5](https://github.com/kitware/wslink/compare/v2.0.4...v2.0.5) (2024-06-06)
 
 
