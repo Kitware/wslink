@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os
 import logging
 import sys
@@ -6,6 +7,7 @@ import json
 from pathlib import Path
 
 from wslink.protocol import WslinkHandler, AbstractWebApp
+
 
 # Backend specific imports
 import aiohttp
