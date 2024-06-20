@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/kitware/wslink/compare/v2.1.0...v2.1.1) (2024-06-20)
+
+
+### Bug Fixes
+
+* add missing __future__ annotations for type hints ([472950f](https://github.com/kitware/wslink/commit/472950f98cee2175a507e664ef993eec471469fc))
+
 # [2.1.0](https://github.com/kitware/wslink/compare/v2.0.5...v2.1.0) (2024-06-19)
 
 
