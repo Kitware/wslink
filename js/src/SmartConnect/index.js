@@ -33,9 +33,7 @@ function extractPathName(addOn, pathName = window.location.pathname) {
   return `${pathName}${addOn}`;
 }
 
-export const DEFAULT_SESSION_MANAGER_URL = `${window.location.protocol}//${
-  window.location.hostname
-}:${window.location.port}${extractPathName('/paraview/')}`;
+export const DEFAULT_SESSION_MANAGER_URL = `${document.baseURI}paraview/`;
 
 export const DEFAULT_SESSION_URL = `${
   window.location.protocol === 'https:' ? 'wss:' : 'ws:'
