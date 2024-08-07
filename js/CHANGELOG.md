@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/kitware/wslink/compare/v2.1.1...v2.1.2) (2024-08-07)
+
+
+### Bug Fixes
+
+* **js:** sessionManagerURL use baseURI ([bb4c34c](https://github.com/kitware/wslink/commit/bb4c34ce64f5056f1dc1b442edc2f79410983ac1))
+
 ## [2.1.1](https://github.com/kitware/wslink/compare/v2.1.0...v2.1.1) (2024-06-20)
 
 
