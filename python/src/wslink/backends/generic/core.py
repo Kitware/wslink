@@ -45,7 +45,7 @@ class WsConnection:
     async def on_close(self, ws):
         self.closed = True
         if self._ws == ws:
-            ws.disconnect(self.client_id)
+            await ws.disconnect(self.client_id)
             self._ws = None
 
     async def send_str(self, value):
@@ -71,7 +71,7 @@ class WsEndpoint(WslinkHandler):
         )
         if client_or_id in self.connections:
             client = self.connections.pop(client_or_id)
-            await client.onClose(client_or_id)
+            await client.on_close(client_or_id)
 
 
 class GenericServer(AbstractWebApp):
