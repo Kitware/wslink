@@ -1,3 +1,10 @@
+## [2.1.3](https://github.com/kitware/wslink/compare/v2.1.2...v2.1.3) (2024-09-09)
+
+
+### Bug Fixes
+
+* **generic:** proper api call ([c443c74](https://github.com/kitware/wslink/commit/c443c7490efcb0b030b303025946088af72c4476))
+
 ## [2.1.2](https://github.com/kitware/wslink/compare/v2.1.1...v2.1.2) (2024-08-07)
 
 
