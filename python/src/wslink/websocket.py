@@ -67,17 +67,28 @@ class LinkProtocol(object):
 
 
 class NetworkMonitor:
+    """
+    Provide context manager for increase/decrease pending request
+    either synchronously or asynchronously.
+
+    The Asynchronous version also await completion.
+    """
+
     def __init__(self):
+
         self.pending = 0
         self.event = asyncio.Event()
 
     def network_call_completed(self):
+        """Trigger completion event"""
         self.event.set()
 
     def on_enter(self, *args, **kwargs):
+        """Increase pending request"""
         self.pending += 1
 
     def on_exit(self, *args, **kwargs):
+        """Decrease pending request and trigger completion event if we reach 0 pending request"""
         self.pending -= 1
         if self.pending == 0 and not self.event.is_set():
             self.event.set()
@@ -97,6 +108,10 @@ class NetworkMonitor:
 
     async def __aexit__(self, exc_t, exc_v, exc_tb):
         self.on_exit()
+        await self.completion()
+
+    async def completion(self):
+        """Await completion of any pending network request"""
         while self.pending:
             self.event.clear()
             await self.event.wait()
