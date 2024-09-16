@@ -11,15 +11,6 @@
   </url>
   
   <url>
-    <loc>https://kitware.github.io/wslink/api/index.html</loc>
-    
-    <lastmod>2024-09-16</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://kitware.github.io/wslink/docs/contributing.html</loc>
     
     <lastmod>2024-09-16</lastmod>
@@ -30,6 +21,15 @@
   
   <url>
     <loc>https://kitware.github.io/wslink/docs/index.html</loc>
+    
+    <lastmod>2024-09-16</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://kitware.github.io/wslink/api/index.html</loc>
     
     <lastmod>2024-09-16</lastmod>
     
