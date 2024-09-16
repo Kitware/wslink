@@ -54,7 +54,7 @@ def schedule_callback(delay, callback, *args, **kwargs):
     return loop.call_later(delay, functools.partial(callback, *args, **kwargs))
 
 
-def schedule_coroutine(delay, coro_func, *args, **kwargs):
+def schedule_coroutine(delay, coro_func, *args, done_callback=None, **kwargs):
     """
     Creates a coroutine out of the provided coroutine function coro_func and
     the provided args and kwargs, then schedules the coroutine to be called
@@ -73,4 +73,11 @@ def schedule_coroutine(delay, coro_func, *args, **kwargs):
     # See method above for comment on "get_event_loop()" vs "get_running_loop()".
     loop = asyncio.get_event_loop()
     coro_partial = functools.partial(coro_func, *args, **kwargs)
+    if done_callback is not None:
+        return loop.call_later(
+            delay,
+            lambda: asyncio.ensure_future(coro_partial()).add_done_callback(
+                done_callback
+            ),
+        )
     return loop.call_later(delay, lambda: asyncio.ensure_future(coro_partial()))

@@ -27,6 +27,7 @@ class PublishManager(object):
         for protocol in self.protocols:
             # The client is unknown - we send to any client who is subscribed to the topic
             rpcid = "publish:{0}:{1}".format(topic, self.publishCount)
+            protocol.network_monitor.on_enter()
             schedule_coroutine(
                 0,
                 protocol.sendWrappedMessage,
@@ -34,6 +35,8 @@ class PublishManager(object):
                 data,
                 client_id=client_id,
                 skip_last_active_client=skip_last_active_client,
+                # for schedule_coroutine call
+                done_callback=protocol.network_monitor.on_exit,
             )
 
 

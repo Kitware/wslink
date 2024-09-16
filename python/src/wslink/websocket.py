@@ -5,6 +5,7 @@ ServerProtocol to hook all the needed LinkProtocols together.
 """
 
 import logging
+import asyncio
 
 from . import register as exportRpc
 from . import schedule_callback
@@ -65,6 +66,42 @@ class LinkProtocol(object):
 # =============================================================================
 
 
+class NetworkMonitor:
+    def __init__(self):
+        self.pending = 0
+        self.event = asyncio.Event()
+
+    def network_call_completed(self):
+        self.event.set()
+
+    def on_enter(self, *args, **kwargs):
+        self.pending += 1
+
+    def on_exit(self, *args, **kwargs):
+        self.pending -= 1
+        if self.pending == 0 and not self.event.is_set():
+            self.event.set()
+
+    # Sync ctx manager
+    def __enter__(self):
+        self.on_enter()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.on_exit()
+
+    # Async ctx manager
+    async def __aenter__(self):
+        self.on_enter()
+        return self
+
+    async def __aexit__(self, exc_t, exc_v, exc_tb):
+        self.on_exit()
+        while self.pending:
+            self.event.clear()
+            await self.event.wait()
+
+
 class ServerProtocol(object):
     """
     Defines the core server protocol for wslink. Gathers a list of LinkProtocol
@@ -72,6 +109,7 @@ class ServerProtocol(object):
     """
 
     def __init__(self):
+        self.network_monitor = NetworkMonitor()
         self.linkProtocols = []
         self.secret = None
         self.initialize()

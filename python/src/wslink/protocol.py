@@ -152,6 +152,7 @@ class WslinkHandler(object):
         self.attachment_atomic = asyncio.Lock()
         self.pub_manager = PublishManager()
         self.unchunkers = {}
+        self.network_monitor = protocol.network_monitor
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
         if self.getServerProtocol():
@@ -257,7 +258,8 @@ class WslinkHandler(object):
 
         full_message = self.unchunkers[client_id].process_chunk(msg.data)
         if full_message is not None:
-            await self.onCompleteMessage(full_message, client_id)
+            with self.network_monitor:
+                await self.onCompleteMessage(full_message, client_id)
 
     async def onCompleteMessage(self, rpc, client_id):
         logger.debug("wslink incoming msg %s", self.payloadWithSecretStripped(rpc))
@@ -282,23 +284,25 @@ class WslinkHandler(object):
 
         # Prevent any further processing if token is not valid
         if not self.isClientAuthenticated(client_id):
-            await self.sendWrappedError(
-                rpcid,
-                AUTHENTICATION_ERROR,
-                "Unauthorized: Skip message processing",
-                client_id=client_id,
-            )
+            with self.network_monitor:
+                await self.sendWrappedError(
+                    rpcid,
+                    AUTHENTICATION_ERROR,
+                    "Unauthorized: Skip message processing",
+                    client_id=client_id,
+                )
             return
 
         # No matching method found
         if not methodName in self.functionMap:
-            await self.sendWrappedError(
-                rpcid,
-                METHOD_NOT_FOUND,
-                "Unregistered method called",
-                methodName,
-                client_id=client_id,
-            )
+            with self.network_monitor:
+                await self.sendWrappedError(
+                    rpcid,
+                    METHOD_NOT_FOUND,
+                    "Unregistered method called",
+                    methodName,
+                    client_id=client_id,
+                )
             return
 
         obj, func = self.functionMap[methodName]
@@ -308,31 +312,34 @@ class WslinkHandler(object):
             self.web_app.last_active_client_id = client_id
             results = func(*args, **kwargs)
             if inspect.isawaitable(results):
-                results = await results
+                with self.network_monitor:
+                    results = await results
 
             if self.connections[client_id].closed:
                 # Connection was closed during RPC call.
                 return
 
-            await self.sendWrappedMessage(
-                rpcid, results, method=methodName, client_id=client_id
-            )
+            with self.network_monitor:
+                await self.sendWrappedMessage(
+                    rpcid, results, method=methodName, client_id=client_id
+                )
         except Exception as e_inst:
             captured_trace = traceback.format_exc()
             logger.error("Exception raised")
             logger.error(repr(e_inst))
             logger.error(captured_trace)
-            await self.sendWrappedError(
-                rpcid,
-                EXCEPTION_ERROR,
-                "Exception raised",
-                {
-                    "method": methodName,
-                    "exception": repr(e_inst),
-                    "trace": captured_trace,
-                },
-                client_id=client_id,
-            )
+            with self.network_monitor:
+                await self.sendWrappedError(
+                    rpcid,
+                    EXCEPTION_ERROR,
+                    "Exception raised",
+                    {
+                        "method": methodName,
+                        "exception": repr(e_inst),
+                        "trace": captured_trace,
+                    },
+                    client_id=client_id,
+                )
 
     def payloadWithSecretStripped(self, payload):
         payload = copy.deepcopy(payload)
@@ -397,13 +404,14 @@ class WslinkHandler(object):
         except Exception:
             # the content which is not serializable might be arbitrarily large, don't include.
             # repr(content) would do that...
-            await self.sendWrappedError(
-                rpcid,
-                RESULT_SERIALIZE_ERROR,
-                "Method result cannot be serialized",
-                method,
-                client_id=client_id,
-            )
+            with self.network_monitor:
+                await self.sendWrappedError(
+                    rpcid,
+                    RESULT_SERIALIZE_ERROR,
+                    "Method result cannot be serialized",
+                    method,
+                    client_id=client_id,
+                )
             return
 
         websockets = self.getAuthenticatedWebsockets(client_id, skip_last_active_client)
@@ -411,11 +419,15 @@ class WslinkHandler(object):
         # aiohttp can not handle pending ws.send_bytes()
         # tried with semaphore but got exception with >1
         # https://github.com/aio-libs/aiohttp/issues/2934
-        async with self.attachment_atomic:
-            for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
-                for ws in websockets:
-                    if ws is not None:
-                        await ws.send_bytes(chunk)
+        with self.network_monitor:
+            async with self.attachment_atomic:
+                for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
+                    for ws in websockets:
+                        if ws is not None:
+                            await ws.send_bytes(chunk)
+
+        # Network operation completed
+        self.network_monitor.network_call_completed()
 
     async def sendWrappedError(self, rpcid, code, message, data=None, client_id=None):
         wrapper = {
@@ -443,11 +455,15 @@ class WslinkHandler(object):
         # aiohttp can not handle pending ws.send_bytes()
         # tried with semaphore but got exception with >1
         # https://github.com/aio-libs/aiohttp/issues/2934
-        async with self.attachment_atomic:
-            for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
-                for ws in websockets:
-                    if ws is not None:
-                        await ws.send_bytes(chunk)
+        with self.network_monitor:
+            async with self.attachment_atomic:
+                for chunk in generate_chunks(packed_wrapper, MAX_MSG_SIZE):
+                    for ws in websockets:
+                        if ws is not None:
+                            await ws.send_bytes(chunk)
+
+        # Network operation completed
+        self.network_monitor.network_call_completed()
 
     def publish(self, topic, data, client_id=None, skip_last_active_client=False):
         client_list = [client_id] if client_id else [c_id for c_id in self.connections]
