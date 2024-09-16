@@ -1,3 +1,10 @@
+## [2.2.1](https://github.com/kitware/wslink/compare/v2.2.0...v2.2.1) (2024-09-16)
+
+
+### Bug Fixes
+
+* **NetworkMonitor:** add async completion() method ([62e4c68](https://github.com/kitware/wslink/commit/62e4c6812d111f3a50cbaeb9a7a4a988822efef5))
+
 # [2.2.0](https://github.com/kitware/wslink/compare/v2.1.3...v2.2.0) (2024-09-16)
 
 
