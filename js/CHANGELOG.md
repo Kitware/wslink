@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/kitware/wslink/compare/v2.1.3...v2.2.0) (2024-09-16)
+
+
+### Features
+
+* **NetworkMonitor:** add support for network completion monitoring ([3202aad](https://github.com/kitware/wslink/commit/3202aad42f71f2be156830412d77786f695684e9))
+
 ## [2.1.3](https://github.com/kitware/wslink/compare/v2.1.2...v2.1.3) (2024-09-09)
 
 
