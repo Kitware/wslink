@@ -23,6 +23,8 @@ HTTP_HEADERS: str | None = os.environ.get("WSLINK_HTTP_HEADERS")  # path to json
 if HTTP_HEADERS and Path(HTTP_HEADERS).exists():
     HTTP_HEADERS: dict = json.loads(Path(HTTP_HEADERS).read_text())
 
+STATE_KEY = aiohttp_web.AppKey("state", str)
+
 logger = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
@@ -92,7 +94,7 @@ class WebAppServer(AbstractWebApp):
             self.app.router.add_route("GET", "/", _root_handler)
             self.app.add_routes(routes)
 
-        self.app["state"] = {}
+        self.app[STATE_KEY] = {}
 
     # -------------------------------------------------------------------------
     # Server status
