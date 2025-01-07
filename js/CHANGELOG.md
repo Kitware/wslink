@@ -1,3 +1,10 @@
+## [2.2.2](https://github.com/kitware/wslink/compare/v2.2.1...v2.2.2) (2025-01-07)
+
+
+### Bug Fixes
+
+* **aiohttp:** use AppKey for state ([3a313f9](https://github.com/kitware/wslink/commit/3a313f9418498a6f9de66f45ecb7ca691ace45e5))
+
 ## [2.2.1](https://github.com/kitware/wslink/compare/v2.2.0...v2.2.1) (2024-09-16)
 
 
