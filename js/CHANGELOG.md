@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/kitware/wslink/compare/v2.2.2...v2.3.0) (2025-02-20)
+
+
+### Features
+
+* **protocol:** log internal events through an object that can be subscribed to ([89175ba](https://github.com/kitware/wslink/commit/89175baee9f1956ab007368e577fff1d2709e30e))
+
 ## [2.2.2](https://github.com/kitware/wslink/compare/v2.2.1...v2.2.2) (2025-01-07)
 
 
