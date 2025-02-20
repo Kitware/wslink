@@ -1,47 +1,7 @@
-import asyncio
 from functools import partial
+from wslink.emitter import EventEmitter
 from wslink.backends.generic.core import GenericServer
 from IPython.core.getipython import get_ipython
-
-
-class EventEmitter:
-    def __init__(self):
-        self._listeners = {}
-
-    def clear(self):
-        self._listeners = {}
-
-    def emit(self, event, *args, **kwargs):
-        listeners = self._listeners.get(event)
-        if listeners is None:
-            return
-
-        loop = asyncio.get_running_loop()
-        coroutine_run = (
-            loop.create_task if (loop and loop.is_running()) else asyncio.run
-        )
-
-        for listener in listeners:
-            if asyncio.iscoroutinefunction(listener):
-                coroutine_run(listener(*args, **kwargs))
-            else:
-                listener(*args, **kwargs)
-
-    def add_event_listener(self, event, listener):
-        listeners = self._listeners.get(event)
-        if listeners is None:
-            listeners = set()
-            self._listeners[event] = listeners
-
-        listeners.add(listener)
-
-    def remove_event_listener(self, event, listener):
-        listeners = self._listeners.get(event)
-        if listeners is None:
-            return
-
-        if listener in listeners:
-            listeners.remove(listener)
 
 
 class WsJupyterComm(EventEmitter):

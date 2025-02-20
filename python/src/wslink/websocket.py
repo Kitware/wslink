@@ -6,9 +6,12 @@ ServerProtocol to hook all the needed LinkProtocols together.
 
 import logging
 import asyncio
+from typing import Literal
+from dataclasses import dataclass
 
-from . import register as exportRpc
-from . import schedule_callback
+from wslink import register as exportRpc
+from wslink import schedule_callback
+from wslink.emitter import EventEmitter
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +120,9 @@ class NetworkMonitor:
             await self.event.wait()
 
 
+LogEmitterEvents = Literal["exception", "error", "critical", "info", "debug"]
+
+
 class ServerProtocol(object):
     """
     Defines the core server protocol for wslink. Gathers a list of LinkProtocol
@@ -125,6 +131,7 @@ class ServerProtocol(object):
 
     def __init__(self):
         self.network_monitor = NetworkMonitor()
+        self.log_emitter = EventEmitter[LogEmitterEvents]()
         self.linkProtocols = []
         self.secret = None
         self.initialize()
@@ -169,7 +176,9 @@ class ServerProtocol(object):
         try:
             self.linkProtocols.remove(protocol)
         except ValueError as e:
-            logger.error("Link protocol missing from registered list.")
+            error_message = "Link protocol missing from registered list."
+            logger.error(error_message)
+            self.log_emitter("error", error_message)
 
     def getLinkProtocols(self):
         return self.linkProtocols

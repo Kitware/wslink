@@ -9,6 +9,7 @@ import traceback
 from wslink import schedule_coroutine
 from wslink.publish import PublishManager
 from wslink.chunking import generate_chunks, UnChunker
+from wslink.websocket import ServerProtocol
 
 # from http://www.jsonrpc.org/specification, section 5.1
 METHOD_NOT_FOUND = -32601
@@ -141,7 +142,7 @@ class AbstractWebApp:
 
 
 class WslinkHandler(object):
-    def __init__(self, protocol=None, web_app=None):
+    def __init__(self, protocol: ServerProtocol, web_app=None):
         self.serverProtocol = protocol
         self.web_app = web_app
         self.functionMap = {}
@@ -153,6 +154,7 @@ class WslinkHandler(object):
         self.pub_manager = PublishManager()
         self.unchunkers = {}
         self.network_monitor = protocol.network_monitor
+        self.log_emitter = protocol.log_emitter
 
         # Build the rpc method dictionary, assuming we were given a serverprotocol
         if self.getServerProtocol():
@@ -253,7 +255,9 @@ class WslinkHandler(object):
 
     async def onMessage(self, is_binary, msg, client_id):
         if not is_binary:
-            logger.critical("wslink is not expecting text message:\n> %s", msg.data)
+            error_message = "wslink is not expecting text message:\n> %s"
+            logger.critical(error_message, msg.data)
+            self.log_emitter.critical(error_message % msg.data)
             return
 
         full_message = self.unchunkers[client_id].process_chunk(msg.data)
@@ -262,7 +266,13 @@ class WslinkHandler(object):
                 await self.onCompleteMessage(full_message, client_id)
 
     async def onCompleteMessage(self, rpc, client_id):
-        logger.debug("wslink incoming msg %s", self.payloadWithSecretStripped(rpc))
+        debug_message = "wslink incoming msg %s"
+        stripped_payload = self.payloadWithSecretStripped(rpc)
+        logger.debug(debug_message, stripped_payload)
+
+        if self.log_emitter.has("debug"):
+            self.log_emitter.debug(debug_message % stripped_payload)
+
         if "id" not in rpc:
             return
 
@@ -295,6 +305,7 @@ class WslinkHandler(object):
 
         # No matching method found
         if not methodName in self.functionMap:
+            self.log_emitter.error(f"Method not found: {methodName}")
             with self.network_monitor:
                 await self.sendWrappedError(
                     rpcid,
@@ -328,6 +339,7 @@ class WslinkHandler(object):
             logger.error("Exception raised")
             logger.error(repr(e_inst))
             logger.error(captured_trace)
+            self.log_emitter.exception(e_inst)
             with self.network_monitor:
                 await self.sendWrappedError(
                     rpcid,
