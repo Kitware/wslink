@@ -56,7 +56,7 @@ class WsConnection:
 
 
 class WsEndpoint(WslinkHandler):
-    def __init__(self, protocol=None, web_app=None):
+    def __init__(self, protocol, web_app=None):
         super().__init__(protocol, web_app)
 
     async def connect(self):
