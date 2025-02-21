@@ -126,7 +126,9 @@ class ServerProtocol(object):
 
     def __init__(self):
         self.network_monitor = NetworkMonitor()
-        self.log_emitter = EventEmitter()
+        self.log_emitter = EventEmitter(
+            allowed_events=["exception", "error", "critical", "info", "debug"]
+        )
         self.linkProtocols = []
         self.secret = None
         self.initialize()
