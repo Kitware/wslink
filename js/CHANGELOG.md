@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/kitware/wslink/compare/v2.3.0...v2.3.1) (2025-02-21)
+
+
+### Bug Fixes
+
+* **typing:** remove typing messing up ParaView apps ([158bbda](https://github.com/kitware/wslink/commit/158bbda82977a3311f0a6580dda94dc3def85653))
+
 # [2.3.0](https://github.com/kitware/wslink/compare/v2.2.2...v2.3.0) (2025-02-20)
 
 
