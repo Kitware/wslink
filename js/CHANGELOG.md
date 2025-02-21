@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/kitware/wslink/compare/v2.3.1...v2.3.2) (2025-02-21)
+
+
+### Bug Fixes
+
+* **emitter:** add EventEmitter tests and a way to specify allowed events ([b079e2e](https://github.com/kitware/wslink/commit/b079e2e1eeb1bbed35220d537ab64426946cbde7))
+
 ## [2.3.1](https://github.com/kitware/wslink/compare/v2.3.0...v2.3.1) (2025-02-21)
 
 
