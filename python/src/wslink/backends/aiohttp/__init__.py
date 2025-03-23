@@ -27,6 +27,19 @@ STATE_KEY = aiohttp_web.AppKey("state", str)
 
 logger = logging.getLogger(__name__)
 
+def reload_settings():
+    global MSG_OVERHEAD, MAX_MSG_SIZE, HEART_BEAT, HTTP_HEADERS
+
+    MSG_OVERHEAD = int(os.environ.get("WSLINK_MSG_OVERHEAD", 4096))
+    MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
+    HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
+    HTTP_HEADERS = os.environ.get("WSLINK_HTTP_HEADERS")
+
+    # Allow to skip heart beat
+    if HEART_BEAT < 1:
+        HEART_BEAT = None
+
+
 # -----------------------------------------------------------------------------
 # HTTP helpers
 # -----------------------------------------------------------------------------
@@ -57,6 +70,7 @@ async def http_headers(request: aiohttp_web.Request, handler):
 # -----------------------------------------------------------------------------
 class WebAppServer(AbstractWebApp):
     def __init__(self, server_config):
+        reload_settings()
         AbstractWebApp.__init__(self, server_config)
         if HTTP_HEADERS:
             self.set_app(aiohttp_web.Application(middlewares=[http_headers]))
@@ -167,6 +181,7 @@ class WebAppServer(AbstractWebApp):
 
 class ReverseWebAppServer(AbstractWebApp):
     def __init__(self, server_config):
+        reload_settings()
         super().__init__(server_config)
         self._url = server_config.get("reverse_url")
         self._server_protocol = server_config.get("ws_protocol")
