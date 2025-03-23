@@ -1,3 +1,10 @@
+## [2.3.3](https://github.com/kitware/wslink/compare/v2.3.2...v2.3.3) (2025-03-23)
+
+
+### Bug Fixes
+
+* **HEART_BEAT:** properly reload env when overriden ([c5b7f3a](https://github.com/kitware/wslink/commit/c5b7f3a3ec5b89dbbd987b1887f3a552e511de13))
+
 ## [2.3.2](https://github.com/kitware/wslink/compare/v2.3.1...v2.3.2) (2025-02-21)
 
 
