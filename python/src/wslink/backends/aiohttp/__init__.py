@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 def reload_settings():
     global MSG_OVERHEAD, MAX_MSG_SIZE, HEART_BEAT, HTTP_HEADERS
 
-    MSG_OVERHEAD = int(os.environ.get("WSLINK_MSG_OVERHEAD", 4096))
-    MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", 4194304))
-    HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", 30))  # 30 seconds
-    HTTP_HEADERS = os.environ.get("WSLINK_HTTP_HEADERS")
+    MSG_OVERHEAD = int(os.environ.get("WSLINK_MSG_OVERHEAD", MSG_OVERHEAD))
+    MAX_MSG_SIZE = int(os.environ.get("WSLINK_MAX_MSG_SIZE", MAX_MSG_SIZE))
+    HEART_BEAT = int(os.environ.get("WSLINK_HEART_BEAT", HEART_BEAT or 30))  # 30 seconds
+    HTTP_HEADERS = os.environ.get("WSLINK_HTTP_HEADERS", HTTP_HEADERS)
 
     # Allow to skip heart beat
     if HEART_BEAT < 1:
