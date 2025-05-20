@@ -1,3 +1,10 @@
+## [2.3.4](https://github.com/kitware/wslink/compare/v2.3.3...v2.3.4) (2025-05-20)
+
+
+### Bug Fixes
+
+* **http-headers:** override settings on reload only if env available ([721eb54](https://github.com/kitware/wslink/commit/721eb5492bcca40e7ba77638c81d36667f151d86))
+
 ## [2.3.3](https://github.com/kitware/wslink/compare/v2.3.2...v2.3.3) (2025-03-23)
 
 
