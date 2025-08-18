@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/kitware/wslink/compare/v2.3.4...v2.4.0) (2025-08-18)
+
+
+### Features
+
+* **launcher:** allow to retry launcher request ([0b9b173](https://github.com/kitware/wslink/commit/0b9b173a044ed305dda111e0cac3821242d5f9b4))
+
 ## [2.3.4](https://github.com/kitware/wslink/compare/v2.3.3...v2.3.4) (2025-05-20)
 
 
