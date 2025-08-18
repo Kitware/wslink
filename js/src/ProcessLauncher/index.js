@@ -5,16 +5,22 @@ const connections = [];
 
 function ProcessLauncher(publicAPI, model) {
   publicAPI.start = (config) => {
-    var xhr = new XMLHttpRequest(),
-      url = model.endPoint;
+    const xhr = new XMLHttpRequest();
+    const url = model.endPoint;
+    if (!model._retry) {
+      model._retry = config.launcherRetry || [];
+    }
 
     xhr.open('POST', url, true);
 
     if (config.headers) {
-      Object.entries(config.headers).forEach(([key, value]) =>
+      model._headers = config.headers;
+      delete config.headers;
+    }
+    if (model._headers) {
+      Object.entries(model._headers).forEach(([key, value]) =>
         xhr.setRequestHeader(key, value)
       );
-      delete config.headers;
     }
 
     xhr.responseType = 'json';
@@ -27,8 +33,12 @@ function ProcessLauncher(publicAPI, model) {
         connections.push(response);
         publicAPI.fireProcessReady(response);
         return;
+      } else if (xhr.status === 503 && model._retry.length > 0) {
+        const timeout = model._retry.shift();
+        setTimeout(publicAPI.start, timeout, config);
+      } else {
+        publicAPI.fireError(xhr);
       }
-      publicAPI.fireError(xhr);
     };
 
     xhr.onerror = (e) => {

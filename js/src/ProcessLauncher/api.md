@@ -10,9 +10,13 @@ a VTK or a ParaView backend.
 import ProcessLauncher from 'wslink/src/ProcessLauncher';
 
 processLauncher = ProcessLauncher.newInstance({ endPoint: '/paraview' });
+
+// Optionally you can provide a launcherRetry: [1000, 2000, 3000, 5000]
+// with the set of time to wait in ms before another retry.
+// Retries will only occured on a 503 response from the server.
 ```
 
-## ProcessLauncher.newInstance({ endPoint }) 
+## ProcessLauncher.newInstance({ endPoint, launcherRetry: [] })
 
 Create a process launcher that will make requests to a remote
 server using the provided endpoint url.
