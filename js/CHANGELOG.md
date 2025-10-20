@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/kitware/wslink/compare/v2.4.0...v2.5.0) (2025-10-20)
+
+
+### Features
+
+* **symlinks:** add option to enable symlinks for static web serving ([d865d49](https://github.com/kitware/wslink/commit/d865d49272a970b82fbaee604168aafde553da5b))
+
 # [2.4.0](https://github.com/kitware/wslink/compare/v2.3.4...v2.4.0) (2025-08-18)
 
 
