@@ -93,6 +93,9 @@ class WebAppServer(AbstractWebApp):
 
         if "static" in server_config:
             static_routes = server_config["static"]
+            follow_symlinks = server_config["static_follow_symlinks"] if "static_follow_symlinks" in server_config else False
+            follow_symlinks = follow_symlinks or bool(int(os.environ.get("WSLINK_FOLLOW_SYMLINKS", 0)))
+
             routes = []
 
             # Ensure longer path are registered first
@@ -100,7 +103,10 @@ class WebAppServer(AbstractWebApp):
                 server_path = static_routes[route]
                 routes.append(
                     aiohttp_web.static(
-                        _fix_path(route), server_path, append_version=True
+                        _fix_path(route),
+                        server_path,
+                        append_version=True,
+                        follow_symlinks=follow_symlinks,
                     )
                 )
 
