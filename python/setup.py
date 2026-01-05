@@ -20,6 +20,7 @@ with open("README.rst") as f:
 
 setup(
     name="wslink",
+    version = "2.5.0",
     description="Python/JavaScript library for communicating over WebSocket",
     long_description=readme,
     author="Kitware, Inc.",
