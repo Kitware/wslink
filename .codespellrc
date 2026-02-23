@@ -1,0 +1,2 @@
+[codespell]
+skip = js-lib/CHANGELOG.md,CHANGELOG.md,examples/chat-rpc-pub-sub/www/assets/**,js-lib/package-lock.json,tests/test_ws_protocol.py

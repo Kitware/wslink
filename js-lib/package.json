@@ -1,0 +1,33 @@
+{
+  "name": "wslink",
+  "version": "2.5.0",
+  "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kitware/wslink.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kitware/wslink/issues"
+  },
+  "homepage": "https://github.com/kitware/wslink#readme",
+  "main": "dist/wslink.umd.js",
+  "scripts": {
+    "format": "prettier src --write",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "author": "Kitware",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "prettier": "^3.8.1",
+    "vite": "^7.3.1",
+    "vite-plugin-prettier-format": "^1.0.0"
+  },
+  "dependencies": {
+    "@msgpack/msgpack": "^2.8.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

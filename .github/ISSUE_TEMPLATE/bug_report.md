@@ -1,26 +1,27 @@
 ---
 name: Bug report
 about: Report a reproducible bug or regression.
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 <!-- Ignoring this template may result in your bug report getting deleted -->
 
 **Describe the bug**
 
-A clear and concise description of what the bug is. Before submitting, please remove unnecessary sections.
+A clear and concise description of what the bug is. Before submitting, please
+remove unnecessary sections.
 
 **To Reproduce**
 
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. See error
 
-***Code***
+**_Code_**
 
 ```python
 # code goes here
@@ -32,29 +33,35 @@ A clear and concise description of what you expected to happen.
 
 **Screenshots**
 
-If applicable, add screenshots to help explain your problem (drag and drop the image).
+If applicable, add screenshots to help explain your problem (drag and drop the
+image).
 
 **Platform:**
 
-***Device:***
+**_Device:_**
+
 <!-- Check all that apply -->
+
 - [ ] Desktop
 - [ ] Mobile
 
-***OS:***
+**_OS:_**
+
 <!-- Check all that apply -->
+
 - [ ] Windows
 - [ ] MacOS
 - [ ] Linux
 - [ ] Android
 - [ ] iOS
 
-***Browsers Affected:***
+**_Browsers Affected:_**
+
 <!-- Check all that apply -->
+
 - [ ] Chrome
 - [ ] Firefox
 - [ ] Safari
 - [ ] IE (Version)
 
-***wslink version:***
-vMAJOR.MINOR.PATCH
+**_wslink version:_** vMAJOR.MINOR.PATCH

@@ -43,6 +43,8 @@ jobs:
       - name: Publish docs
         if: github.ref == 'refs/heads/master'
         env:
-          GIT_PUBLISH_URL: https://${{ secrets.GH_PUBLISH_CREDS }}@github.com/Kitware/wslink.git
+          GIT_PUBLISH_URL:
+            https://${{ secrets.GH_PUBLISH_CREDS
+            }}@github.com/Kitware/wslink.git
         run: npm run doc:publish
         working-directory: ${{env.webclient}}
