@@ -2,9 +2,9 @@ name: Build and test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build-js:
@@ -49,16 +49,16 @@ jobs:
         shell: bash
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install and Run Tests
-      working-directory: ${{env.python_pkg}}
-      run: |
-        pip install .
-        python -m unittest discover src/tests
+      - name: Install and Run Tests
+        working-directory: ${{env.python_pkg}}
+        run: |
+          pip install .
+          python -m unittest discover src/tests

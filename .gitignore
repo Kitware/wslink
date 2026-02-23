@@ -1,6 +1,5 @@
-py-env
 .DS_Store
-runtime*
+.venv
 build
 dist
 logs

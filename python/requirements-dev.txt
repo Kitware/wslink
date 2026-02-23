@@ -1,8 +1,0 @@
--r requirements.txt
-
-# doc checking
-collective.checkdocs
-
-# publishing
-twine
-wheel
