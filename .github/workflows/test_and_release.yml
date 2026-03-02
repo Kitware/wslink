@@ -59,7 +59,7 @@ jobs:
       - name: Install package
         run: |
           python -m pip install .
-          python -m pip install "pytest >=6" "pytest-asyncio" "pytest-cov >=3"
+          python -m pip install uv "pytest >=6" "pytest-asyncio" "pytest-cov >=3"
 
       - name: Test package
         run: >-
