@@ -46,10 +46,11 @@ repos:
       - id: shellcheck
 
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "v0.23"
+    rev: "v0.25"
     hooks:
       - id: validate-pyproject
-        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+        additional_dependencies:
+          ["validate-pyproject[all]", "validate-pyproject-schema-store"]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: "0.31.0"
