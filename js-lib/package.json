@@ -1,6 +1,6 @@
 {
   "name": "@kitware/wslink",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
   "repository": {
     "type": "git",

@@ -9,7 +9,7 @@ wslink.websocket handles the communication
 from wslink.core import register, schedule_callback, schedule_coroutine
 
 __license__ = "BSD-3-Clause"
-__version__ = "2.5.0"
+__version__ = "2.5.1"
 
 __all__ = [
     "__license__",
