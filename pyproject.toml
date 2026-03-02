@@ -29,6 +29,7 @@ dependencies = [
 ssl = [
     "cryptography",
 ]
+build = ["uv ~= 0.10.7"]
 
 [dependency-groups]
 test = [
@@ -103,7 +104,12 @@ version_variables = [
     "src/wslink/__init__.py:__version__",
     "js-lib/package.json:version",
 ]
-build_command = "uv build"
+build_command = """
+    python -m pip install -e '.[build]'
+    uv lock --upgrade-package "$PACKAGE_NAME"
+    git add uv.lock
+    uv build
+"""
 
 [tool.semantic_release.publish]
 dist_glob_patterns = ["dist/*"]
