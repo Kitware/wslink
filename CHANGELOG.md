@@ -2,6 +2,17 @@
 
 <!-- version list -->
 
+## v2.5.2 (2026-03-03)
+
+### Bug Fixes
+
+- Force release
+  ([`bdb476c`](https://github.com/Kitware/wslink/commit/bdb476c134294c371cd98a854b5a218fb37d54dc))
+
+- Update validate-pyproject
+  ([`29c85a2`](https://github.com/Kitware/wslink/commit/29c85a29936720610d1773033345b6531bef634c))
+
+
 ## v2.5.1 (2026-03-02)
 
 ### Bug Fixes
