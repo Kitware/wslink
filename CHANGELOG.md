@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.5.3 (2026-03-03)
+
+### Bug Fixes
+
+- Provenance repository url
+  ([`3b6409f`](https://github.com/Kitware/wslink/commit/3b6409f65604fe571e3a75dac7369410fb61ef23))
+
+
 ## v2.5.2 (2026-03-03)
 
 ### Bug Fixes
