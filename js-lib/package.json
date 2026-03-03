@@ -4,12 +4,13 @@
   "description": "Rpc and pub/sub between Python and JavaScript over WebSockets",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kitware/wslink.git"
+    "url": "git+https://github.com/Kitware/wslink.git",
+    "directory": "js-lib"
   },
   "bugs": {
-    "url": "https://github.com/kitware/wslink/issues"
+    "url": "https://github.com/Kitware/wslink/issues"
   },
-  "homepage": "https://github.com/kitware/wslink#readme",
+  "homepage": "https://github.com/Kitware/wslink#readme",
   "main": "dist/wslink.umd.js",
   "scripts": {
     "format": "prettier src --write",
