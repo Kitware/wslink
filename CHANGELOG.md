@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.5.5 (2026-03-04)
+
+### Bug Fixes
+
+- Incrementally improve WSLinkClient typing
+  ([`452a0b1`](https://github.com/Kitware/wslink/commit/452a0b16b75e188e59e2cd2058387f6bd3076f38))
+
+
 ## v2.5.4 (2026-03-04)
 
 ### Bug Fixes

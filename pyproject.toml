@@ -1,6 +1,6 @@
 [project]
 name = "wslink"
-version = "2.5.4"
+version = "2.5.5"
 authors = [
 { name = "Aron Helser", email = "Aron.helser@kitware.com" },
 { name = "Scott Wittenburg", email = "scott.wittenburg@kitware.com" },
