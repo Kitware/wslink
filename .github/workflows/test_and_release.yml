@@ -36,6 +36,26 @@ jobs:
           pre-commit install
           pre-commit run --all-files
 
+  npm-build:
+    runs-on: ubuntu-latest
+    needs: [pre-commit]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set Up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build js-lib
+        run: |
+          cd js-lib
+          npm ci
+          npm run typecheck
+          npm run build
+
   checks:
     name: Check Python ${{ matrix.python-version }} on ${{ matrix.runs-on }}
     runs-on: ${{ matrix.runs-on }}
@@ -67,7 +87,7 @@ jobs:
           --durations=20
 
   release:
-    needs: [pre-commit, checks]
+    needs: [pre-commit, npm-build, checks]
     name: Distribution build
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
