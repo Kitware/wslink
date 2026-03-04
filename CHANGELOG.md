@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.5.4 (2026-03-04)
+
+### Bug Fixes
+
+- Wslinkclient event invoke/fire and remove imagestream
+  ([`06e03d5`](https://github.com/Kitware/wslink/commit/06e03d5547ca07ee1aa7e042affa6117db91ece8))
+
+
 ## v2.5.3 (2026-03-03)
 
 ### Bug Fixes
