@@ -1,3 +1,5 @@
+import { WebsocketConnection } from '../WebsocketConnection';
+
 export interface vtkSubscription {
   unsubscribe(): void;
 }
@@ -98,18 +100,6 @@ export interface vtkWSLinkClient {
   getNotBusyList(): object;
 
   /**
-   * Should the client auto listen to image stream topic by creating its imageStream object
-   * @param {Boolean} autoCreate (default: true)
-   * @returns {Boolean} true if the set method modified the object
-   */
-  setCreateImageStream(autoCreate: boolean): boolean;
-
-  /**
-   * @returns {Boolean} the autoCreate state for imageStream
-   */
-  getCreateImageStream(): boolean;
-
-  /**
    * Set a config decorator to possibly alternate the config object that get received from the launcher.
    * @param decorator function for config object
    */
@@ -123,7 +113,7 @@ export interface vtkWSLinkClient {
   /**
    *
    */
-  getConnection(): any;
+  getConnection(): WebsocketConnection | null;
 
   /**
    *
@@ -136,30 +126,76 @@ export interface vtkWSLinkClient {
   getRemote(): Record<string, any>;
 
   /**
-   *
-   */
-  getImageStream(): vtkImageStream;
-
-  /**
-   *
+   * Register a callback for the busyChange event
    * @param callback
-   * @param priority
+   *
+   * @returns {vtkSubscription} subscription object that can be used to unsubscribe from the event.
    */
-  onBusyChange(callback: Function, priority: number): vtkSubscription;
+  onBusyChange(callback: (count: number) => void): vtkSubscription;
 
   /**
-   *
+   * Emits a busyChange event
    */
-  invokeBusyChange(): void;
+  invokeBusyChange(count: number): void;
 
-  onConnectionReady(callback: (httpReq: any) => void): vtkSubscription;
-  // invokeConnectionReady(): void
+  /**
+   * Emits a busyChange event
+   */
+  fireBusyChange(count: number): void;
 
-  onConnectionError(callback: (httpReq: any) => void): vtkSubscription;
-  // invokeConnectionError(): void
+  /**
+   * Register a callback for the connectionReady event
+   * @param callback
+   *
+   * @returns {vtkSubscription} subscription object that can be used to unsubscribe from the event.
+   */
+  onConnectionReady(callback: (client: vtkWSLinkClient) => void): vtkSubscription;
 
-  onConnectionClose(callback: (httpReq: any) => void): vtkSubscription;
-  // invokeConnectionClose(): void
+  /**
+   * Emits a connectionReady event
+   */
+  invokeConnectionReady(client: vtkWSLinkClient): void
+
+  /**
+   * Emits a connectionReady event
+   */
+  fireConnectionReady(client: vtkWSLinkClient): void
+
+  /**
+   * Register a callback for the connectionError event
+   * @param callback
+   *
+   * @returns {vtkSubscription} subscription object that can be used to unsubscribe from the event.
+   */
+  onConnectionError(callback: (...args: any[]) => void): vtkSubscription;
+
+  /**
+   * Emits a connectionError event
+   */
+  invokeConnectionError(...args: any[]): void
+
+  /**
+   * Emits a connectionError event
+   */
+  fireConnectionError(...args: any[]): void
+
+  /**
+   * Register a callback for the connectionClose event
+   * @param callback
+   *
+   * @returns {vtkSubscription} subscription object that can be used to unsubscribe from the event.
+   */
+  onConnectionClose(callback: (...args: any[]) => void): vtkSubscription;
+
+  /**
+   * Emits a connectionClose event
+   */
+  invokeConnectionClose(...args: any[]): void
+
+  /**
+   * Emits a connectionClose event
+   */
+  fireConnectionClose(...args: any[]): void
 }
 
 /**

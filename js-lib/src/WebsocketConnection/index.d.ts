@@ -30,6 +30,11 @@ export interface WebsocketSession {
    * @returns The id assigned to the binary attachment
    */
   addAttachment(payload: Blob): string;
+
+  /** this method shouldn't be overridden unless you know what you're doing */
+  onconnect(event: any): Promise<any>;
+  /** this method shouldn't be overridden unless you know what you're doing */
+  onmessage(event: any): Promise<void>;
 }
 
 export interface IWebsocketConnectionInitialValues {
@@ -41,9 +46,22 @@ export interface IWebsocketConnectionInitialValues {
 
 // Represents a single established websocket connection.
 export interface WebsocketConnection {
-  getSession(): WebsocketSession;
+  connect(): WebsocketSession | null;
+  getSession(): WebsocketSession | null;
   getUrl(): string | null;
   destroy(): void;
+
+  onConnectionReady(callback: (connection: WebsocketConnection) => void): { unsubscribe(): void; };
+  invokeConnectionReady(connection: WebsocketConnection): void
+  fireConnectionReady(connection: WebsocketConnection): void
+
+  onConnectionError(callback: (...args: any[]) => void): { unsubscribe(): void; };
+  invokeConnectionError(...args: any[]): void
+  fireConnectionError(...args: any[]): void
+
+  onConnectionClose(callback: (...args: any[]) => void): { unsubscribe(): void; };
+  invokeConnectionClose(...args: any[]): void
+  fireConnectionClose(...args: any[]): void
 }
 
 /**
