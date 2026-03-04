@@ -122,12 +122,6 @@ function vtkWSLinkClient(publicAPI, model) {
           );
         });
 
-        // Handle image stream if needed
-        if (model.createImageStream) {
-          model.imageStream = vtkImageStream.newInstance();
-          model.imageStream.connect(session);
-        }
-
         // Forward ready info as well
         publicAPI.invokeConnectionReady(publicAPI);
 
@@ -185,12 +179,10 @@ const DEFAULT_VALUES = {
   // protocols: null,
   // connection: null,
   // config: null,
-  // imageStream
   notBusyList: [],
   busyCount: 0,
   timeoutId: 0,
   notificationTimeout: 50,
-  createImageStream: true,
   // configDecorator: null,
 };
 
@@ -203,17 +195,14 @@ export function extend(publicAPI, model, initialValues = {}) {
   CompositeClosureHelper.set(publicAPI, model, [
     "protocols",
     "notBusyList",
-    "createImageStream",
     "configDecorator",
   ]);
   CompositeClosureHelper.get(publicAPI, model, [
     "connection",
     "config",
     "remote",
-    "imageStream",
     "protocols",
     "notBusyList",
-    "createImageStream",
     "configDecorator",
   ]);
   CompositeClosureHelper.event(publicAPI, model, "BusyChange");

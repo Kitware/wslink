@@ -74,7 +74,7 @@ function destroy(publicAPI, model = {}) {
 }
 
 // ----------------------------------------------------------------------------
-// Event handling: onXXX(callback), fireXXX(args...)
+// Event handling: onXXX(callback), fireXXX(args...) or invokeXXX(args...)
 // ----------------------------------------------------------------------------
 
 function event(publicAPI, model, eventName, asynchronous = true) {
@@ -92,7 +92,7 @@ function event(publicAPI, model, eventName, asynchronous = true) {
     return Object.freeze({ unsubscribe });
   }
 
-  publicAPI[`fire${capitalize(eventName)}`] = (...args) => {
+  const triggerEvent = (...args) => {
     if (model.deleted) {
       console.log("instance deleted - can not call any method");
       return;
@@ -116,6 +116,9 @@ function event(publicAPI, model, eventName, asynchronous = true) {
       processCallbacks();
     }
   };
+
+  publicAPI[`fire${capitalize(eventName)}`] = triggerEvent;
+  publicAPI[`invoke${capitalize(eventName)}`] = triggerEvent;
 
   publicAPI[`on${capitalize(eventName)}`] = (callback) => {
     if (model.deleted) {
