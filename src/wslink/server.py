@@ -260,7 +260,11 @@ def start_webserver(
     # asyncio.run(ws_server.start())
 
     # Until then, we can start the server this way
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
     port_callback = None
     if hasattr(wslinkServer, "port_callback"):
