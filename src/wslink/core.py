@@ -40,7 +40,12 @@ def schedule_callback(delay, callback, *args, **kwargs):
     # Using "asyncio.get_running_loop()" requires the event loop to be running
     # already, so we use "asyncio.get_event_loop()" here so that we can support
     # scheduling tasks before the server is started.
-    loop = asyncio.get_event_loop()
+    # starting from python 3.14, "asyncio.get_event_loop()" fails if there is no event loop
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     return loop.call_later(delay, functools.partial(callback, *args, **kwargs))
 
 
@@ -61,7 +66,11 @@ def schedule_coroutine(delay, coro_func, *args, done_callback=None, **kwargs):
     '<coro-name>' was never awaited".
     """
     # See method above for comment on "get_event_loop()" vs "get_running_loop()".
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     coro_partial = functools.partial(coro_func, *args, **kwargs)
     if done_callback is not None:
         return loop.call_later(

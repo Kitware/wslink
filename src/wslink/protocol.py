@@ -31,7 +31,12 @@ class AbstractWebApp:
         self._last_active_client_id = None
         self._config = server_config
         self._shutdown_task = None
-        self._completion = asyncio.get_event_loop().create_future()
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        self._completion = loop.create_future()
         self._app = None
 
     # -------------------------------------------------------------------------
