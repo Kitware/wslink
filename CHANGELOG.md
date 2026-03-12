@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.5.6 (2026-03-12)
+
+### Bug Fixes
+
+- Create event loop if there is none
+  ([`f6e25f4`](https://github.com/Kitware/wslink/commit/f6e25f47de929b130b365dd1bb274988e1b36225))
+
+
 ## v2.5.5 (2026-03-04)
 
 ### Bug Fixes

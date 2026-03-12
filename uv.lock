@@ -1264,7 +1264,7 @@ wheels = [
 
 [[package]]
 name = "wslink"
-version = "2.5.5"
+version = "2.5.6"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
