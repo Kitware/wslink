@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-vue2": "^2.3.4",
-    "vue": "^2.7.14",
+    "vue": "^3.0.0",
     "wslink": "^1.10.0"
   },
   "devDependencies": {
