@@ -2,6 +2,52 @@
 
 <!-- version list -->
 
+## v2.5.7 (2026-05-15)
+
+### Bug Fixes
+
+- **network**: Allow listeners on network monitor
+  ([`b4d7ead`](https://github.com/Kitware/wslink/commit/b4d7eadcfb0ed9544749d3f793a2747019f085ff))
+
+### Chores
+
+- **deps**: Bump actions/attest-build-provenance in the actions group
+  ([`3b51aef`](https://github.com/Kitware/wslink/commit/3b51aefc965a49406b4ce5220fa1788d4dfb7839))
+
+- **deps**: Bump aiohttp from 3.13.3 to 3.13.4
+  ([`89e4782`](https://github.com/Kitware/wslink/commit/89e4782996700e5caeb200e92ef8460f57f797b6))
+
+- **deps**: Bump cryptography from 46.0.5 to 46.0.6
+  ([`694ddb2`](https://github.com/Kitware/wslink/commit/694ddb2d50d75b886893038da64bf066076b7eeb))
+
+- **deps**: Bump cryptography from 46.0.6 to 46.0.7
+  ([`dc370e7`](https://github.com/Kitware/wslink/commit/dc370e76c86733ec6751a2f97b1f0c1c80a70c57))
+
+- **deps**: Bump uv from 0.10.7 to 0.11.6
+  ([`cd4085a`](https://github.com/Kitware/wslink/commit/cd4085ae0c973fea4750933eab56e628554d60a5))
+
+- **deps**: Bump vite and @vitejs/plugin-vue2
+  ([`c71bd01`](https://github.com/Kitware/wslink/commit/c71bd0107d664d1233d93e859b94472a8b8d73fb))
+
+- **deps**: Bump vue in /examples/chat-rpc-pub-sub/clients/js
+  ([`c2cc7e7`](https://github.com/Kitware/wslink/commit/c2cc7e74913f97df973a4fed9cdae872a4e4289c))
+
+- **deps-dev**: Bump flatted in /examples/chat-rpc-pub-sub/clients/js
+  ([`59b53b0`](https://github.com/Kitware/wslink/commit/59b53b018101bb1fd779b2feadc9aa137c183ff1))
+
+- **deps-dev**: Bump lodash in /examples/chat-rpc-pub-sub/clients/js
+  ([`9c65cd4`](https://github.com/Kitware/wslink/commit/9c65cd499ed8c2b1f45822ec491bef6c6beb4cd5))
+
+- **deps-dev**: Bump postcss from 8.5.6 to 8.5.14 in /js-lib
+  ([`cd5d2df`](https://github.com/Kitware/wslink/commit/cd5d2dff389822eb3319caf1b082fae033994207))
+
+- **deps-dev**: Bump pytest from 9.0.2 to 9.0.3
+  ([`ecc7de9`](https://github.com/Kitware/wslink/commit/ecc7de991abb1b17e93373f5d61a03f95a79fb9a))
+
+- **deps-dev**: Bump vite from 7.3.1 to 7.3.2 in /js-lib
+  ([`786aa4b`](https://github.com/Kitware/wslink/commit/786aa4bce08139044d135e5583ed34864d97d420))
+
+
 ## v2.5.6 (2026-03-12)
 
 ### Bug Fixes
