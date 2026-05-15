@@ -6,6 +6,7 @@ ServerProtocol to hook all the needed LinkProtocols together.
 
 import asyncio
 import logging
+from contextlib import suppress
 
 from wslink import register as exportRpc
 from wslink import schedule_callback
@@ -75,9 +76,20 @@ class NetworkMonitor:
     """
 
     def __init__(self):
-
         self.pending = 0
+        self._next_listener_id = 1
+        self._listeners = {}
         self.event = asyncio.Event()
+
+    def add_listener(self, enter, exit):
+        """Register listener and return id to enable remove"""
+        self._next_listener_id += 1
+        self._listeners[self._next_listener_id] = (enter, exit)
+        return self._next_listener_id
+
+    def remove_listener(self, key):
+        """Unregister listener using its registration key"""
+        return self._listeners.pop(key, None)
 
     def network_call_completed(self):
         """Trigger completion event"""
@@ -85,11 +97,23 @@ class NetworkMonitor:
 
     def on_enter(self, *_, **__):
         """Increase pending request"""
+
+        if self.pending == 0:
+            for enter, _ in self._listeners.values():
+                with suppress(Exception):
+                    enter()
+
         self.pending += 1
 
     def on_exit(self, *_, **__):
         """Decrease pending request and trigger completion event if we reach 0 pending request"""
         self.pending -= 1
+
+        if self.pending == 0:
+            for _, exit in self._listeners.values():
+                with suppress(Exception):
+                    exit()
+
         if self.pending == 0 and not self.event.is_set():
             self.event.set()
 
