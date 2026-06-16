@@ -18,7 +18,7 @@
     "eslint": "^8.33.0",
     "eslint-plugin-vue": "^9.3.0",
     "prettier": "^2.7.1",
-    "vite": "^8.0.7"
+    "vite": "^8.0.16"
   },
   "browserslist": [
     "> 1%",
