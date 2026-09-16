@@ -19,6 +19,11 @@ def create_webserver(server_config, backend="aiohttp"):
 
         return create_webserver(server_config)
 
+    if backend == "robyn":
+        from .robyn import create_webserver  # noqa: PLC0415
+
+        return create_webserver(server_config)
+
     msg = f"{backend} backend is not implemented"
     raise Exception(msg)
 
@@ -41,6 +46,11 @@ def launcher_start(args, config, backend="aiohttp"):
 
     if backend == "jupyter":
         from .jupyter import startWebServer  # noqa: PLC0415
+
+        return startWebServer(args, config)
+
+    if backend == "robyn":
+        from .robyn import startWebServer  # noqa: PLC0415
 
         return startWebServer(args, config)
 
