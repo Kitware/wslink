@@ -52,3 +52,7 @@ def test_import_backends_aiohttp():
 
 def test_import_backends_generic():
     import wslink.backends.generic  # noqa: F401
+
+
+def test_import_backends_robyn():
+    import wslink.backends.robyn  # noqa: F401

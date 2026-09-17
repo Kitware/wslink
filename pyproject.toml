@@ -29,6 +29,9 @@ dependencies = [
 ssl = [
     "cryptography",
 ]
+robyn = [
+    "robyn>=0.70",
+]
 build = ["uv>=0.10.7,<0.12.0"]
 
 [dependency-groups]
@@ -36,6 +39,7 @@ test = [
   "pytest >=6",
   "pytest-asyncio",
   "pytest-cov >=3",
+  "robyn>=0.70",
 ]
 dev = [
   "pytest >=6",
@@ -43,6 +47,7 @@ dev = [
   "pytest-cov >=3",
   "pre-commit",
   "ruff",
+  "robyn>=0.70",
 ]
 
 [build-system]
