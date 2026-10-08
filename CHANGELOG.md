@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v2.6.0 (2026-10-08)
+
+### Features
+
+- **aiohttp**: Allow disabling websocket compression
+  ([`763c460`](https://github.com/Kitware/wslink/commit/763c460a8dd43780f24b8c1119c6d303a1d6fccf))
+
+
 ## v2.5.8 (2026-10-08)
 
 ### Bug Fixes
