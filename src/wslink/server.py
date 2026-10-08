@@ -87,6 +87,12 @@ def add_arguments(parser):
         help="If provided, disables the websocket endpoint",
     )
     parser.add_argument(
+        "--no-ws-compress",
+        action="store_true",
+        dest="nowscompress",
+        help="If provided, disables websocket compression (permessage-deflate)",
+    )
+    parser.add_argument(
         "--fs-endpoints",
         default="",
         dest="fsEndpoints",
@@ -218,6 +224,10 @@ def start_webserver(
         if not options.nows:
             server_config["ws"] = {}
             server_config["ws"][options.ws] = wslinkServer
+
+        # Only override WSLINK_WS_COMPRESS when explicitly requested
+        if options.nowscompress:
+            server_config["ws_compress"] = False
 
         # Configure default static route if --content requested
         if len(options.content) > 0:
