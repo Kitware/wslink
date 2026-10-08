@@ -2,6 +2,103 @@
 
 <!-- version list -->
 
+## v2.5.8 (2026-10-08)
+
+### Bug Fixes
+
+- **routes**: Ensure proper route handling
+  ([`e4a4612`](https://github.com/Kitware/wslink/commit/e4a4612037d0a95ac1264920729418d0a3765e42))
+
+### Chores
+
+- **deps**: Bump actions/attest-build-provenance in the actions group
+  ([`aaae138`](https://github.com/Kitware/wslink/commit/aaae138d62f59353b2cd44042b306375e275b11f))
+
+- **deps**: Bump actions/attest-build-provenance in the actions group
+  ([`f13e01f`](https://github.com/Kitware/wslink/commit/f13e01f675a279c8a14ae80a047a408742b53751))
+
+- **deps**: Bump actions/checkout from 6 to 7 in the actions group
+  ([`b0d5966`](https://github.com/Kitware/wslink/commit/b0d5966ea9ecb3522bb2279900907dbf3860489b))
+
+- **deps**: Bump actions/setup-node from 6 to 7 in the actions group
+  ([`5641b1e`](https://github.com/Kitware/wslink/commit/5641b1ed53f6e7a77e745382d06284363f8b80c9))
+
+- **deps**: Bump actions/setup-python from 6 to 7 in the actions group
+  ([`d5b8275`](https://github.com/Kitware/wslink/commit/d5b82753fa31032866d90bd784a4d10bd43ec061))
+
+- **deps**: Bump aiohttp from 3.13.4 to 3.14.0
+  ([`99c0f56`](https://github.com/Kitware/wslink/commit/99c0f56af553c614506e24dd05ef8b32da3b9175))
+
+- **deps**: Bump aiohttp from 3.14.0 to 3.14.1
+  ([`5d4e3d3`](https://github.com/Kitware/wslink/commit/5d4e3d3eaef75778a2302809cc35aa714a411bea))
+
+- **deps**: Bump aiohttp from 3.14.1 to 3.14.3
+  ([`0deb9eb`](https://github.com/Kitware/wslink/commit/0deb9eb36ebb191828a34aaaaed1f8d2d63346ea))
+
+- **deps**: Bump cryptography from 46.0.7 to 48.0.1
+  ([`aa720c4`](https://github.com/Kitware/wslink/commit/aa720c4def348e7bc32f0b226ca9ad85447cdf12))
+
+- **deps**: Bump cryptography from 48.0.1 to 50.0.0
+  ([`9e5ea28`](https://github.com/Kitware/wslink/commit/9e5ea28e74b68e3fcc1c752c82a81d268300f737))
+
+- **deps**: Bump idna from 3.11 to 3.15
+  ([`35fe607`](https://github.com/Kitware/wslink/commit/35fe607fe71580e470f6fc5a72f4df2f5499cfe4))
+
+- **deps**: Bump msgpack from 1.1.2 to 1.2.1
+  ([`ad65e7b`](https://github.com/Kitware/wslink/commit/ad65e7b9109c19a06f963d010fe8cc713f1fa622))
+
+- **deps**: Bump nanoid in /examples/chat-rpc-pub-sub/clients/js
+  ([`0c2844d`](https://github.com/Kitware/wslink/commit/0c2844de8c95edd3e8430a6bfa4f0afb1bcac155))
+
+- **deps**: Bump postcss in /examples/chat-rpc-pub-sub/clients/js
+  ([`d91675f`](https://github.com/Kitware/wslink/commit/d91675ff7502a391770af21e4e3cf13a7bcee149))
+
+- **deps**: Bump postcss in /examples/chat-rpc-pub-sub/clients/js
+  ([`2b3f483`](https://github.com/Kitware/wslink/commit/2b3f48310427aae6899cfd73efe46f07601489eb))
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`cb29c6d`](https://github.com/Kitware/wslink/commit/cb29c6d9268e90af20240a6738411dfb2f083a6e))
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`8f87dbb`](https://github.com/Kitware/wslink/commit/8f87dbb10d81c058d67db76f3e365f3f01acdf7f))
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`a86469a`](https://github.com/Kitware/wslink/commit/a86469a68326a7f3b19f7705c62ca85eef3af792))
+
+- **deps**: Bump python-semantic-release/python-semantic-release
+  ([`fe22a3f`](https://github.com/Kitware/wslink/commit/fe22a3fb36f2f226e82d56d440415c0690389e6d))
+
+- **deps**: Bump uv from 0.11.6 to 0.11.15
+  ([`91ef241`](https://github.com/Kitware/wslink/commit/91ef24111fecd689512a1737e93bfa5436c7f6dc))
+
+- **deps**: Bump virtualenv from 21.1.0 to 21.7.13
+  ([`1dafaaf`](https://github.com/Kitware/wslink/commit/1dafaaf5ada0d331d2b6badc77d594d53942bc80))
+
+- **deps-dev**: Bump brace-expansion
+  ([`ba676b8`](https://github.com/Kitware/wslink/commit/ba676b8c6a91d5c9e3a3cee10906803071db09fe))
+
+- **deps-dev**: Bump js-yaml in /examples/chat-rpc-pub-sub/clients/js
+  ([`a326a41`](https://github.com/Kitware/wslink/commit/a326a41dc1c7d81f0952887a2d0db13629e9fb88))
+
+- **deps-dev**: Bump js-yaml in /examples/chat-rpc-pub-sub/clients/js
+  ([`1137787`](https://github.com/Kitware/wslink/commit/11377879f1a423148711b428b86167f1a329d94d))
+
+- **deps-dev**: Bump js-yaml in /examples/chat-rpc-pub-sub/clients/js
+  ([`3b9c781`](https://github.com/Kitware/wslink/commit/3b9c78191f31e2de9d6b20eeec2e02f97d6a0086))
+
+- **deps-dev**: Bump picomatch from 4.0.3 to 4.0.4 in /js-lib
+  ([`d30dc48`](https://github.com/Kitware/wslink/commit/d30dc4831b0f1d2e9e6dbe57a34a8c17cbc1401c))
+
+- **deps-dev**: Bump postcss from 8.5.14 to 8.5.25 in /js-lib
+  ([`284d55f`](https://github.com/Kitware/wslink/commit/284d55f247d67fee04927652f9a17ba8e5026ae1))
+
+- **deps-dev**: Bump vite from 7.3.2 to 7.3.5 in /js-lib
+  ([`9183ede`](https://github.com/Kitware/wslink/commit/9183edeccb2b6500ce43488f7fff5742a42433ef))
+
+- **deps-dev**: Bump vite in /examples/chat-rpc-pub-sub/clients/js
+  ([`ac212bb`](https://github.com/Kitware/wslink/commit/ac212bb8a0533cf0feeea9feba032f3a896bb57e))
+
+
 ## v2.5.7 (2026-05-15)
 
 ### Bug Fixes
