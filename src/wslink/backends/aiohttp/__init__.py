@@ -47,9 +47,10 @@ def reload_settings():
 
 
 async def _root_handler(request):
+    location = "index.html"
     if request.query_string:
-        return aiohttp.web.HTTPFound(f"index.html?{request.query_string}")
-    return aiohttp.web.HTTPFound("index.html")
+        location = f"{location}?{request.query_string}"
+    raise aiohttp.web.HTTPFound(location)
 
 
 def _fix_path(path):
@@ -80,6 +81,10 @@ class WebAppServer(AbstractWebApp):
         self._ws_handlers = []
         self._site = None
         self._runner = None
+
+        # Static routes are registered on start() so any route added
+        # beforehand (e.g. app.router.add_routes()) takes precedence
+        self._default_routes = []
 
         if "ws" in server_config:
             routes = []
@@ -114,8 +119,7 @@ class WebAppServer(AbstractWebApp):
                 )
 
             # Resolve / => index.html
-            self.app.router.add_route("GET", "/", _root_handler)
-            self.app.add_routes(routes)
+            self._default_routes = [aiohttp_web.get("/", _root_handler), *routes]
 
         self.app[STATE_KEY] = {}
 
@@ -140,6 +144,11 @@ class WebAppServer(AbstractWebApp):
     # -------------------------------------------------------------------------
 
     async def start(self, port_callback=None):
+        # Register last so routes added since creation take precedence
+        if self._default_routes:
+            self.app.add_routes(self._default_routes)
+            self._default_routes = []
+
         self._runner = aiohttp_web.AppRunner(
             self.app, handle_signals=self.handle_signals
         )
